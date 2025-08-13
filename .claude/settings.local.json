@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__sequential-thinking__sequentialthinking_tools",
+      "Bash(./run.sh)",
+      "Bash(mv:*)",
+      "Bash(swift build:*)",
+      "Bash(git add:*)",
+      "Bash(find:*)",
+      "Bash(pkill:*)",
+      "Bash(true)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(git commit:*)",
+      "Bash(swiftlint:*)"
+    ],
+    "deny": [],
+    "additionalDirectories": [
+      "/Users/pabloalvarado/Projects/"
+    ]
+  }
+}
