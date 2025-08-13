@@ -1,3 +1,11 @@
+//
+//  AuroraBackground.swift
+//  Spellbreak
+//
+//  Animated gradient wave background with time-based color palettes.
+//  Creates flowing organic effects using Canvas and TimelineView.
+//
+
 import SwiftUI
 
 // MARK: - Aurora Background

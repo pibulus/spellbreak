@@ -1,3 +1,10 @@
+//
+//  AmbientParticles.swift
+//  Spellbreak
+//
+//  Floating particle system for atmospheric depth.
+//
+
 import SwiftUI
 
 // MARK: - Particle Model

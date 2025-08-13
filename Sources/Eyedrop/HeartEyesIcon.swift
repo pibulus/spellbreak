@@ -1,3 +1,10 @@
+//
+//  HeartEyesIcon.swift
+//  Spellbreak
+//
+//  Custom menu bar icon with eye animation states.
+//
+
 import SwiftUI
 
 struct HeartEyesIcon: View {
