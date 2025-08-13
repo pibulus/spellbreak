@@ -58,9 +58,9 @@ struct AuroraBackground: View {
                     let speed = 0.2 + Double(layer) * 0.15
                     let opacity = 0.7 - Double(layer) * 0.12
                     
-                    // Varying wave parameters for calmer look
-                    let waveAmplitude = size.height * (0.15 + Double(layer) * 0.03)
-                    let waveFrequency = 1.5 + Double(layer) * 0.3
+                    // More dramatic wave parameters for flowing effect
+                    let waveAmplitude = size.height * (0.25 + Double(layer) * 0.05)
+                    let waveFrequency = 1.2 + Double(layer) * 0.4
                     
                     var path = Path()
                     path.move(to: CGPoint(x: 0, y: size.height))
