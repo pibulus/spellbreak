@@ -29,25 +29,20 @@ struct OverlayWindow: View {
     
     var body: some View {
         ZStack {
-            // Group the background layers for proper diffusion
-            ZStack {
-                // Aurora animated background
-                AuroraBackground()
-                
-                // Heavy blur overlay to diffuse the waves
-                Rectangle()
-                    .fill(.black.opacity(0.3))
-                    .blur(radius: 100)
-                    .ignoresSafeArea()
-                
-                // Thick glass material for dreamy diffusion
-                Rectangle()
-                    .fill(.thickMaterial)
-                    .opacity(0.8)
-                    .ignoresSafeArea()
-            }
-            .compositingGroup()  // Composite the background layers together
-            .blur(radius: 20)    // Extra blur for the entire background
+            // Desktop blur with thick material for frosted glass
+            Rectangle()
+                .fill(.ultraThickMaterial)
+                .ignoresSafeArea()
+            
+            // Aurora waves on top of blurred desktop
+            AuroraBackground()
+                .blur(radius: 30)
+                .opacity(0.8)
+            
+            // Dark tint for contrast
+            Rectangle()
+                .fill(.black.opacity(0.2))
+                .ignoresSafeArea()
             
             // Ambient floating particles on top
             AmbientParticles()
@@ -130,14 +125,8 @@ struct OverlayWindow: View {
                     Spacer()
                     if timeRemaining > 0 {
                         Text(formatTimeShort(timeRemaining))
-                            .font(.system(size: 24, weight: .ultraLight, design: .monospaced))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [.white.opacity(0.6), .white.opacity(0.4)],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
+                            .font(.system(size: 26, weight: .medium, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.5))
                             .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
                             .opacity(messageOpacity * 0.8)
                             .padding(.trailing, 50)
@@ -171,12 +160,12 @@ struct OverlayWindow: View {
             // Play break start chime
             soundManager.playBreakStartChime()
             
-            // Simple fade in
-            withAnimation(.easeOut(duration: 1.0)) {
+            // Faster fade in for quicker response
+            withAnimation(.easeOut(duration: 0.5)) {
                 opacity = 1
             }
             
-            withAnimation(.easeOut(duration: 0.8).delay(0.3)) {
+            withAnimation(.easeOut(duration: 0.4).delay(0.1)) {
                 messageOpacity = 1
             }
             
