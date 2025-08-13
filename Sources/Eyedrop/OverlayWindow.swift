@@ -1,3 +1,11 @@
+//
+//  OverlayWindow.swift
+//  Spellbreak
+//
+//  Full-screen break overlay with mystical animated effects,
+//  hold-to-skip functionality, and countdown timer.
+//
+
 import SwiftUI
 import AppKit
 

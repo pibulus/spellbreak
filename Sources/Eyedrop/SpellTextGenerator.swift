@@ -1,3 +1,10 @@
+//
+//  SpellTextGenerator.swift
+//  Spellbreak
+//
+//  Generates mystical break messages based on time and moon phases.
+//
+
 import Foundation
 
 struct SpellTextGenerator {

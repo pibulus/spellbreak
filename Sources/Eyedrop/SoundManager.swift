@@ -1,3 +1,10 @@
+//
+//  SoundManager.swift
+//  Spellbreak
+//
+//  Audio playback manager for chimes, ambient sounds, and UI feedback.
+//
+
 import AVFoundation
 import SwiftUI
 import AppKit

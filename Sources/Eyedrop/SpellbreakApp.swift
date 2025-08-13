@@ -1,3 +1,11 @@
+//
+//  SpellbreakApp.swift
+//  Spellbreak
+//
+//  Main application entry point managing menu bar presence,
+//  overlay presentation, and break scheduling.
+//
+
 import SwiftUI
 import AppKit
 import UserNotifications

@@ -1,3 +1,10 @@
+//
+//  AppErrors.swift
+//  Spellbreak
+//
+//  Error types and handling for the application.
+//
+
 import Foundation
 
 // MARK: - App Error Types

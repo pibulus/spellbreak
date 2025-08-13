@@ -1,3 +1,10 @@
+//
+//  MenuViewSimple.swift
+//  Spellbreak
+//
+//  Menu bar interface showing next break time and quick actions.
+//
+
 import SwiftUI
 
 // MARK: - Simple Menu View

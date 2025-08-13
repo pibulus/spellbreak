@@ -1,3 +1,11 @@
+//
+//  PreferencesView.swift
+//  Spellbreak
+//
+//  Settings interface for configuring break intervals,
+//  duration, sounds, and other preferences.
+//
+
 import SwiftUI
 import ServiceManagement
 import AppKit

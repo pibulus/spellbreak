@@ -1,15 +1,16 @@
-# Eyedrop
+# 🔮 Spellbreak
 
-A minimalist macOS menu bar app that reminds you to take regular breaks and rest your eyes.
+Break the digital spell! A mystical break reminder app for macOS that helps you maintain healthy screen time habits with beautiful, immersive break experiences.
 
 ## Features
 
-- **20-20-20 Rule**: Customizable break reminders (default: every 20 minutes for 20 seconds)
-- **Beautiful Break Overlay**: Full-screen break reminders with calming visuals
-- **Ambient Music**: Optional relaxing background music during breaks
-- **Lock Mode**: Option to make breaks mandatory (cannot be skipped)
-- **Statistics Tracking**: Monitor your break completion rate
-- **Menu Bar Integration**: Unobtrusive menu bar icon with quick controls
+- **Mystical Break Experience**: Full-screen overlay with flowing aurora waves and ambient particles
+- **Smart Scheduling**: Customizable break intervals (default: every 20 minutes)
+- **Hold-to-Skip**: Press and hold to skip if needed (duration scales with break length)
+- **Time-Based Themes**: Color palettes shift with time of day (dawn, day, evening, night)
+- **Ambient Soundscape**: Optional relaxing sounds during breaks
+- **Menu Bar Control**: Unobtrusive icon with quick access to settings
+- **Break Statistics**: Track your break completion rate
 
 ## Requirements
 
@@ -18,63 +19,66 @@ A minimalist macOS menu bar app that reminds you to take regular breaks and rest
 
 ## Installation
 
-### From Source
+### Quick Start
 
-1. Clone the repository:
-```bash
-git clone https://github.com/pibulus/eyedrop.git
-cd eyedrop/Eyedrop
-```
+1. Download the latest release from [spellbreak.app](https://spellbreak.app)
+2. Move Spellbreak.app to your Applications folder
+3. Launch and grant necessary permissions
 
-2. Build the app:
+### Build from Source
+
 ```bash
+git clone https://github.com/pabloalvarado/spellbreak.git
+cd spellbreak
 ./build-app.sh
+open Spellbreak.app
 ```
-
-3. Run the app:
-```bash
-open Eyedrop.app
-```
-
-4. Optional: Move to Applications folder for permanent installation
 
 ## Usage
 
-- Click the droplet icon in your menu bar to access controls
-- Adjust break intervals and duration in Preferences
-- Enable Lock Mode to prevent skipping breaks
-- Choose from different visual styles for break screens
-- View your break statistics to track eye care habits
+- **Menu Bar**: Click the Spellbreak icon to access controls
+- **Preferences**: Customize break intervals, duration, and sounds
+- **Skip Break**: Hold the skip button for 1 second per minute of break time
+- **Pause/Resume**: Temporarily pause break reminders when needed
+
+## Privacy & Security
+
+Spellbreak respects your privacy:
+- ✅ No data collection or analytics
+- ✅ All settings stored locally
+- ✅ No network connections
+- ✅ Fully sandboxed
+- ✅ No microphone access
 
 ## Development
 
 Built with:
-- Swift 5.9
+- Swift 5.9+
 - SwiftUI
 - Swift Package Manager
 
-### Building for Release
+### Project Structure
 
-```bash
-swift build -c release
-./build-app.sh
+```
+Sources/Eyedrop/
+├── SpellbreakApp.swift     # Main app entry point
+├── OverlayWindow.swift     # Break overlay interface
+├── AuroraBackground.swift  # Animated wave effects
+├── PreferencesView.swift   # Settings interface
+├── MenuViewSimple.swift    # Menu bar UI
+└── SoundManager.swift      # Audio handling
 ```
 
-### Code Signing for Distribution
+### Code Signing
 
-The app includes proper entitlements for Mac App Store distribution. To sign for distribution:
+For Mac App Store distribution:
 
 ```bash
-codesign --deep --force --verify --verbose --sign "Developer ID Application: Your Name" Eyedrop.app
+codesign --deep --force --verify --verbose \
+  --sign "Developer ID Application: Your Name" \
+  --entitlements Spellbreak.entitlements \
+  Spellbreak.app
 ```
-
-## Privacy
-
-Eyedrop respects your privacy:
-- No data collection or tracking
-- All settings stored locally
-- No network connections required
-- Fully sandboxed for security
 
 ## License
 
@@ -82,4 +86,4 @@ Copyright © 2025 Pablo Alvarado. All rights reserved.
 
 ## Support
 
-For issues or suggestions, please open an issue on GitHub.
+For issues or feature requests, visit [github.com/pabloalvarado/spellbreak](https://github.com/pabloalvarado/spellbreak)
