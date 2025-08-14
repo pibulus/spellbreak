@@ -4,7 +4,6 @@
 Spellbreak is a mystical break reminder app for macOS that creates immersive, unskippable (but skippable with friction) break experiences.
 
 **Domain**: spellbreak.app  
-**Price**: $10  
 **Philosophy**: "Break the spell! You're not being productive, you're being hypnotized"
 
 ## Technical Stack
