@@ -17,6 +17,7 @@ struct PreferencesView: View {
     @AppStorage("breakDurationSec") private var breakDurationSec: Double = 20
     @AppStorage("lockMode") private var lockMode: Bool = true
     @AppStorage("launchAtLogin") private var launchAtLogin: Bool = false
+    @AppStorage("fancyMenu") private var fancyMenu: Bool = true
     
     // MARK: - UI State
     @State private var selectedTab = 0
@@ -294,7 +295,21 @@ struct PreferencesView: View {
     // MARK: - Vibes Tab Content
     private var vibesContent: some View {
         VStack(spacing: 24) {
-            // Coming soon card with better layout
+            // Menu style toggle
+            ToggleCard(
+                title: "Fancy Menu",
+                subtitle: "Mystical vibes vs clean text",
+                isOn: fancyMenu,
+                isHovered: hoveredElement == "menu-toggle",
+                onChange: { fancyMenu = $0 }
+            )
+            .onHover { hovering in
+                hoveredElement = hovering ? "menu-toggle" : nil
+            }
+            .padding(.horizontal, 32)
+            .padding(.top, 16)
+            
+            // Coming soon card for sounds/effects
             VStack(spacing: 20) {
                 Image(systemName: "waveform.path.ecg")
                     .font(.system(size: 48))
@@ -332,7 +347,7 @@ struct PreferencesView: View {
                     .multilineTextAlignment(.center)
                     .padding(.top, 8)
             }
-            .padding(40)
+            .padding(32)
             .frame(maxWidth: .infinity)
             .background(
                 RoundedRectangle(cornerRadius: 24)
@@ -348,7 +363,6 @@ struct PreferencesView: View {
                 hoveredElement = hovering ? "coming-soon" : nil
             }
             .padding(.horizontal, 32)
-            .padding(.top, 16)
             
             Spacer()
         }
