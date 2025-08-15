@@ -12,13 +12,46 @@ import SwiftUI
 struct MenuViewSimple: View {
     @EnvironmentObject var appState: AppState
     @State private var hoveredItem: String? = nil
+    @State private var isVisible = false
     @AppStorage("breakIntervalMin") private var breakInterval: Double = 20
     
     var body: some View {
         VStack(spacing: 0) {
+            // Spellbreak branding - mystical vibes
+            VStack(spacing: 6) {
+                HStack(spacing: 8) {
+                    Image(systemName: "sparkles.tv")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color(red: 0.6, green: 0.4, blue: 0.9), 
+                                        Color(red: 0.8, green: 0.3, blue: 0.7)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                    Text("Spellbreak")
+                        .font(.system(size: 26, weight: .bold, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color(red: 0.7, green: 0.4, blue: 0.9), 
+                                        Color(red: 0.9, green: 0.3, blue: 0.6)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .fixedSize()
+                }
+                Text("Break the spell")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(.secondary)
+            }
+            .padding(.vertical, 20)
+            .padding(.horizontal, 8)
+            
             // Timer display with subtle styling
             if appState.timerRunning {
-                VStack(spacing: 2) {
+                VStack(spacing: 4) {
                     Text(formatTime(appState.timeRemaining))
                         .font(.system(size: 24, weight: .semibold, design: .rounded))
                         .foregroundColor(.primary)
@@ -27,21 +60,24 @@ struct MenuViewSimple: View {
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(.secondary)
                 }
-                .padding(.vertical, 14)
+                .padding(.vertical, 18)
                 .frame(maxWidth: .infinity)
                 .background(
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(0.03),
-                            Color.white.opacity(0.01)
+                            Color.white.opacity(0.05),
+                            Color.white.opacity(0.02)
                         ],
                         startPoint: .top,
                         endPoint: .bottom
                     )
                 )
+                .cornerRadius(10)
+                .padding(.horizontal, 12)
+                .padding(.bottom, 8)
             }
             
-            VStack(spacing: 1) {
+            VStack(spacing: 2) {
                 // Break Now
                 SimpleMenuItem(
                     icon: "moon.stars.fill",
@@ -91,20 +127,25 @@ struct MenuViewSimple: View {
                 }
                 .onHover { hoveredItem = $0 ? "quit" : nil }
             }
-            .padding(4)
+            .padding(.horizontal, 8)
+            .padding(.bottom, 8)
         }
-        .frame(width: 160)
-        .background(
-            ZStack {
-                Color.black.opacity(0.1)
-                    .background(.ultraThinMaterial)
-            }
-        )
-        .cornerRadius(12)
+        .frame(width: 220)
+        .background(.ultraThickMaterial)
+        .cornerRadius(16)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.white.opacity(0.12), lineWidth: 0.5)
         )
+        .shadow(color: Color.black.opacity(0.15), radius: 20, x: 0, y: 8)
+        .scaleEffect(isVisible ? 1.0 : 0.95)
+        .opacity(isVisible ? 1.0 : 0.0)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isVisible)
+        .onAppear {
+            withAnimation {
+                isVisible = true
+            }
+        }
     }
     
     private func formatTime(_ seconds: TimeInterval) -> String {
@@ -136,11 +177,11 @@ struct SimpleMenuItem: View {
                 
                 Spacer()
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
             .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(isHovered ? Color.white.opacity(0.06) : Color.clear)
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(isHovered ? Color.white.opacity(0.08) : Color.clear)
             )
         }
         .buttonStyle(.plain)
