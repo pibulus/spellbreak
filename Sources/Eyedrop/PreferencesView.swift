@@ -28,7 +28,7 @@ struct PreferencesView: View {
     @StateObject private var soundManager = SoundManager()
     
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 32) {
             // Header with app title
             HStack(spacing: 12) {
                 Image(systemName: "sparkles")
@@ -63,7 +63,7 @@ struct PreferencesView: View {
                 Spacer()
             }
             .padding(.horizontal, 32)
-            .padding(.top, 32)  // More top padding
+            .padding(.top, 40)  // Even more top padding for breathing room
             
             // Tab selector with gradient
             HStack(spacing: 16) {
@@ -103,13 +103,15 @@ struct PreferencesView: View {
             ZStack {
                 if selectedTab == 0 {
                     timerContent
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                         .transition(.opacity)
                 } else {
                     vibesContent
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                         .transition(.opacity)
                 }
             }
-            .frame(maxHeight: .infinity)
+            .frame(height: 380)  // Slightly reduced to accommodate better top spacing
             .animation(.easeInOut(duration: 0.2), value: selectedTab)
             
             // Test break button
@@ -152,9 +154,10 @@ struct PreferencesView: View {
                 hoveredElement = hovering ? "test-button" : nil
             }
             .padding(.horizontal, 32)
-            .padding(.bottom, 40)  // More bottom padding
+            .padding(.top, 8)      // Small gap from content above
+            .padding(.bottom, 48)  // Even more bottom breathing room
         }
-        .frame(width: 520, height: 640)  // Increased height
+        .frame(width: 520, height: 660)  // Extra height for better breathing room
         .background(
             ZStack {
                 // Dark gradient background
@@ -175,9 +178,9 @@ struct PreferencesView: View {
         )
     }
     
-    // MARK: - Timer Tab Content
+    // MARK: - Timer Tab Content  
     private var timerContent: some View {
-        VStack(spacing: 24) {
+        VStack(alignment: .leading, spacing: 24) {
             // Main timing card
             VStack(spacing: 32) {
                 // Break interval
@@ -294,8 +297,8 @@ struct PreferencesView: View {
     
     // MARK: - Vibes Tab Content
     private var vibesContent: some View {
-        VStack(spacing: 24) {
-            // Menu style toggle
+        VStack(alignment: .leading, spacing: 24) {
+            // Menu style toggle - same top spacing as timer content
             ToggleCard(
                 title: "Fancy Menu",
                 subtitle: "Mystical vibes vs clean text",
