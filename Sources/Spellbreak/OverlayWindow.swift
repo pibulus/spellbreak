@@ -25,8 +25,9 @@ struct OverlayWindow: View {
     @State private var holdTimer: Timer?
     @State private var showSkipRing = false
     @State private var isHoveringRing = false
+    @State private var escapePulse: Double = 0
     @AppStorage("lockMode") private var lockMode: Bool = false
-    @AppStorage("breakDuration") private var breakDuration: Double = 20
+    @AppStorage("breakDurationSec") private var breakDuration: Double = 20
     @AppStorage("musicEnabled") private var musicEnabled: Bool = false
     
     // Calculate required hold duration: 1s per minute, clamped 2-15s
@@ -47,10 +48,11 @@ struct OverlayWindow: View {
                 .blur(radius: 30)
                 .opacity(0.8)
             
-            // Dark tint for contrast
+            // Dark tint for contrast + escape pulse effect
             Rectangle()
-                .fill(.black.opacity(0.2))
+                .fill(.black.opacity(0.2 + escapePulse * 0.1))
                 .ignoresSafeArea()
+                .animation(.easeOut(duration: 0.8), value: escapePulse)
             
             // Ambient floating particles on top
             AmbientParticles()
@@ -167,6 +169,19 @@ struct OverlayWindow: View {
         .onAppear {
             // Play break start chime
             soundManager.playBreakStartChime()
+            
+            // Listen for escape key presses
+            NotificationCenter.default.addObserver(
+                forName: NSNotification.Name("EscapePressed"),
+                object: nil,
+                queue: .main
+            ) { _ in
+                // Subtle pulse effect when escape is pressed
+                escapePulse = 1
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    escapePulse = 0
+                }
+            }
             
             // Faster fade in for quicker response
             withAnimation(.easeOut(duration: 0.5)) {
