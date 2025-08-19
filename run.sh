@@ -22,13 +22,13 @@ mkdir -p "${RESOURCES_DIR}"
 cp .build/release/${APP_NAME} "${MACOS_DIR}/"
 
 # Copy resources if they exist
-if [ -d "Sources/Eyedrop/Resources/Assets.xcassets" ]; then
-    cp -r Sources/Eyedrop/Resources/Assets.xcassets "${RESOURCES_DIR}/"
+if [ -d "Sources/Spellbreak/Resources/Assets.xcassets" ]; then
+    cp -r Sources/Spellbreak/Resources/Assets.xcassets "${RESOURCES_DIR}/"
 fi
 
 # Copy sounds
-if [ -d "Sources/Eyedrop/Resources/Sounds" ]; then
-    cp -r Sources/Eyedrop/Resources/Sounds "${RESOURCES_DIR}/"
+if [ -d "Sources/Spellbreak/Resources/Sounds" ]; then
+    cp -r Sources/Spellbreak/Resources/Sounds "${RESOURCES_DIR}/"
 fi
 
 # Create Info.plist
