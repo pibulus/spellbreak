@@ -15,8 +15,9 @@ struct PreferencesView: View {
     // MARK: - UI Constants
     private enum UI {
         static let sidePadding: CGFloat = 32
-        static let windowPaddingY: CGFloat = 24          // More breathing room top/bottom
-        static let sectionSpacing: CGFloat = 12           // Tighter between sections  
+        static let windowPaddingY: CGFloat = 28          // More breathing room top/bottom
+        static let sectionSpacing: CGFloat = 16           // Tighter between sections  
+        static let buttonSpacing: CGFloat = 18            // Reasonable gap for CTA button
         static let cardPadding: CGFloat = 16              // Unified card internal padding
     }
     
@@ -36,7 +37,8 @@ struct PreferencesView: View {
     @StateObject private var soundManager = SoundManager()
     
     var body: some View {
-        VStack(spacing: UI.sectionSpacing) {
+        VStack(spacing: 0) {
+            VStack(spacing: UI.sectionSpacing) {
             // Header with app title
             HStack(spacing: 12) {
                 Image(systemName: "sparkles")
@@ -76,7 +78,7 @@ struct PreferencesView: View {
             HStack(spacing: 16) {
                 TabButton(
                     icon: "clock",
-                    title: "Timer",
+                    title: "Time",
                     isSelected: selectedTab == 0,
                     isHovered: hoveredElement == "timer-tab"
                 ) {
@@ -110,15 +112,17 @@ struct PreferencesView: View {
             ZStack {
                 if selectedTab == 0 {
                     timerContent
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                        .frame(maxWidth: .infinity, alignment: .top)
                         .transition(.opacity)
                 } else {
                     vibesContent
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                        .frame(maxWidth: .infinity, alignment: .top)
                         .transition(.opacity)
                 }
             }
+            .frame(height: 360)  // Fixed height for consistent window size
             .animation(.easeInOut(duration: 0.2), value: selectedTab)
+            }
             
             // Test break button
             Button(action: {
@@ -159,6 +163,7 @@ struct PreferencesView: View {
             .onHover { hovering in
                 hoveredElement = hovering ? "test-button" : nil
             }
+            .padding(.top, UI.buttonSpacing)
             .padding(.horizontal, UI.sidePadding)
         }
         .padding(.top, UI.windowPaddingY)
@@ -186,7 +191,7 @@ struct PreferencesView: View {
     
     // MARK: - Timer Tab Content  
     private var timerContent: some View {
-        VStack(alignment: .leading, spacing: 24) {
+        VStack(alignment: .leading, spacing: 16) {
             // Main timing card
             VStack(spacing: 32) {
                 // Break interval
@@ -262,11 +267,11 @@ struct PreferencesView: View {
             // Toggle cards
             HStack(spacing: 16) {
                 ToggleCard(
-                    title: "Skippable",
-                    subtitle: lockMode ? "Can't skip" : "Hold to skip",
-                    isOn: !lockMode,
+                    title: "Unskippable",
+                    subtitle: lockMode ? "No skips!" : "Hold to skip",
+                    isOn: lockMode,
                     isHovered: hoveredElement == "skip-toggle",
-                    onChange: { lockMode = !$0 }
+                    onChange: { lockMode = $0 }
                 )
                 .onHover { hovering in
                     hoveredElement = hovering ? "skip-toggle" : nil
@@ -296,14 +301,17 @@ struct PreferencesView: View {
             }
             .padding(.horizontal, UI.sidePadding)
             
-            Spacer()
+            Spacer()  // Push content to top within fixed height
         }
     }
     
     // MARK: - Vibes Tab Content
     private var vibesContent: some View {
         VStack(alignment: .leading, spacing: 24) {
-            // Menu style toggle - same top spacing as timer content
+            // Add spacing to match timer tab's card placement
+            Color.clear.frame(height: 0)  // Alignment spacer
+            
+            // Menu style toggle
             ToggleCard(
                 title: "Fancy Menu",
                 subtitle: "Mystical vibes vs clean text",
@@ -371,7 +379,7 @@ struct PreferencesView: View {
             }
             .padding(.horizontal, UI.sidePadding)
             
-            Spacer()
+            Spacer()  // Push content to top within fixed height
         }
     }
 }
@@ -434,7 +442,22 @@ struct ToggleCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundStyle(
+                            isOn ? 
+                            LinearGradient(
+                                colors: [
+                                    Color(red: 1.0, green: 0.6, blue: 0.5),
+                                    Color(red: 0.95, green: 0.4, blue: 0.8)
+                                ],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            ) : 
+                            LinearGradient(
+                                colors: [.white, .white],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
                     Text(subtitle)
                         .font(.system(size: 14))
                         .foregroundColor(.white.opacity(0.5))
@@ -485,7 +508,7 @@ struct ToggleCard: View {
                 }
             }
         }
-        .padding(16)
+        .padding(12)
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 20)
