@@ -122,7 +122,6 @@ class AppState: ObservableObject {
     private var preferencesWindowController: NSWindowController?     // Preferences window
     private var overlayCancellable: AnyCancellable?
     private var preferencesCancellable: AnyCancellable?
-    private var keyMonitor: Any?                 // Escape key monitor
     
     // MARK: - Persisted Properties
     @AppStorage("breakInterval") private var breakIntervalMinutes: Double = 20.0 {
@@ -170,7 +169,7 @@ class AppState: ObservableObject {
         lastBreakTimestamp = lastBreakTime.timeIntervalSince1970
         
         timer = Timer.scheduledTimer(withTimeInterval: breakInterval, repeats: true) { _ in
-            self.triggerBreak()
+            self.checkAndTriggerBreak()
         }
         
         // Update time remaining every second
@@ -196,6 +195,24 @@ class AppState: ObservableObject {
     private func restartTimer() {
         stopTimer()
         startTimer()
+    }
+    
+    func checkAndTriggerBreak() {
+        // Always check if in a call - no option to disable
+        if MediaDetector.isInCall() {
+            // Postpone for 5 minutes if in a call
+            print("In call, postponing break for 5 minutes")
+            
+            // Reset the last break time to now to restart the countdown
+            lastBreakTime = Date()
+            
+            // Schedule a check in 5 minutes
+            Timer.scheduledTimer(withTimeInterval: 300, repeats: false) { _ in
+                self.checkAndTriggerBreak()
+            }
+        } else {
+            triggerBreak()
+        }
     }
     
     func triggerBreak() {
@@ -279,18 +296,8 @@ class AppState: ObservableObject {
         window.backgroundColor = NSColor.clear
         window.isReleasedWhenClosed = false
         
-        // Add escape key handler
-        if let existingMonitor = keyMonitor {
-            NSEvent.removeMonitor(existingMonitor)
-        }
-        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            if event.keyCode == 53 { // Escape
-                window.close()
-                self?.showingOverlay = false
-                return nil
-            }
-            return event
-        }
+        // No escape key handler - breaks are unskippable!
+        // (except through the hold-to-skip mechanism)
         
         // Bring it all the way front
         window.orderFrontRegardless()
@@ -333,10 +340,10 @@ class AppState: ObservableObject {
             
             // Set up timer for the remaining time
             timer = Timer.scheduledTimer(withTimeInterval: remainingTime, repeats: false) { _ in
-                self.triggerBreak()
+                self.checkAndTriggerBreak()
                 // After this break, continue with regular intervals
                 self.timer = Timer.scheduledTimer(withTimeInterval: self.breakInterval, repeats: true) { _ in
-                    self.triggerBreak()
+                    self.checkAndTriggerBreak()
                 }
             }
             
@@ -350,7 +357,7 @@ class AppState: ObservableObject {
             timerWasRunning = false
             if elapsed < breakInterval * 2 {
                 // Only trigger if we're not too far past the scheduled time
-                triggerBreak()
+                checkAndTriggerBreak()
             }
         }
     }
