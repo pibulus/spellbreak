@@ -29,6 +29,7 @@ struct OverlayWindow: View {
     @AppStorage("lockMode") private var lockMode: Bool = false
     @AppStorage("breakDurationSec") private var breakDuration: Double = 20
     @AppStorage("musicEnabled") private var musicEnabled: Bool = false
+    @AppStorage("visualTheme") private var visualTheme: String = "aurora"
     
     // Calculate required hold duration: 1s per minute, clamped 2-15s
     private var requiredHoldDuration: Double {
@@ -43,10 +44,23 @@ struct OverlayWindow: View {
                 .fill(.ultraThickMaterial)
                 .ignoresSafeArea()
             
-            // Aurora waves on top of blurred desktop
-            AuroraBackground()
-                .blur(radius: 30)
-                .opacity(0.8)
+            // Theme-based animated background
+            Group {
+                switch visualTheme {
+                case "lava":
+                    LavaLampBackground()
+                        .blur(radius: 25)
+                        .opacity(0.85)
+                case "cosmic":
+                    CosmicBackground()
+                        .blur(radius: 20)
+                        .opacity(0.9)
+                default: // "aurora"
+                    AuroraBackground()
+                        .blur(radius: 30)
+                        .opacity(0.8)
+                }
+            }
             
             // Dark tint for contrast + escape pulse effect
             Rectangle()

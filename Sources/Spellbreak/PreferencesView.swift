@@ -27,6 +27,7 @@ struct PreferencesView: View {
     @AppStorage("lockMode") private var lockMode: Bool = true
     @AppStorage("launchAtLogin") private var launchAtLogin: Bool = false
     @AppStorage("fancyMenu") private var fancyMenu: Bool = true
+    @AppStorage("visualTheme") private var visualTheme: String = "aurora"
     
     // MARK: - UI State
     @State private var selectedTab = 0
@@ -324,59 +325,84 @@ struct PreferencesView: View {
             }
             .padding(.horizontal, UI.sidePadding)
             
-            // Coming soon card for sounds/effects
-            VStack(spacing: 20) {
-                Image(systemName: "waveform.path.ecg")
-                    .font(.system(size: 48))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [
-                                Color(red: 0.95, green: 0.4, blue: 0.8).opacity(0.6),
-                                Color(red: 1.0, green: 0.6, blue: 0.5).opacity(0.6)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+            // Visual theme selector
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Visual Theme")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.9))
+                    .padding(.horizontal, 4)
                 
-                Text("Coming Soon")
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [
-                                Color(red: 0.95, green: 0.4, blue: 0.8),
-                                Color(red: 1.0, green: 0.6, blue: 0.5)
-                            ],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                
-                Text("Ambient sounds and visual effects")
-                    .font(.system(size: 16))
-                    .foregroundColor(.white.opacity(0.5))
-                
-                Text("Customize your break experience with\nsoothing sounds and animations")
-                    .font(.system(size: 14))
-                    .foregroundColor(.white.opacity(0.3))
-                    .multilineTextAlignment(.center)
-                    .padding(.top, 8)
+                VStack(spacing: 12) {
+                    // Aurora theme
+                    ThemeOption(
+                        title: "Aurora",
+                        subtitle: "Time-aware flowing waves",
+                        icon: "sparkles",
+                        colors: [
+                            Color(red: 0.95, green: 0.4, blue: 0.8),
+                            Color(red: 1.0, green: 0.6, blue: 0.5),
+                            Color(red: 0.7, green: 0.4, blue: 0.9)
+                        ],
+                        isSelected: visualTheme == "aurora",
+                        isHovered: hoveredElement == "theme-aurora"
+                    ) {
+                        visualTheme = "aurora"
+                        soundManager.playToggleOn()
+                    }
+                    .onHover { hovering in
+                        hoveredElement = hovering ? "theme-aurora" : nil
+                    }
+                    
+                    // Lava Lamp theme
+                    ThemeOption(
+                        title: "Lava Lamp",
+                        subtitle: "Retro morphing blobs",
+                        icon: "lava.floor.fill",
+                        colors: [
+                            Color(red: 1.0, green: 0.3, blue: 0.4),
+                            Color(red: 1.0, green: 0.1, blue: 0.6),
+                            Color(red: 1.0, green: 0.5, blue: 0.2)
+                        ],
+                        isSelected: visualTheme == "lava",
+                        isHovered: hoveredElement == "theme-lava"
+                    ) {
+                        visualTheme = "lava"
+                        soundManager.playToggleOn()
+                    }
+                    .onHover { hovering in
+                        hoveredElement = hovering ? "theme-lava" : nil
+                    }
+                    
+                    // Cosmic theme
+                    ThemeOption(
+                        title: "Cosmic",
+                        subtitle: "Deep space nebula",
+                        icon: "moon.stars.fill",
+                        colors: [
+                            Color(red: 0.1, green: 0.1, blue: 0.3),
+                            Color(red: 0.4, green: 0.1, blue: 0.8),
+                            Color(red: 0.2, green: 0.6, blue: 1.0)
+                        ],
+                        isSelected: visualTheme == "cosmic",
+                        isHovered: hoveredElement == "theme-cosmic"
+                    ) {
+                        visualTheme = "cosmic"
+                        soundManager.playToggleOn()
+                    }
+                    .onHover { hovering in
+                        hoveredElement = hovering ? "theme-cosmic" : nil
+                    }
+                }
             }
-            .padding(UI.cardPadding * 2)  // Slightly larger for the coming soon card
-            .frame(maxWidth: .infinity)
+            .padding(UI.cardPadding)
             .background(
                 RoundedRectangle(cornerRadius: 24)
-                    .fill(Color.white.opacity(hoveredElement == "coming-soon" ? 0.10 : 0.06))
+                    .fill(Color.white.opacity(0.06))
                     .overlay(
                         RoundedRectangle(cornerRadius: 24)
                             .stroke(Color.white.opacity(0.08), lineWidth: 1)
                     )
             )
-            .scaleEffect(hoveredElement == "coming-soon" ? 1.03 : 1.0)
-            .animation(.easeOut(duration: 0.2), value: hoveredElement)
-            .onHover { hovering in
-                hoveredElement = hovering ? "coming-soon" : nil
-            }
             .padding(.horizontal, UI.sidePadding)
             
             Spacer()  // Push content to top within fixed height
@@ -665,6 +691,79 @@ struct GradientSlider: View {
                 NSSound.beep()
             }
         }
+    }
+}
+
+// MARK: - Theme Option
+struct ThemeOption: View {
+    let title: String
+    let subtitle: String
+    let icon: String
+    let colors: [Color]
+    let isSelected: Bool
+    let isHovered: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 16) {
+                // Color preview circles
+                HStack(spacing: -8) {
+                    ForEach(0..<colors.count, id: \.self) { i in
+                        Circle()
+                            .fill(colors[i])
+                            .frame(width: 24, height: 24)
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.black.opacity(0.2), lineWidth: 1)
+                            )
+                            .zIndex(Double(colors.count - i))
+                    }
+                }
+                .frame(width: 60)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.white.opacity(isSelected ? 0.95 : 0.8))
+                    Text(subtitle)
+                        .font(.system(size: 12))
+                        .foregroundColor(.white.opacity(isSelected ? 0.6 : 0.4))
+                }
+                
+                Spacer()
+                
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: colors,
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.white.opacity(isSelected ? 0.12 : (isHovered ? 0.08 : 0.04)))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(
+                                LinearGradient(
+                                    colors: isSelected ? colors : [Color.white.opacity(0.1)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                ),
+                                lineWidth: isSelected ? 2 : 1
+                            )
+                    )
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
