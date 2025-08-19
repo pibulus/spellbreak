@@ -296,8 +296,17 @@ class AppState: ObservableObject {
         window.backgroundColor = NSColor.clear
         window.isReleasedWhenClosed = false
         
-        // No escape key handler - breaks are unskippable!
-        // (except through the hold-to-skip mechanism)
+        // Intercept escape key to prevent system error sound
+        // But don't actually do anything - breaks are unskippable!
+        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            if event.keyCode == 53 { // Escape key
+                // Consume the event to prevent error sound
+                // Could trigger a visual feedback here if wanted
+                NotificationCenter.default.post(name: NSNotification.Name("EscapePressed"), object: nil)
+                return nil // Consume the event
+            }
+            return event
+        }
         
         // Bring it all the way front
         window.orderFrontRegardless()
