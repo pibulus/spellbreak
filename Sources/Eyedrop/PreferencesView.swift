@@ -234,7 +234,7 @@ struct PreferencesView: View {
                             .foregroundColor(.white.opacity(0.7))
                     }
                     
-                    GradientSlider(value: $breakDurationSec, range: 10...60, step: 5)
+                    GradientSlider(value: $breakDurationSec, range: 5...60, step: 5)
                 }
             }
             .padding(28)
@@ -258,7 +258,7 @@ struct PreferencesView: View {
             HStack(spacing: 16) {
                 ToggleCard(
                     title: "Skippable",
-                    subtitle: "Hold to skip",
+                    subtitle: lockMode ? "Can't skip" : "Hold to skip",
                     isOn: !lockMode,
                     isHovered: hoveredElement == "skip-toggle",
                     onChange: { lockMode = !$0 }
