@@ -12,6 +12,14 @@ import AppKit
 
 // MARK: - Preferences View
 struct PreferencesView: View {
+    // MARK: - UI Constants
+    private enum UI {
+        static let sidePadding: CGFloat = 32
+        static let windowPaddingY: CGFloat = 24          // More breathing room top/bottom
+        static let sectionSpacing: CGFloat = 12           // Tighter between sections  
+        static let cardPadding: CGFloat = 16              // Unified card internal padding
+    }
+    
     // MARK: - Core Settings
     @AppStorage("breakIntervalMin") private var breakIntervalMin: Double = 20
     @AppStorage("breakDurationSec") private var breakDurationSec: Double = 20
@@ -28,7 +36,7 @@ struct PreferencesView: View {
     @StateObject private var soundManager = SoundManager()
     
     var body: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: UI.sectionSpacing) {
             // Header with app title
             HStack(spacing: 12) {
                 Image(systemName: "sparkles")
@@ -62,8 +70,7 @@ struct PreferencesView: View {
                 
                 Spacer()
             }
-            .padding(.horizontal, 32)
-            .padding(.top, 40)  // Even more top padding for breathing room
+            .padding(.horizontal, UI.sidePadding)
             
             // Tab selector with gradient
             HStack(spacing: 16) {
@@ -97,7 +104,7 @@ struct PreferencesView: View {
                     hoveredElement = hovering ? "vibes-tab" : nil
                 }
             }
-            .padding(.horizontal, 32)
+            .padding(.horizontal, UI.sidePadding)
             
             // Content area with consistent height
             ZStack {
@@ -111,7 +118,6 @@ struct PreferencesView: View {
                         .transition(.opacity)
                 }
             }
-            .frame(height: 380)  // Slightly reduced to accommodate better top spacing
             .animation(.easeInOut(duration: 0.2), value: selectedTab)
             
             // Test break button
@@ -153,11 +159,11 @@ struct PreferencesView: View {
             .onHover { hovering in
                 hoveredElement = hovering ? "test-button" : nil
             }
-            .padding(.horizontal, 32)
-            .padding(.top, 8)      // Small gap from content above
-            .padding(.bottom, 48)  // Even more bottom breathing room
+            .padding(.horizontal, UI.sidePadding)
         }
-        .frame(width: 520, height: 660)  // Extra height for better breathing room
+        .padding(.top, UI.windowPaddingY)
+        .padding(.bottom, UI.windowPaddingY)
+        .frame(width: 520)
         .background(
             ZStack {
                 // Dark gradient background
@@ -237,7 +243,7 @@ struct PreferencesView: View {
                     GradientSlider(value: $breakDurationSec, range: 5...60, step: 5)
                 }
             }
-            .padding(28)
+            .padding(UI.cardPadding)
             .background(
                 RoundedRectangle(cornerRadius: 24)
                     .fill(Color.white.opacity(hoveredElement == "timing-card" ? 0.10 : 0.06))
@@ -251,8 +257,7 @@ struct PreferencesView: View {
             .onHover { hovering in
                 hoveredElement = hovering ? "timing-card" : nil
             }
-            .padding(.horizontal, 32)
-            .padding(.top, 16)
+            .padding(.horizontal, UI.sidePadding)
             
             // Toggle cards
             HStack(spacing: 16) {
@@ -289,7 +294,7 @@ struct PreferencesView: View {
                     hoveredElement = hovering ? "auto-toggle" : nil
                 }
             }
-            .padding(.horizontal, 32)
+            .padding(.horizontal, UI.sidePadding)
             
             Spacer()
         }
@@ -309,8 +314,7 @@ struct PreferencesView: View {
             .onHover { hovering in
                 hoveredElement = hovering ? "menu-toggle" : nil
             }
-            .padding(.horizontal, 32)
-            .padding(.top, 16)
+            .padding(.horizontal, UI.sidePadding)
             
             // Coming soon card for sounds/effects
             VStack(spacing: 20) {
@@ -350,7 +354,7 @@ struct PreferencesView: View {
                     .multilineTextAlignment(.center)
                     .padding(.top, 8)
             }
-            .padding(32)
+            .padding(UI.cardPadding * 2)  // Slightly larger for the coming soon card
             .frame(maxWidth: .infinity)
             .background(
                 RoundedRectangle(cornerRadius: 24)
@@ -365,7 +369,7 @@ struct PreferencesView: View {
             .onHover { hovering in
                 hoveredElement = hovering ? "coming-soon" : nil
             }
-            .padding(.horizontal, 32)
+            .padding(.horizontal, UI.sidePadding)
             
             Spacer()
         }
@@ -481,7 +485,7 @@ struct ToggleCard: View {
                 }
             }
         }
-        .padding(20)
+        .padding(16)
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 20)

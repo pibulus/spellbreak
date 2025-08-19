@@ -44,10 +44,10 @@ mkdir -p "$RESOURCES_DIR"
 cp .build/release/Spellbreak "$MACOS_DIR/$APP_NAME"
 
 # Copy Info.plist
-cp Sources/Eyedrop/Resources/Info.plist "$CONTENTS_DIR/"
+cp Sources/Spellbreak/Resources/Info.plist "$CONTENTS_DIR/"
 
 # Copy Resources
-cp -r Sources/Eyedrop/Resources/Sounds "$RESOURCES_DIR/"
+cp -r Sources/Spellbreak/Resources/Sounds "$RESOURCES_DIR/"
 # Note: Assets.xcassets would need to be compiled with actool for production
 
 # Make it executable

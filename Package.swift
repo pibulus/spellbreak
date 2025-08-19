@@ -16,7 +16,7 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "Spellbreak",
-            path: "Sources/Eyedrop",
+            path: "Sources/Spellbreak",
             exclude: [
                 "Resources/Info.plist"
             ],
