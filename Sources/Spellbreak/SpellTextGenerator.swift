@@ -113,56 +113,95 @@ struct SpellTextGenerator {
     ]
     
     // ===================================================================
-    // SYMBOL-BASED MESSAGE SYSTEM
+    // NY TAROT READER MESSAGE SYSTEM - Street-smart occult wisdom
     // ===================================================================
     
-    private static let bodySymbols = [
-        "your eyes", "your hands", "your breath", "your shoulders", 
-        "your neck", "your spine", "your feet", "your jaw"
+    // Body parts as witnesses who've seen things
+    private static let bodyParts = [
+        "Your shoulders", "Your jaw", "Your neck", "Your spine",
+        "Your eyes", "Your hands", "Your breathing", "Your chest",
+        "That spot between your eyes", "Your lower back", "Your edges"
     ]
     
-    private static let sensationSymbols = [
-        "tension", "distance", "focus", "rhythm", "stillness",
-        "movement", "warmth", "weight", "space", "balance"
+    // What body parts do (shorter actions for 5-6 word limit)
+    private static let bodyActions = [
+        "holding court", "keeping score", "telling stories",
+        "carrying weight", "collecting receipts", "taking notes",
+        "running hot", "getting loud", "speaking up"
     ]
     
-    private static let bodyQuestions = [
-        "What are [symbol] trying to tell you?",
-        "How do [symbol] feel right now?",
-        "What do [symbol] need?",
-        "Where are [symbol] holding stress?",
-        "Can [symbol] relax from here?",
-        "What would [symbol] do if they could?",
-        "Notice what [symbol] are doing",
-        "When did [symbol] last move?",
-        "Are [symbol] comfortable?",
-        "What position are [symbol] in?"
+    // Shorter time markers
+    private static let timeMarkers = [
+        "since Tuesday", "since breakfast", "all morning",
+        "for hours", "too long", "a while"
     ]
     
-    private static let sensationQuestions = [
-        "Where do you feel [symbol]?",
-        "Is there [symbol] somewhere?",
-        "Can you find [symbol]?",
-        "What needs more [symbol]?",
-        "How much [symbol] is enough?",
-        "Notice the [symbol]",
-        "Does [symbol] help?",
-        "Where did the [symbol] go?",
-        "Can you create [symbol]?",
-        "What happens with more [symbol]?"
+    // The patterns/states as entities
+    private static let patterns = [
+        "The trance", "The loop", "The grip", "The spell",
+        "That old story", "The usual spiral", "The same dance",
+        "The pull", "The static", "The hold", "The drift"
     ]
     
-    private static let suggestions = [
-        "Maybe check in with [symbol]",
-        "Consider what [symbol] want",
-        "[symbol] might need attention",
-        "Notice [symbol]",
-        "Let [symbol] guide you",
-        "[symbol] know what to do",
-        "Trust [symbol]",
-        "Listen to [symbol]",
-        "[symbol] have wisdom",
-        "Follow what [symbol] suggest"
+    // Pattern behaviors
+    private static let patternActions = [
+        "gets comfortable", "knows your name", "feeds itself",
+        "grows stronger", "likes the dark", "needs your permission",
+        "recognizes you", "settles in", "makes itself at home",
+        "gets cozy", "knows you're here"
+    ]
+    
+    // Direct address openers
+    private static let openers = [
+        "Listen,", "Real talk:", "Here's the thing:",
+        "Check this:", "Tell me something:", "Question:",
+        "Notice how", "Funny thing is", "You know what?"
+    ]
+    
+    // Knowing questions (5-6 words max)
+    private static let knowingQuestions = [
+        "How long you carrying that?",
+        "This feeling familiar?",
+        "Your spine straight or storytelling?",
+        "That tension got a name?",
+        "Where's this headed?",
+        "Same movie, different day?",
+        "The grip getting tighter?",
+        "You feeding the trance?",
+        "When'd you last move?",
+        "Your breathing shallow?",
+        "Shoulders up by your ears?",
+        "The loop feel cozy?",
+        "Screen winning this round?",
+        "Your body keeping score?"
+    ]
+    
+    // Practical wisdom statements (5-6 words max)
+    private static let wisdomStatements = [
+        "Screens don't blink first",
+        "Pixels can't touch back",
+        "The spell needs permission",
+        "Hypnosis needs your yes",
+        "Bodies keep better time",
+        "Tension's just stored fear",
+        "The loop needs you",
+        "Distance shrinks the screen",
+        "Ancestors didn't watch rectangles",
+        "The trance breaks easy"
+    ]
+    
+    // Check-in questions (5 words max)
+    private static let checkIns = [
+        "Where you at?",
+        "You still there?",
+        "Body talking yet?",
+        "Feel that shift?",
+        "Notice anything?",
+        "You tracking this?",
+        "Getting the picture?",
+        "Catching the pattern?",
+        "See what's happening?",
+        "Feeling the pull?"
     ]
     
     // ===================================================================
@@ -220,94 +259,120 @@ struct SpellTextGenerator {
         lastBreakInterval: TimeInterval? = nil
     ) -> String {
         
+        // 60% chance to use NY tarot reader voice
+        let useNYVoice = Int.random(in: 1...10) <= 6
+        
+        if useNYVoice {
+            let messageType = Int.random(in: 1...6)
+            
+            switch messageType {
+            case 1:  // Body + Action (4-5 words)
+                let body = bodyParts.randomElement() ?? "Your shoulders"
+                let action = bodyActions.randomElement() ?? "holding court"
+                // 50% chance to add time for 5-6 words total
+                if Int.random(in: 1...2) == 1 {
+                    let time = timeMarkers.randomElement() ?? "too long"
+                    return "\(body) \(action) \(time)"
+                } else {
+                    return "\(body) been \(action)"
+                }
+                
+            case 2:  // Pattern + Action (3-4 words)
+                let pattern = patterns.randomElement() ?? "The trance"
+                let action = patternActions.randomElement() ?? "gets comfortable"
+                return "\(pattern) \(action)"
+                
+            case 3:  // Direct knowing question (3-5 words)
+                return knowingQuestions.randomElement() ?? "This feeling familiar?"
+                
+            case 4:  // Just wisdom (4-5 words) - no opener to keep it short
+                let wisdom = wisdomStatements.randomElement() ?? "Screens don't blink first"
+                return wisdom
+                
+            case 5:  // Simple check-in (3-4 words)
+                return checkIns.randomElement() ?? "You still there?"
+                
+            default:  // Short body observations (4-5 words)
+                let body = bodyParts.randomElement() ?? "Your breathing"
+                let shortObservations = [
+                    "\(body) trying to talk?",
+                    "\(body) got something?",
+                    "\(body) sending signals?",
+                    "\(body) speaking up?",
+                    "Notice \(body.lowercased())?"
+                ]
+                return shortObservations.randomElement() ?? "\(body) trying to talk?"
+            }
+        }
+        
+        // 40% chance for other mystical/temporal messages
         var pool: [String] = []
         
-        // 40% chance to use symbol-based generation for body awareness
-        let useSymbols = Int.random(in: 1...10) <= 4
-        
-        if useSymbols {
-            let symbolType = Int.random(in: 1...3)
-            var message: String
-            
-            switch symbolType {
-            case 1:  // Body part questions
-                let bodyPart = bodySymbols.randomElement() ?? "your eyes"
-                let template = bodyQuestions.randomElement() ?? "How do [symbol] feel?"
-                message = template.replacingOccurrences(of: "[symbol]", with: bodyPart)
-                
-            case 2:  // Sensation questions
-                let sensation = sensationSymbols.randomElement() ?? "tension"
-                let template = sensationQuestions.randomElement() ?? "Where do you feel [symbol]?"
-                message = template.replacingOccurrences(of: "[symbol]", with: sensation)
-                
-            default:  // Suggestions
-                let bodyPart = bodySymbols.randomElement() ?? "your breath"
-                let template = suggestions.randomElement() ?? "Notice [symbol]"
-                message = template.replacingOccurrences(of: "[symbol]", with: bodyPart)
-            }
-            
-            return message
+        // Mix in some of the original messages for variety
+        let mixType = Int.random(in: 1...3)
+        switch mixType {
+        case 1:
+            pool = mysticalMessages.shuffled().prefix(10).map { $0 }
+        case 2:
+            pool = playfulMessages.shuffled().prefix(10).map { $0 }
+        default:
+            pool = directMessages.shuffled().prefix(10).map { $0 }
         }
         
-        // Otherwise use regular pool selection
-        let magicRoll = Int.random(in: 1...10)
+        // Context-aware additions
         
-        if magicRoll <= 6 {
-            // 60% - Mystical or playful
-            pool = mysticalMessages + playfulMessages
-        } else {
-            // 40% - Direct or temporal
-            pool = directMessages + temporalMessages
-        }
-        
-        // Add context modifiers
-        
-        // If been too long (>40 mins), add more direct messages
+        // If been too long (>40 mins), add direct NY voice (5 words max)
         if let interval = lastBreakInterval, interval > 2400 {
             pool += [
-                "It's been too long",
-                "The spell deepens",
-                "Time to break free",
-                "Your body knows"
+                "It's been a minute",
+                "You're in deep",
+                "The grip's got you",
+                "Your spine's writing novels"
             ]
         }
         
-        // If many breaks skipped, get slightly more insistent
+        // If many breaks skipped, get more knowing (5 words max)
         if skippedCount > 3 {
             pool += [
-                "The pattern holds you",
-                "Deep in the trance",
-                "Break the cycle",
-                "The spell grows stronger"
+                "Same pattern, different day",
+                "The loop knows you",
+                "Screen's got your number",
+                "This dance getting old?"
             ]
         }
         
-        // Moon phase special messages
-        let moonPhase = getMoonPhase()
-        if moonPhase == "full", let fullMoonMessages = moonMessages["full"] {
-            pool += fullMoonMessages
-        } else if moonPhase == "new", let newMoonMessages = moonMessages["new"] {
-            pool += newMoonMessages
-        }
-        
-        // Time-based contextual messages
+        // Time-based NY observations (5 words max)
         let hour = Calendar.current.component(.hour, from: Date())
         switch hour {
         case 0..<5:
-            pool += ["Late night eyes need different light", "3am thoughts need space"]
+            pool += [
+                "3am screens hit different",
+                "Eyes running on fumes"
+            ]
         case 5..<9:
-            pool += ["Morning light helps reset", "Dawn changes how things look"]
+            pool += [
+                "Morning eyes need light",
+                "Dawn's trying to help"
+            ]
         case 12..<14:
-            pool += ["Midday glare is real", "Noon light shows everything"]
+            pool += [
+                "Noon glare's got opinions",
+                "Midday trance runs deep"
+            ]
         case 17..<20:
-            pool += ["Golden hour changes perspective", "Evening light is gentler"]
+            pool += [
+                "Golden hour can't reach",
+                "Evening's calling you back"
+            ]
         case 22..<24:
-            pool += ["Night screens hit different", "Time to wind down maybe"]
+            pool += [
+                "Night eyes need mercy",
+                "Screen knows you're tired"
+            ]
         default:
             break
         }
         
-        // Select a random message from the pool
         return pool.randomElement() ?? "Break the spell"
     }
     
