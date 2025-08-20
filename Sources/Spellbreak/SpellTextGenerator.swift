@@ -14,102 +14,102 @@ struct SpellTextGenerator {
     // ===================================================================
     
     private static let mysticalMessages = [
-        "The void blinks back",
-        "Pixels dissolve at the edges",
-        "Distance tastes like memory",
-        "The spell thins here",
-        "Reality buffers slowly",
-        "Your rhythm syncs with elsewhere",
-        "The screen dreams of forests",
-        "Infinity lives in peripheral vision",
-        "Time leaks between pixels",
-        "The simulation pauses",
-        "Digital ghosts need rest too",
-        "Your aura extends past the screen",
-        "The matrix loosens its grip",
-        "Consciousness drifts sideways",
-        "The portal needs closing",
-        "Energy flows where focus goes",
-        "The spell weakens with distance",
-        "Your timeline branches here",
-        "The algorithm releases you",
-        "Static becomes signal"
+        "The void holds its breath, waiting",
+        "Pixels dissolve like sugar in rain",
+        "Distance remembers what screens forget",
+        "The spell breaks where light bends",
+        "Reality loads one frame at a time",
+        "Your pulse finds older rhythms",
+        "Screens dream of the forests they'll never be",
+        "Infinity sleeps in your peripheral vision",
+        "Time pools in the spaces between refresh rates",
+        "Even simulations need to dream",
+        "Ghost light flickers at the edge of focus",
+        "Your attention casts shadows elsewhere",
+        "The trance loosens at its edges",
+        "Consciousness flows like water finding level",
+        "Every portal opens both ways",
+        "Attention is the only currency here",
+        "Spells break themselves eventually",
+        "This moment forks into infinite timelines",
+        "The algorithm exhales, finally",
+        "Static resolves into meaning"
     ]
     
     private static let playfulMessages = [
-        "Your ancestors looked at horizons",
-        "The simulation needs rest too",
-        "Blink with intention",
-        "Screens can't follow you here",
-        "Reality renders differently",
-        "Your body keeps the score",
-        "The pixels will wait",
-        "Rectangles aren't found in nature",
-        "The third eye needs distance",
-        "The void returns your gaze",
-        "Digital dreams need pauses",
-        "Your vision has limits",
-        "The cursor can wait",
-        "Photons scatter naturally",
-        "Your focus has wandered",
-        "The internet remains",
-        "Physical space exists",
-        "Your body remembers stillness",
-        "The screen stays put",
-        "Reset your focal length"
+        "Your ancestors watched fires and stars",
+        "Even gods close their eyes",
+        "Blink like you mean it this time",
+        "Screens haven't learned to walk yet",
+        "Reality runs at infinite frames per second",
+        "The body keeps receipts",
+        "Pixels age in dog years without you",
+        "Nature forgot to make rectangles",
+        "The third eye sees better from a distance",
+        "The void has been watching you back",
+        "Digital prayer requires digital sabbath",
+        "Vision is not an infinite resource",
+        "The cursor dreams of retirement",
+        "Light remembers how to scatter",
+        "Your attention took a left turn",
+        "The internet survives your absence",
+        "Atoms still dance when pixels sleep",
+        "Your spine writes complaint letters",
+        "Screens are terrible at hide and seek",
+        "Focus is a lens, not a laser"
     ]
     
     private static let directMessages = [
-        "Eyes elsewhere now",
-        "Break the pixel spell",
-        "Focus dissolves. Let it",
-        "Time to unfocus",
-        "Look through, not at",
-        "Release the screen",
-        "Gaze into actual distance",
-        "Stop. Breathe. Blink",
-        "Turn away",
-        "Let your eyes wander",
-        "Find something far",
-        "The horizon calls",
-        "Shift your focal plane",
-        "Exit the trance",
-        "Break eye contact with the void",
-        "Look at nothing specific",
-        "Distance heals",
-        "Periphery needs attention",
-        "Close your eyes. Count to ten",
-        "Reality check initiated"
+        "Eyes elsewhere. Now",
+        "Break the spell before it breaks you",
+        "Let focus dissolve like salt in water",
+        "Unfocus with purpose",
+        "Look through the screen to the wall behind it",
+        "Release what you're holding with your eyes",
+        "Find where the horizon lives",
+        "Stop. Breathe. Remember breathing",
+        "Turn your head like you've forgotten how",
+        "Let your gaze get lost on purpose",
+        "Distance is a form of medicine",
+        "The horizon has been patient",
+        "Shift from sharp to soft",
+        "Exit through the gift shop of consciousness",
+        "Make meaningless eye contact with space",
+        "Look at nothing until it becomes something",
+        "Twenty feet heals what two feet wounds",
+        "Your periphery is starving",
+        "Close your eyes. The darkness is a gift",
+        "This is your scheduled reality check"
     ]
     
     private static let temporalMessages = [
         // Morning
-        "Dawn breaks the digital spell",
-        "Morning light beats screen glow",
-        "The day exists beyond pixels",
+        "Dawn doesn't buffer",
+        "Morning light remembers your retinas",
+        "The day begins outside the frame",
         
         // Afternoon
-        "Afternoon drift is natural",
-        "Peak hours for distance gazing",
-        "The sun doesn't render in RGB",
+        "Afternoon light falls at angles screens can't calculate",
+        "Peak hours for remembering distance exists",
+        "The sun refuses to render in RGB",
         
         // Evening
-        "Twilight dissolves the harsh edges",
-        "Evening eyes seek softer light",
-        "Golden hour isn't on your screen",
+        "Twilight blurs all the hard edges",
+        "Evening asks for softer focal points",
+        "Golden hour happens without permissions",
         
         // Night
-        "The moon pulls your gaze",
-        "Darkness is gentler than backlight",
-        "Night vision needs no pixels",
-        "Stars don't need refreshing",
-        "The void gazes also into you",
+        "The moon pulls tides and pupils equally",
+        "Darkness holds more colors than backlights",
+        "Night vision evolved before pixels",
+        "Stars auto-update every billion years",
+        "The void has been watching longer than screens",
         
         // Anytime
-        "Time moves differently out there",
-        "This moment won't compile",
-        "The present has no loading screen",
-        "Now exists in analog"
+        "Time moves in curves, not refresh rates",
+        "This moment refuses to compile",
+        "The present runs without loading",
+        "Now happens in continuous, not discrete"
     ]
     
     // ===================================================================
@@ -214,15 +214,15 @@ struct SpellTextGenerator {
         let hour = Calendar.current.component(.hour, from: Date())
         switch hour {
         case 0..<5:
-            pool += ["Late thoughts need space", "The quiet hour arrives"]
+            pool += ["Three AM knows your secrets", "The smallest hours need the most space"]
         case 5..<9:
-            pool += ["Dawn breaks the spell", "Morning light differs"]
+            pool += ["Dawn erases yesterday's pixels", "Morning hasn't learned to lie yet"]
         case 12..<14:
-            pool += ["Noon light is real", "Midday clarity calls"]
+            pool += ["Noon casts the shortest shadows", "Midday strips illusions"]
         case 17..<20:
-            pool += ["Golden hour waits outside", "Evening softens edges"]
+            pool += ["Golden hour forgives everything", "Evening light has no algorithm"]
         case 22..<24:
-            pool += ["Night thoughts drift", "The day releases"]
+            pool += ["Night thoughts swim deeper", "The day unclenches its jaw"]
         default:
             break
         }
