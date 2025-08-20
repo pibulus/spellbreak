@@ -193,6 +193,8 @@ struct PreferencesView: View {
     // MARK: - Timer Tab Content  
     private var timerContent: some View {
         VStack(alignment: .leading, spacing: 16) {
+            Color.clear.frame(height: 12)  // Alignment spacer to match Vibes tab
+            
             // Main timing card
             VStack(spacing: 32) {
                 // Break interval
@@ -308,9 +310,9 @@ struct PreferencesView: View {
     
     // MARK: - Vibes Tab Content
     private var vibesContent: some View {
-        VStack(alignment: .leading, spacing: 24) {
+        VStack(alignment: .leading, spacing: 18) {
             // Add spacing to match timer tab's card placement
-            Color.clear.frame(height: 0)  // Alignment spacer
+            Color.clear.frame(height: 12)  // Alignment spacer
             
             // Menu style toggle
             ToggleCard(
@@ -353,26 +355,6 @@ struct PreferencesView: View {
                         hoveredElement = hovering ? "theme-aurora" : nil
                     }
                     
-                    // Lava Lamp theme
-                    ThemeOption(
-                        title: "Lava Lamp",
-                        subtitle: "Retro morphing blobs",
-                        icon: "lava.floor.fill",
-                        colors: [
-                            Color(red: 1.0, green: 0.3, blue: 0.4),
-                            Color(red: 1.0, green: 0.1, blue: 0.6),
-                            Color(red: 1.0, green: 0.5, blue: 0.2)
-                        ],
-                        isSelected: visualTheme == "lava",
-                        isHovered: hoveredElement == "theme-lava"
-                    ) {
-                        visualTheme = "lava"
-                        soundManager.playToggleOn()
-                    }
-                    .onHover { hovering in
-                        hoveredElement = hovering ? "theme-lava" : nil
-                    }
-                    
                     // Cosmic theme
                     ThemeOption(
                         title: "Cosmic",
@@ -391,6 +373,26 @@ struct PreferencesView: View {
                     }
                     .onHover { hovering in
                         hoveredElement = hovering ? "theme-cosmic" : nil
+                    }
+                    
+                    // Lava Lamp theme
+                    ThemeOption(
+                        title: "Lava Lamp",
+                        subtitle: "Retro morphing blobs",
+                        icon: "lava.floor.fill",
+                        colors: [
+                            Color(red: 1.0, green: 0.3, blue: 0.4),
+                            Color(red: 1.0, green: 0.1, blue: 0.6),
+                            Color(red: 1.0, green: 0.5, blue: 0.2)
+                        ],
+                        isSelected: visualTheme == "lava",
+                        isHovered: hoveredElement == "theme-lava"
+                    ) {
+                        visualTheme = "lava"
+                        soundManager.playToggleOn()
+                    }
+                    .onHover { hovering in
+                        hoveredElement = hovering ? "theme-lava" : nil
                     }
                 }
             }

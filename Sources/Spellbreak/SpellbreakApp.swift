@@ -56,7 +56,7 @@ final class OverlayWindowController: NSWindowController {
 @main
 struct SpellbreakApp: App {
     // MARK: - State
-    @StateObject private var appState = AppState()
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     // MARK: - Initialization
     init() {
@@ -70,34 +70,9 @@ struct SpellbreakApp: App {
     
     // MARK: - Body
     var body: some Scene {
-        MenuBarExtra {
-            MenuViewSimple()
-                .environmentObject(appState)
-        } label: {
-            HeartEyesIcon()
-                .environmentObject(appState)
-        }
-        .menuBarExtraStyle(.window)  // Use window style for timer updates
-        .commands {
-            CommandGroup(replacing: .newItem) {
-                Button("Break") {
-                    appState.triggerBreak()
-                }
-                
-                Divider()
-                
-                Button(appState.timerRunning ? "Disable" : "Enable") {
-                    if appState.timerRunning {
-                        appState.stopTimer()
-                    } else {
-                        appState.startTimer()
-                    }
-                }
-                
-                Button("Settings") {
-                    appState.showPreferences()
-                }
-            }
+        // Empty scene - we're using NSStatusItem directly now
+        Settings {
+            EmptyView()
         }
     }
 }
@@ -135,7 +110,7 @@ class AppState: ObservableObject {
     @AppStorage("totalCompletedBreaks") var totalCompletedBreaks: Int = 0
     @AppStorage("totalSkippedBreaks") var totalSkippedBreaks: Int = 0
     @AppStorage("lastBreakDate") private var lastBreakDateString: String = ""
-    @AppStorage("timerWasRunning") private var timerWasRunning: Bool = false
+    @AppStorage("timerWasRunning") var timerWasRunning: Bool = false
     @AppStorage("lastBreakTimestamp") private var lastBreakTimestamp: Double = 0
     
     // MARK: - Computed Properties
