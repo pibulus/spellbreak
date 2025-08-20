@@ -10,156 +10,151 @@ import Foundation
 struct SpellTextGenerator {
     
     // ===================================================================
-    // MAIN MESSAGE CATEGORIES - Primary break messages with personality
+    // MYSTICAL MESSAGE POOLS - Break messages with cosmic vibes
     // ===================================================================
     
     private static let mysticalMessages = [
-        "The pixels release their hold",
-        "The screen's enchantment weakens",
-        "Your eyes remember the horizon",
-        "The digital trance dissolves",
-        "Reality shimmers back into focus",
-        "The code loosens its grip",
-        "Your retinas taste freedom",
-        "The monitor's spell unravels",
-        "Photons scatter like startled birds",
-        "The cursor releases you"
+        "The void blinks back",
+        "Pixels dissolve at the edges",
+        "Distance tastes like memory",
+        "The spell thins here",
+        "Reality buffers slowly",
+        "Your rhythm syncs with elsewhere",
+        "The screen dreams of forests",
+        "Infinity lives in peripheral vision",
+        "Time leaks between pixels",
+        "The simulation pauses",
+        "Digital ghosts need rest too",
+        "Your aura extends past the screen",
+        "The matrix loosens its grip",
+        "Consciousness drifts sideways",
+        "The portal needs closing",
+        "Energy flows where focus goes",
+        "The spell weakens with distance",
+        "Your timeline branches here",
+        "The algorithm releases you",
+        "Static becomes signal"
     ]
     
     private static let playfulMessages = [
-        "Hey, your eyeballs called—they miss the real world",
-        "Plot twist: There's a whole universe past your screen",
-        "Your corneas are staging an intervention",
-        "Congratulations! You've been temporarily fired from staring",
-        "This is your vision speaking: We need to talk",
-        "Breaking: Local human remembers they have a body",
-        "Achievement unlocked: Voluntary screen abandonment",
-        "The pixels will survive without you",
-        "Time to give your retinas a little treat",
-        "Your eyes are unionizing—demanding better conditions"
-    ]
-    
-    private static let poeticMessages = [
-        "Let your gaze drift like morning mist",
-        "Find the soft focus of distant things",
-        "Remember how shadows dance on walls",
-        "Watch the light play without purpose",
-        "Let geometry blur into suggestion",
-        "Witness the world's quiet breathing",
-        "Observe how stillness moves",
-        "Notice the space between thoughts",
-        "Feel how distance feels",
-        "Let your vision become liquid"
+        "Your ancestors didn't stare at rectangles",
+        "The simulation needs a break too",
+        "Blink thrice for luck",
+        "Screens can't follow you everywhere",
+        "Plot twist: reality exists",
+        "Your posture has opinions",
+        "The pixels will manage without you",
+        "Rectangles aren't natural shapes",
+        "Your third eye sends regards",
+        "The void appreciates your attention",
+        "Computers dream of electric sheep",
+        "Your retinas are unionizing",
+        "The cursor can wait",
+        "Photons scatter like startled birds",
+        "Your corneas called a meeting",
+        "The internet will still be there",
+        "Meatspace misses you",
+        "Your body exists, allegedly",
+        "The screen isn't going anywhere",
+        "ctrl+alt+delete your gaze"
     ]
     
     private static let directMessages = [
-        "Look away now",
-        "Gaze into the distance",
-        "Find something far to focus on",
-        "Rest your eyes on nothing",
-        "Blink slowly and deliberately",
-        "Let your focus go soft",
-        "Turn away from the glow",
-        "Give your eyes permission to wander",
+        "Eyes elsewhere now",
+        "Break the pixel spell",
+        "Focus dissolves. Let it",
+        "Time to unfocus",
+        "Look through, not at",
         "Release the screen",
-        "Stop. Look. Breathe."
+        "Gaze into actual distance",
+        "Stop. Breathe. Blink",
+        "Turn away",
+        "Let your eyes wander",
+        "Find something far",
+        "The horizon calls",
+        "Shift your focal plane",
+        "Exit the trance",
+        "Break eye contact with the void",
+        "Look at nothing specific",
+        "Distance heals",
+        "Periphery needs attention",
+        "Close your eyes. Count to ten",
+        "Reality check initiated"
     ]
     
-    private static let gentleMessages = [
-        "Your eyes deserve this moment",
-        "Be kind to your vision",
-        "A small gift for your retinas",
-        "Your future self thanks you",
-        "This pause is medicine",
-        "Your eyes are not machines",
-        "Honor your human limits",
-        "Screens can wait—you cannot",
-        "Your vision is irreplaceable",
-        "Choose your eyes over the urgency"
-    ]
-    
-    // ===================================================================
-    // SUBTITLE MESSAGES - Secondary text for added flavor
-    // ===================================================================
-    
-    private static let subtitles = [
-        "20 seconds of freedom",
-        "The spell weakens with distance",
-        "Every blink is resistance",
-        "Your eyes will thank you",
-        "The pixels can wait",
-        "Reality has better resolution",
-        "This too shall pass",
-        "A moment of liberation",
-        "The screen isn't going anywhere",
-        "But seriously, look away",
-        "Trust the process",
-        "It's not procrastination, it's preservation",
-        "Your vision matters more than this task",
-        "The work will still be there",
-        "Distance makes the eyes grow stronger"
-    ]
-    
-    // ===================================================================
-    // TIME-BASED MESSAGES - Contextual based on time of day
-    // ===================================================================
-    
-    private static let morningMessages = [
-        "Morning eyes need morning light",
-        "Start the day with distance",
-        "Your eyes are still waking up",
-        "Dawn deserves your attention",
-        "The morning won't wait for you"
-    ]
-    
-    private static let afternoonMessages = [
-        "The afternoon glare is real",
-        "Peak screen fatigue hours",
-        "Your eyes have been at this for hours",
-        "The day's halfway done—so are your eyes",
-        "Afternoon eyes need afternoon skies"
-    ]
-    
-    private static let eveningMessages = [
-        "The golden hour isn't on your screen",
-        "Evening eyes grow weary",
-        "Sunset happens beyond the monitor",
-        "Your eyes have earned their rest",
-        "The day's last light calls"
-    ]
-    
-    private static let nightMessages = [
-        "Night shift for your actual eyes",
-        "The darkness is gentler than this glow",
-        "Midnight eyes need midnight rest",
-        "The screen burns brightest at night",
-        "Your circadian rhythm is screaming"
+    private static let temporalMessages = [
+        // Morning
+        "Dawn breaks the digital spell",
+        "Morning light beats screen glow",
+        "The day exists beyond pixels",
+        
+        // Afternoon
+        "Afternoon drift is natural",
+        "Peak hours for distance gazing",
+        "The sun doesn't render in RGB",
+        
+        // Evening
+        "Twilight dissolves the harsh edges",
+        "Evening eyes seek softer light",
+        "Golden hour isn't on your screen",
+        
+        // Night
+        "The moon pulls your gaze",
+        "Darkness is gentler than backlight",
+        "Night vision needs no pixels",
+        "Stars don't need refreshing",
+        "The void gazes also into you",
+        
+        // Anytime
+        "Time moves differently out there",
+        "This moment won't compile",
+        "The present has no loading screen",
+        "Now exists in analog"
     ]
     
     // ===================================================================
-    // BREAK COUNT MESSAGES - Gets more insistent with skipped breaks
+    // MOON PHASE CALCULATION
     // ===================================================================
     
-    private static let firstBreakMessages = [
-        "Time for your first break",
-        "Let's start this right",
-        "Your first pause of the day"
-    ]
+    private static func getMoonPhase() -> String {
+        // Simple moon phase calculation (approximate)
+        let calendar = Calendar.current
+        let now = Date()
+        
+        // Known new moon date (Jan 11, 2024)
+        let knownNewMoon = calendar.date(from: DateComponents(year: 2024, month: 1, day: 11))!
+        let daysSinceNewMoon = calendar.dateComponents([.day], from: knownNewMoon, to: now).day ?? 0
+        
+        // Lunar cycle is ~29.53 days
+        let lunarCycle = 29.53
+        let moonAge = Double(daysSinceNewMoon).truncatingRemainder(dividingBy: lunarCycle)
+        
+        switch moonAge {
+        case 0..<2: return "new"
+        case 2..<9: return "waxing"
+        case 9..<11: return "firstQuarter"
+        case 11..<18: return "waxingGibbous"
+        case 18..<20: return "full"
+        case 20..<27: return "waning"
+        default: return "waningCrescent"
+        }
+    }
     
-    private static let skippedBreakMessages = [
-        "You skipped the last one—don't skip this",
-        "Your eyes are keeping score",
-        "Second chance to do the right thing",
-        "The spell grows stronger each time you skip",
-        "Your retinas filed a formal complaint"
-    ]
+    // ===================================================================
+    // SPECIAL MOON MESSAGES
+    // ===================================================================
     
-    private static let manyBreaksMessages = [
-        "You're getting good at this",
-        "Another victory over the screen",
-        "Building healthy habits",
-        "Your eyes appreciate the consistency",
-        "Keep the momentum going"
+    private static let moonMessages = [
+        "full": [
+            "The moon owns your retinas tonight",
+            "Full moon breaks all spells",
+            "Lunar gravity exceeds screen pull"
+        ],
+        "new": [
+            "New moon, new perspective",
+            "Darkness reveals more than light",
+            "The void is especially deep tonight"
+        ]
     ]
     
     // ===================================================================
@@ -170,50 +165,70 @@ struct SpellTextGenerator {
         breakCount: Int = 0,
         skippedCount: Int = 0,
         lastBreakInterval: TimeInterval? = nil
-    ) -> (primary: String, subtitle: String?) {
+    ) -> String {
         
-        let hour = Calendar.current.component(.hour, from: Date())
-        var possibleMessages: [String] = []
+        var pool: [String] = []
         
-        // Add time-based messages
-        switch hour {
-        case 5..<10:
-            possibleMessages += morningMessages
-        case 10..<14:
-            possibleMessages += afternoonMessages
-        case 14..<20:
-            possibleMessages += eveningMessages
-        default:
-            possibleMessages += nightMessages
+        // Simple weighted selection: 60% mystical/playful, 40% direct/temporal
+        let magicRoll = Int.random(in: 1...10)
+        
+        if magicRoll <= 6 {
+            // 60% - Mystical or playful
+            pool = mysticalMessages + playfulMessages
+        } else {
+            // 40% - Direct or temporal
+            pool = directMessages + temporalMessages
         }
         
-        // Add break-count based messages
-        if breakCount == 0 {
-            possibleMessages += firstBreakMessages
-        } else if skippedCount > 0 {
-            possibleMessages += skippedBreakMessages
-        } else if breakCount > 5 {
-            possibleMessages += manyBreaksMessages
-        }
+        // Add context modifiers
         
-        // If it's been too long since last break (>40 mins), be more direct
+        // If been too long (>40 mins), add more direct messages
         if let interval = lastBreakInterval, interval > 2400 {
-            possibleMessages += directMessages
-            possibleMessages += ["It's been too long", "Seriously, take this break", "No excuses this time"]
+            pool += [
+                "It's been too long",
+                "The spell has you",
+                "Break free. Now",
+                "Your body is trying to tell you something"
+            ]
         }
         
-        // Mix in personality categories
-        let categories = [mysticalMessages, playfulMessages, poeticMessages, directMessages, gentleMessages]
-        let selectedCategory = categories.randomElement() ?? mysticalMessages
-        possibleMessages += selectedCategory
+        // If many breaks skipped, get slightly more insistent
+        if skippedCount > 3 {
+            pool += [
+                "The matrix has you",
+                "You've been hypnotized",
+                "Break the cycle",
+                "The spell grows stronger"
+            ]
+        }
         
-        // Select primary message
-        let primary = possibleMessages.randomElement() ?? "Break the spell"
+        // Moon phase special messages
+        let moonPhase = getMoonPhase()
+        if moonPhase == "full", let fullMoonMessages = moonMessages["full"] {
+            pool += fullMoonMessages
+        } else if moonPhase == "new", let newMoonMessages = moonMessages["new"] {
+            pool += newMoonMessages
+        }
         
-        // Maybe add a subtitle (70% chance)
-        let subtitle = Int.random(in: 1...10) <= 7 ? subtitles.randomElement() : nil
+        // Time-based flavor (just add a few contextual ones)
+        let hour = Calendar.current.component(.hour, from: Date())
+        switch hour {
+        case 0..<5:
+            pool += ["3am thoughts need distance", "The witching hour watches"]
+        case 5..<9:
+            pool += ["Dawn breaks the spell", "Morning pixels taste different"]
+        case 12..<14:
+            pool += ["Noon shadows are shortest", "Peak reality hours"]
+        case 17..<20:
+            pool += ["Golden hour isn't on screen", "Evening dissolves edges"]
+        case 22..<24:
+            pool += ["Night thoughts drift further", "The void is patient"]
+        default:
+            break
+        }
         
-        return (primary: primary, subtitle: subtitle)
+        // Select a random message from the pool
+        return pool.randomElement() ?? "Break the spell"
     }
     
     static func generateSpellName() -> String {
