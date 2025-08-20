@@ -97,6 +97,11 @@ class AppState: ObservableObject {
     private var preferencesCancellable: AnyCancellable?
     private var escapeKeyMonitor: Any?          // Event monitor for escape key
     
+    // MARK: - Break Statistics (for message generation)
+    private var sessionBreakCount: Int = 0       // Breaks taken this session
+    private var sessionSkippedCount: Int = 0     // Breaks skipped this session
+    private var lastBreakCompletedTime: Date?    // When last break was completed (not skipped)
+    
     // MARK: - Persisted Properties
     @AppStorage("breakInterval") private var breakIntervalMinutes: Double = 20.0 {
         didSet {
@@ -221,13 +226,22 @@ class AppState: ObservableObject {
     func markBreakCompleted() {
         totalCompletedBreaks += 1
         todayCompletedBreaks += 1
+        sessionBreakCount += 1
+        lastBreakCompletedTime = Date()
         checkDailyReset()
     }
     
     func markBreakSkipped() {
         totalSkippedBreaks += 1
         todaySkippedBreaks += 1
+        sessionSkippedCount += 1
         checkDailyReset()
+    }
+    
+    // Get break context for message generation
+    func getBreakContext() -> (breakCount: Int, skippedCount: Int, lastBreakInterval: TimeInterval?) {
+        let interval: TimeInterval? = lastBreakCompletedTime.map { Date().timeIntervalSince($0) }
+        return (sessionBreakCount, sessionSkippedCount, interval)
     }
     
     private func setupCombineObservers() {
