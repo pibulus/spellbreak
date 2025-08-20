@@ -73,7 +73,7 @@ struct OverlayWindow: View {
             AmbientParticles()
                 .opacity(0.7)
             
-            // Centered message - keep text clear but glowing
+            // Centered message - properly centered vertically
             VStack(spacing: 0) {
                 Spacer()
                 
@@ -95,6 +95,8 @@ struct OverlayWindow: View {
                     .scaleEffect(textScale)
                     .padding(.horizontal, 60)
                     .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                    .offset(y: lockMode ? 0 : -30)  // Offset up slightly when skip ring is shown
                 
                 Spacer()
                 
@@ -206,17 +208,17 @@ struct OverlayWindow: View {
                 }
             }
             
-            // Faster fade in for quicker response
-            withAnimation(.easeOut(duration: 0.5)) {
+            // Slower, more gentle fade in
+            withAnimation(.easeOut(duration: 1.2)) {
                 opacity = 1
             }
             
-            withAnimation(.easeOut(duration: 0.4).delay(0.1)) {
+            withAnimation(.easeOut(duration: 1.0).delay(0.3)) {
                 messageOpacity = 1
             }
             
             // Gentle breathing animation (90bpm feel from old version)
-            withAnimation(.easeInOut(duration: 1.334).repeatForever(autoreverses: true).delay(1.0)) {
+            withAnimation(.easeInOut(duration: 1.334).repeatForever(autoreverses: true).delay(1.5)) {
                 textScale = 1.05
             }
             
