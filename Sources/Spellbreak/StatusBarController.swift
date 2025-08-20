@@ -11,14 +11,14 @@ import Combine
 
 enum MenuIconStyle: String, CaseIterable {
     case mystical = "mystical"
-    case plain = "plain"
-    case minimal = "minimal"
+    case yellow = "yellow"
+    case white = "white"
     
     var displayName: String {
         switch self {
-        case .mystical: return "🌙 Mystical"
-        case .plain: return "○ Plain"
-        case .minimal: return "• Minimal"
+        case .mystical: return "Purple"
+        case .yellow: return "Yellow"
+        case .white: return "White"
         }
     }
 }
@@ -246,31 +246,46 @@ class StatusBarController: NSObject {
         NSColor.clear.setFill()
         NSRect(origin: .zero, size: size).fill()
         
-        // Draw icon based on style
+        // Draw icon based on style - all use same moon design with different colors
         if let context = NSGraphicsContext.current?.cgContext {
             switch currentIconStyle {
             case .mystical:
-                drawMysticalIcon(context: context, size: size)
-            case .plain:
-                drawPlainIcon(context: context, size: size)
-            case .minimal:
-                drawMinimalIcon(context: context, size: size)
+                drawMoonIcon(context: context, size: size, style: .mystical)
+            case .yellow:
+                drawMoonIcon(context: context, size: size, style: .yellow)
+            case .white:
+                drawMoonIcon(context: context, size: size, style: .white)
             }
         }
         
         image.unlockFocus()
-        image.isTemplate = (currentIconStyle != .mystical)  // Template for plain/minimal
+        image.isTemplate = false  // Keep colors for all styles
         
         return image
     }
     
-    private func drawMysticalIcon(context: CGContext, size: NSSize) {
-        // Purple/pink gradient colors for mystical theme
-        let color1 = NSColor(red: 0.7, green: 0.4, blue: 0.9, alpha: 1.0)
-        let color2 = NSColor(red: 0.9, green: 0.3, blue: 0.6, alpha: 1.0)
+    private func drawMoonIcon(context: CGContext, size: NSSize, style: MenuIconStyle) {
+        // Set colors based on style
+        let moonColor: NSColor
+        let starColor: NSColor
+        
+        switch style {
+        case .mystical:
+            // Purple/pink gradient colors for mystical theme
+            moonColor = NSColor(red: 0.7, green: 0.4, blue: 0.9, alpha: 1.0)
+            starColor = NSColor(red: 0.9, green: 0.3, blue: 0.6, alpha: 1.0)
+        case .yellow:
+            // Golden yellow theme
+            moonColor = NSColor(red: 1.0, green: 0.85, blue: 0.4, alpha: 1.0)
+            starColor = NSColor(red: 1.0, green: 0.95, blue: 0.6, alpha: 1.0)
+        case .white:
+            // Plain white theme
+            moonColor = NSColor(red: 0.95, green: 0.95, blue: 0.95, alpha: 1.0)
+            starColor = NSColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
+        }
         
         // Draw a crescent moon
-        context.setFillColor(color1.cgColor)
+        context.setFillColor(moonColor.cgColor)
         
         let moonRadius = size.width * 0.35
         let center = CGPoint(x: size.width * 0.5, y: size.height * 0.5)
@@ -290,7 +305,7 @@ class StatusBarController: NSObject {
         
         // Reset blend mode and draw stars
         context.setBlendMode(.normal)
-        context.setFillColor(color2.cgColor)
+        context.setFillColor(starColor.cgColor)
         
         // Small stars around moon
         drawStar(context: context, 
@@ -325,31 +340,5 @@ class StatusBarController: NSObject {
         
         context.addPath(path)
         context.fillPath()
-    }
-    
-    private func drawPlainIcon(context: CGContext, size: NSSize) {
-        // Simple circle icon - will use system color when template
-        let color = NSColor.labelColor
-        context.setFillColor(color.cgColor)
-        
-        let radius = size.width * 0.3
-        let center = CGPoint(x: size.width * 0.5, y: size.height * 0.5)
-        let rect = CGRect(x: center.x - radius, y: center.y - radius, 
-                         width: radius * 2, height: radius * 2)
-        
-        context.fillEllipse(in: rect)
-    }
-    
-    private func drawMinimalIcon(context: CGContext, size: NSSize) {
-        // Minimal dot icon - will use system color when template  
-        let color = NSColor.labelColor
-        context.setFillColor(color.cgColor)
-        
-        let radius = size.width * 0.15
-        let center = CGPoint(x: size.width * 0.5, y: size.height * 0.5)
-        let rect = CGRect(x: center.x - radius, y: center.y - radius,
-                         width: radius * 2, height: radius * 2)
-        
-        context.fillEllipse(in: rect)
     }
 }
