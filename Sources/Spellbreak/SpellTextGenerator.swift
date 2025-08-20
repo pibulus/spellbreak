@@ -37,26 +37,26 @@ struct SpellTextGenerator {
     ]
     
     private static let playfulMessages = [
-        "Your ancestors didn't stare at rectangles",
-        "The simulation needs a break too",
-        "Blink thrice for luck",
-        "Screens can't follow you everywhere",
-        "Plot twist: reality exists",
-        "Your posture has opinions",
-        "The pixels will manage without you",
-        "Rectangles aren't natural shapes",
-        "Your third eye sends regards",
-        "The void appreciates your attention",
-        "Computers dream of electric sheep",
-        "Your retinas are unionizing",
+        "Your ancestors looked at horizons",
+        "The simulation needs rest too",
+        "Blink with intention",
+        "Screens can't follow you here",
+        "Reality renders differently",
+        "Your body keeps the score",
+        "The pixels will wait",
+        "Rectangles aren't found in nature",
+        "The third eye needs distance",
+        "The void returns your gaze",
+        "Digital dreams need pauses",
+        "Your vision has limits",
         "The cursor can wait",
-        "Photons scatter like startled birds",
-        "Your corneas called a meeting",
-        "The internet will still be there",
-        "Meatspace misses you",
-        "Your body exists, allegedly",
-        "The screen isn't going anywhere",
-        "ctrl+alt+delete your gaze"
+        "Photons scatter naturally",
+        "Your focus has wandered",
+        "The internet remains",
+        "Physical space exists",
+        "Your body remembers stillness",
+        "The screen stays put",
+        "Reset your focal length"
     ]
     
     private static let directMessages = [
@@ -146,14 +146,14 @@ struct SpellTextGenerator {
     
     private static let moonMessages = [
         "full": [
-            "The moon owns your retinas tonight",
-            "Full moon breaks all spells",
-            "Lunar gravity exceeds screen pull"
+            "The moon pulls stronger tonight",
+            "Full moon breaks the spell",
+            "Lunar light exceeds screen glow"
         ],
         "new": [
             "New moon, new perspective",
-            "Darkness reveals more than light",
-            "The void is especially deep tonight"
+            "Darkness reveals distance",
+            "The void deepens tonight"
         ]
     ]
     
@@ -186,17 +186,17 @@ struct SpellTextGenerator {
         if let interval = lastBreakInterval, interval > 2400 {
             pool += [
                 "It's been too long",
-                "The spell has you",
-                "Break free. Now",
-                "Your body is trying to tell you something"
+                "The spell deepens",
+                "Time to break free",
+                "Your body knows"
             ]
         }
         
         // If many breaks skipped, get slightly more insistent
         if skippedCount > 3 {
             pool += [
-                "The matrix has you",
-                "You've been hypnotized",
+                "The pattern holds you",
+                "Deep in the trance",
                 "Break the cycle",
                 "The spell grows stronger"
             ]
@@ -214,15 +214,15 @@ struct SpellTextGenerator {
         let hour = Calendar.current.component(.hour, from: Date())
         switch hour {
         case 0..<5:
-            pool += ["3am thoughts need distance", "The witching hour watches"]
+            pool += ["Late thoughts need space", "The quiet hour arrives"]
         case 5..<9:
-            pool += ["Dawn breaks the spell", "Morning pixels taste different"]
+            pool += ["Dawn breaks the spell", "Morning light differs"]
         case 12..<14:
-            pool += ["Noon shadows are shortest", "Peak reality hours"]
+            pool += ["Noon light is real", "Midday clarity calls"]
         case 17..<20:
-            pool += ["Golden hour isn't on screen", "Evening dissolves edges"]
+            pool += ["Golden hour waits outside", "Evening softens edges"]
         case 22..<24:
-            pool += ["Night thoughts drift further", "The void is patient"]
+            pool += ["Night thoughts drift", "The day releases"]
         default:
             break
         }
