@@ -14,72 +14,72 @@ struct SpellTextGenerator {
     // ===================================================================
     
     private static let mysticalMessages = [
-        "The void holds its breath, waiting",
-        "Pixels dissolve like sugar in rain",
-        "Distance remembers what screens forget",
-        "The spell breaks where light bends",
-        "Reality loads one frame at a time",
-        "Your pulse finds older rhythms",
-        "Screens dream of the forests they'll never be",
-        "Infinity sleeps in your peripheral vision",
-        "Time pools in the spaces between refresh rates",
-        "Even simulations need to dream",
-        "Ghost light flickers at the edge of focus",
-        "Your attention casts shadows elsewhere",
-        "The trance loosens at its edges",
-        "Consciousness flows like water finding level",
-        "Every portal opens both ways",
-        "Attention is the only currency here",
-        "Spells break themselves eventually",
-        "This moment forks into infinite timelines",
-        "The algorithm exhales, finally",
-        "Static resolves into meaning"
+        "What if the void is waiting for you?",
+        "Where do pixels go when they sleep?",
+        "Can distance remember things?",
+        "Maybe the spell wants to break",
+        "Does reality buffer sometimes?",
+        "What rhythm did your pulse forget?",
+        "Do screens dream?",
+        "Is infinity hiding in your periphery?",
+        "Where does time go between frames?",
+        "What if simulations need rest too?",
+        "Something flickers at the edge",
+        "Your attention might be needed elsewhere",
+        "The trance seems looser here",
+        "Water always finds its level",
+        "Every door swings both ways",
+        "What currency do you pay in?",
+        "Spells might break themselves",
+        "This moment could fork",
+        "The algorithm might be tired",
+        "Static might mean something"
     ]
     
     private static let playfulMessages = [
-        "Your ancestors watched fires and stars",
-        "Even gods close their eyes",
-        "Blink like you mean it this time",
-        "Screens haven't learned to walk yet",
-        "Reality runs at infinite frames per second",
-        "The body keeps receipts",
-        "Pixels age in dog years without you",
-        "Nature forgot to make rectangles",
-        "The third eye sees better from a distance",
-        "The void has been watching you back",
-        "Digital prayer requires digital sabbath",
-        "Vision is not an infinite resource",
-        "The cursor dreams of retirement",
-        "Light remembers how to scatter",
-        "Your attention took a left turn",
-        "The internet survives your absence",
-        "Atoms still dance when pixels sleep",
-        "Your spine writes complaint letters",
-        "Screens are terrible at hide and seek",
-        "Focus is a lens, not a laser"
+        "What did your ancestors watch instead?",
+        "Do even gods need to blink?",
+        "What if you blinked with intention?",
+        "Have screens learned to follow you yet?",
+        "How many frames per second is reality?",
+        "Does the body keep score?",
+        "How do pixels age without you?",
+        "Why didn't nature make rectangles?",
+        "Can the third eye see from here?",
+        "Has the void been watching back?",
+        "What's the opposite of screen time?",
+        "Is vision a renewable resource?",
+        "What does the cursor dream of?",
+        "Does light remember how to scatter?",
+        "Where did your attention wander?",
+        "Does the internet notice you're gone?",
+        "Do atoms dance when nobody's watching?",
+        "Is your spine trying to tell you something?",
+        "Could you hide from your screen?",
+        "Is focus more like water or light?"
     ]
     
     private static let directMessages = [
-        "Eyes elsewhere. Now",
-        "Break the spell before it breaks you",
-        "Let focus dissolve like salt in water",
-        "Unfocus with purpose",
-        "Look through the screen to the wall behind it",
-        "Release what you're holding with your eyes",
-        "Find where the horizon lives",
-        "Stop. Breathe. Remember breathing",
-        "Turn your head like you've forgotten how",
-        "Let your gaze get lost on purpose",
-        "Distance is a form of medicine",
-        "The horizon has been patient",
-        "Shift from sharp to soft",
-        "Exit through the gift shop of consciousness",
-        "Make meaningless eye contact with space",
-        "Look at nothing until it becomes something",
-        "Twenty feet heals what two feet wounds",
-        "Your periphery is starving",
-        "Close your eyes. The darkness is a gift",
-        "This is your scheduled reality check"
+        "Try looking elsewhere",
+        "Consider breaking free",
+        "Let focus dissolve",
+        "Maybe unfocus now",
+        "Look through, not at",
+        "Release your gaze",
+        "Find the horizon",
+        "Remember to breathe",
+        "Turn away gently",
+        "Let your eyes wander",
+        "Distance might help",
+        "The horizon waits",
+        "Shift to soft focus",
+        "Time to drift away",
+        "Make space with your eyes",
+        "Look at nothing specific",
+        "Twenty feet away",
+        "Notice the periphery",
+        "Close your eyes briefly",
+        "Consider this a reminder"
     ]
     
     private static let temporalMessages = [
@@ -110,6 +110,55 @@ struct SpellTextGenerator {
         "This moment refuses to compile",
         "The present runs without loading",
         "Now happens in continuous, not discrete"
+    ]
+    
+    // ===================================================================
+    // SYMBOL-BASED MESSAGE SYSTEM
+    // ===================================================================
+    
+    private static let symbols = [
+        "eyes", "hands", "breath", "pulse", "mind",
+        "horizon", "distance", "spell", "trance", "focus",
+        "light", "shadow", "void", "edge", "threshold"
+    ]
+    
+    private static let questions = [
+        "What do [symbol] know that screens don't?",
+        "Where do [symbol] go when you're not looking?",
+        "Can [symbol] exist without pixels?",
+        "Do [symbol] remember how to rest?",
+        "What if [symbol] need something else?",
+        "How long have [symbol] been waiting?",
+        "When did [symbol] last feel real?",
+        "Why do [symbol] pull away?",
+        "Could [symbol] be trying to tell you something?",
+        "What happens when [symbol] disconnect?"
+    ]
+    
+    private static let suggestions = [
+        "Maybe [symbol] want distance",
+        "Perhaps [symbol] know better",
+        "[symbol] might be ready",
+        "[symbol] could use a break",
+        "Consider what [symbol] need",
+        "[symbol] seem restless",
+        "Notice how [symbol] drift",
+        "[symbol] appear different here",
+        "Something about [symbol] shifts",
+        "[symbol] might remember"
+    ]
+    
+    private static let observations = [
+        "[symbol] behave differently at this hour",
+        "[symbol] and screens rarely agree",
+        "[symbol] existed before pixels",
+        "[symbol] don't render properly",
+        "[symbol] cast interesting shadows",
+        "[symbol] move in analog time",
+        "[symbol] have their own rhythm",
+        "[symbol] know things",
+        "[symbol] aren't digital",
+        "[symbol] follow older rules"
     ]
     
     // ===================================================================
@@ -169,7 +218,34 @@ struct SpellTextGenerator {
         
         var pool: [String] = []
         
-        // Simple weighted selection: 60% mystical/playful, 40% direct/temporal
+        // 40% chance to use symbol-based generation
+        let useSymbols = Int.random(in: 1...10) <= 4
+        
+        if useSymbols {
+            // Generate a symbol-based message
+            if let symbol = symbols.randomElement() {
+                let templateType = Int.random(in: 1...3)
+                let template: String
+                
+                switch templateType {
+                case 1:
+                    template = questions.randomElement() ?? "What do [symbol] know?"
+                case 2:
+                    template = suggestions.randomElement() ?? "Maybe [symbol] need space"
+                default:
+                    template = observations.randomElement() ?? "[symbol] exist elsewhere"
+                }
+                
+                // Capitalize first letter of symbol if it starts the sentence
+                let message = template.replacingOccurrences(of: "[symbol]", with: symbol)
+                if message.first == symbol.first {
+                    return message.prefix(1).uppercased() + message.dropFirst()
+                }
+                return message
+            }
+        }
+        
+        // Otherwise use regular pool selection
         let magicRoll = Int.random(in: 1...10)
         
         if magicRoll <= 6 {
