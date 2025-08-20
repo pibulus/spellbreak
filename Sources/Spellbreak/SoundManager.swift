@@ -78,7 +78,7 @@ class SoundManager: ObservableObject {
     
     func playAmbient() {
         guard let player = audioPlayer else { 
-            print("⚠️ Spellbreak: Audio player not available")
+            logger.warning("Audio player not available")
             return 
         }
         
@@ -87,7 +87,7 @@ class SoundManager: ObservableObject {
             player.volume = 0
             let success = player.play()
             if !success {
-                print("⚠️ Spellbreak: Failed to start audio playback")
+                logger.error("Failed to start audio playback")
                 return
             }
             
