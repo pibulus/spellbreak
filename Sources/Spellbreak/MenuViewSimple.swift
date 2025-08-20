@@ -28,50 +28,33 @@ struct MenuViewSimple: View {
     // MARK: - Fancy Menu (Current)
     private var fancyMenuView: some View {
         VStack(spacing: 0) {
-            // Spellbreak branding - mystical vibes
-            VStack(spacing: 6) {
-                HStack(spacing: 8) {
-                    Image(systemName: "sparkles.tv")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [Color(red: 0.6, green: 0.4, blue: 0.9), 
-                                        Color(red: 0.8, green: 0.3, blue: 0.7)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                    Text("Spellbreak")
-                        .font(.system(size: 26, weight: .bold, design: .rounded))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [Color(red: 0.7, green: 0.4, blue: 0.9), 
-                                        Color(red: 0.9, green: 0.3, blue: 0.6)],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .fixedSize()
-                }
-                Text("Break the spell")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.secondary)
-            }
-            .padding(.vertical, 20)
-            .padding(.horizontal, 8)
+            // Spellbreak branding
+            Text("Spellbreak")
+                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Color(red: 0.7, green: 0.4, blue: 0.9), 
+                                Color(red: 0.9, green: 0.3, blue: 0.6)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .fixedSize()
+                .padding(.top, 18)
+                .padding(.bottom, 12)
             
             // Timer display with subtle styling
             if appState.timerRunning {
                 VStack(spacing: 4) {
                     Text(formatTime(appState.timeRemaining))
-                        .font(.system(size: 24, weight: .semibold, design: .rounded))
+                        .font(.system(size: 22, weight: .semibold, design: .rounded))
                         .foregroundColor(.primary)
                     
                     Text("until break")
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(.secondary)
                 }
-                .padding(.vertical, 18)
+                .padding(.vertical, 12)
                 .frame(maxWidth: .infinity)
                 .background(
                     LinearGradient(
@@ -83,9 +66,9 @@ struct MenuViewSimple: View {
                         endPoint: .bottom
                     )
                 )
-                .cornerRadius(10)
-                .padding(.horizontal, 12)
-                .padding(.bottom, 8)
+                .cornerRadius(8)
+                .padding(.horizontal, 10)
+                .padding(.bottom, 6)
             }
             
             VStack(spacing: 2) {
@@ -141,7 +124,7 @@ struct MenuViewSimple: View {
             .padding(.horizontal, 8)
             .padding(.bottom, 8)
         }
-        .frame(width: 220)
+        .frame(width: 200)
         .background(.ultraThickMaterial)
     }
     
@@ -224,7 +207,7 @@ struct SimpleMenuItem: View {
                 Spacer()
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.vertical, 11)
             .background(
                 RoundedRectangle(cornerRadius: 10)
                     .fill(isHovered ? Color.white.opacity(0.08) : Color.clear)

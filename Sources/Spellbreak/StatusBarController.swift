@@ -30,6 +30,7 @@ class StatusBarController: NSObject {
     weak var appState: AppState?
     private var cancellables = Set<AnyCancellable>()
     private var currentIconStyle: MenuIconStyle = .mystical
+    private var notificationObserver: Any?
     
     override init() {
         super.init()
@@ -56,10 +57,19 @@ class StatusBarController: NSObject {
         // Setup popover for left-click menu
         popover = NSPopover()
         popover.behavior = .transient
-        popover.animates = true
+        popover.animates = true  // Smooth animation
         
         // Setup context menu for right-click
         setupContextMenu()
+    }
+    
+    deinit {
+        // Clean up notification observer
+        if let observer = notificationObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        // Cancel all Combine subscriptions
+        cancellables.forEach { $0.cancel() }
     }
     
     func configure(with appState: AppState) {
@@ -70,7 +80,7 @@ class StatusBarController: NSObject {
             .environmentObject(appState)
         
         popover.contentViewController = NSHostingController(rootView: menuView)
-        popover.contentSize = NSSize(width: 220, height: NSSize.zero.height)
+        popover.contentSize = NSSize(width: 200, height: NSSize.zero.height)
         
         // Observe timer changes to update tooltip
         appState.$timerRunning
@@ -84,23 +94,62 @@ class StatusBarController: NSObject {
                 self?.updateIcon()
             }
             .store(in: &cancellables)
+        
+        // Listen for fancy menu preference changes
+        notificationObserver = NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            // Close popover if switching to plain menu
+            let fancyMenu = UserDefaults.standard.object(forKey: "fancyMenu") as? Bool ?? true
+            if !fancyMenu && self?.popover.isShown == true {
+                self?.popover.performClose(nil)
+            }
+        }
     }
     
     @objc private func handleClick() {
         guard let event = NSApp.currentEvent else { return }
         
         if event.type == .rightMouseUp {
+            // Close popover first if open
+            if popover.isShown {
+                popover.performClose(nil)
+            }
             // Show context menu on right-click
             showContextMenu()
         } else {
-            // Toggle popover on left-click
-            togglePopover()
+            // Check if fancy menu is enabled (defaults to true)
+            let fancyMenu = UserDefaults.standard.object(forKey: "fancyMenu") as? Bool ?? true
+            
+            if fancyMenu {
+                // Show fancy popover for left-click
+                togglePopover()
+            } else {
+                // Show same context menu for left-click when fancy is off
+                if popover.isShown {
+                    popover.performClose(nil)
+                }
+                showContextMenu()
+            }
         }
     }
     
     private func setupContextMenu() {
         contextMenu = NSMenu()
         contextMenu.autoenablesItems = false
+        
+        // Timer display (if running)
+        if appState?.timerRunning == true {
+            let minutes = Int(appState?.timeRemaining ?? 0) / 60
+            let seconds = Int(appState?.timeRemaining ?? 0) % 60
+            let timerText = String(format: "%d:%02d until break", minutes, seconds)
+            let timerItem = NSMenuItem(title: timerText, action: nil, keyEquivalent: "")
+            timerItem.isEnabled = false
+            contextMenu.addItem(timerItem)
+            contextMenu.addItem(NSMenuItem.separator())
+        }
         
         // Break Now
         let breakItem = NSMenuItem(title: "Break Now", action: #selector(triggerBreak), keyEquivalent: "")
@@ -110,9 +159,9 @@ class StatusBarController: NSObject {
         contextMenu.addItem(NSMenuItem.separator())
         
         // Timer toggle
-        let timerItem = NSMenuItem(title: "Start Timer", action: #selector(toggleTimer), keyEquivalent: "")
+        let timerTitle = appState?.timerRunning == true ? "Pause Timer" : "Start Timer"
+        let timerItem = NSMenuItem(title: timerTitle, action: #selector(toggleTimer), keyEquivalent: "")
         timerItem.target = self
-        timerItem.tag = 100 // Tag to identify for updating
         contextMenu.addItem(timerItem)
         
         contextMenu.addItem(NSMenuItem.separator())
@@ -145,20 +194,8 @@ class StatusBarController: NSObject {
     }
     
     private func showContextMenu() {
-        // Update timer menu item based on current state
-        if let timerItem = contextMenu.item(withTag: 100) {
-            timerItem.title = appState?.timerRunning == true ? "Pause Timer" : "Start Timer"
-        }
-        
-        // Update icon style checkmarks
-        if let styleMenuItem = contextMenu.item(withTitle: "Icon Style"),
-           let styleSubmenu = styleMenuItem.submenu {
-            for item in styleSubmenu.items {
-                if let itemStyle = item.representedObject as? MenuIconStyle {
-                    item.state = (itemStyle == currentIconStyle) ? .on : .off
-                }
-            }
-        }
+        // Rebuild context menu to get fresh timer values
+        setupContextMenu()
         
         // Show the context menu
         statusItem.menu = contextMenu
@@ -176,11 +213,14 @@ class StatusBarController: NSObject {
         if popover.isShown {
             popover.performClose(nil)
         } else {
-            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+            // Calculate the rect to center the popover arrow on the button
+            let buttonWidth = button.bounds.width
+            // Create a 1px wide rect in the center of the button
+            let centerRect = NSRect(x: buttonWidth / 2, y: 0, width: 1, height: button.bounds.height)
             
-            // Make popover window key and bring to front
+            // Show popover centered
+            popover.show(relativeTo: centerRect, of: button, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
-            NSApp.activate(ignoringOtherApps: true)
         }
     }
     
