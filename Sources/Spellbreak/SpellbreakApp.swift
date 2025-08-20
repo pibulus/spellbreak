@@ -97,6 +97,7 @@ class AppState: ObservableObject {
     private var preferencesWindowController: NSWindowController?     // Preferences window
     private var overlayCancellable: AnyCancellable?
     private var preferencesCancellable: AnyCancellable?
+    private var escapeKeyMonitor: Any?          // Event monitor for escape key
     
     // MARK: - Persisted Properties
     @AppStorage("breakInterval") private var breakIntervalMinutes: Double = 20.0 {
@@ -128,9 +129,27 @@ class AppState: ObservableObject {
             forName: NSNotification.Name("ShowTestBreak"),
             object: nil,
             queue: .main
-        ) { _ in
-            self.triggerBreak()
+        ) { [weak self] _ in
+            self?.triggerBreak()
         }
+    }
+    
+    deinit {
+        // Clean up timers
+        timer?.invalidate()
+        statusTimer?.invalidate()
+        
+        // Remove notification observer
+        NotificationCenter.default.removeObserver(self)
+        
+        // Remove escape key monitor if present
+        if let monitor = escapeKeyMonitor {
+            NSEvent.removeMonitor(monitor)
+        }
+        
+        // Cancel Combine subscriptions
+        overlayCancellable?.cancel()
+        preferencesCancellable?.cancel()
     }
     
     func startTimer() {
@@ -143,12 +162,13 @@ class AppState: ObservableObject {
         timerWasRunning = true
         lastBreakTimestamp = lastBreakTime.timeIntervalSince1970
         
-        timer = Timer.scheduledTimer(withTimeInterval: breakInterval, repeats: true) { _ in
-            self.checkAndTriggerBreak()
+        timer = Timer.scheduledTimer(withTimeInterval: breakInterval, repeats: true) { [weak self] _ in
+            self?.checkAndTriggerBreak()
         }
         
         // Update time remaining every second
-        statusTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+        statusTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
             let elapsed = Date().timeIntervalSince(self.lastBreakTime)
             self.timeRemaining = max(0, self.breakInterval - elapsed)
         }
@@ -182,8 +202,8 @@ class AppState: ObservableObject {
             lastBreakTime = Date()
             
             // Schedule a check in 5 minutes
-            Timer.scheduledTimer(withTimeInterval: 300, repeats: false) { _ in
-                self.checkAndTriggerBreak()
+            Timer.scheduledTimer(withTimeInterval: 300, repeats: false) { [weak self] _ in
+                self?.checkAndTriggerBreak()
             }
         } else {
             triggerBreak()
@@ -218,6 +238,11 @@ class AppState: ObservableObject {
             .removeDuplicates()
             .sink { [weak self] showing in
                 if !showing {
+                    // Remove escape key monitor when closing overlay
+                    if let monitor = self?.escapeKeyMonitor {
+                        NSEvent.removeMonitor(monitor)
+                        self?.escapeKeyMonitor = nil
+                    }
                     self?.overlayWindowController?.close()
                     self?.overlayWindowController = nil
                 }
@@ -273,7 +298,7 @@ class AppState: ObservableObject {
         
         // Intercept escape key to prevent system error sound
         // But don't actually do anything - breaks are unskippable!
-        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+        escapeKeyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
             if event.keyCode == 53 { // Escape key
                 // Consume the event to prevent error sound
                 // Could trigger a visual feedback here if wanted
@@ -323,16 +348,18 @@ class AppState: ObservableObject {
             let remainingTime = breakInterval - elapsed
             
             // Set up timer for the remaining time
-            timer = Timer.scheduledTimer(withTimeInterval: remainingTime, repeats: false) { _ in
-                self.checkAndTriggerBreak()
+            timer = Timer.scheduledTimer(withTimeInterval: remainingTime, repeats: false) { [weak self] _ in
+                self?.checkAndTriggerBreak()
                 // After this break, continue with regular intervals
-                self.timer = Timer.scheduledTimer(withTimeInterval: self.breakInterval, repeats: true) { _ in
-                    self.checkAndTriggerBreak()
+                guard let self = self else { return }
+                self.timer = Timer.scheduledTimer(withTimeInterval: self.breakInterval, repeats: true) { [weak self] _ in
+                    self?.checkAndTriggerBreak()
                 }
             }
             
             // Update time remaining every second
-            statusTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            statusTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+                guard let self = self else { return }
                 let elapsed = Date().timeIntervalSince(self.lastBreakTime)
                 self.timeRemaining = max(0, self.breakInterval - elapsed)
             }
