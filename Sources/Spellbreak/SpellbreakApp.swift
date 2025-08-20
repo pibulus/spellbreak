@@ -61,10 +61,8 @@ struct SpellbreakApp: App {
     // MARK: - Initialization
     init() {
         // Request notification permissions on app launch
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
-            if let error = error {
-                print("Notification authorization error: \(error.localizedDescription)")
-            }
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in
+            // Silently handle - notifications are optional
         }
     }
     
@@ -196,7 +194,7 @@ class AppState: ObservableObject {
         // Always check if in a call - no option to disable
         if MediaDetector.isInCall() {
             // Postpone for 5 minutes if in a call
-            print("In call, postponing break for 5 minutes")
+            // In call, postponing break for 5 minutes
             
             // Reset the last break time to now to restart the countdown
             lastBreakTime = Date()
