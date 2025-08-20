@@ -17,7 +17,6 @@ struct OverlayWindow: View {
     @State private var opacity: Double = 0
     @State private var messageOpacity: Double = 0
     @State private var textScale: Double = 1.0
-    @State private var subtitleScale: Double = 1.0
     @State private var timeRemaining: Int = 0
     @State private var countdownTimer: Timer?
     @State private var dismissWorkItem: DispatchWorkItem?
@@ -28,7 +27,6 @@ struct OverlayWindow: View {
     @State private var isHoveringRing = false
     @State private var escapePulse: Double = 0
     @State private var breakMessage: String = ""
-    @State private var breakSubtitle: String? = nil
     @AppStorage("lockMode") private var lockMode: Bool = false
     @AppStorage("breakDurationSec") private var breakDuration: Double = 20
     @AppStorage("musicEnabled") private var musicEnabled: Bool = false
@@ -79,38 +77,24 @@ struct OverlayWindow: View {
             VStack(spacing: 0) {
                 Spacer()
                 
-                VStack(spacing: 20) {
-                    // Main message with soft glow (no blur on text itself)
-                    Text(breakMessage)
-                        .font(.system(size: 56, weight: .semibold, design: .rounded))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.white, .white.opacity(0.95)],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
+                // Main message with soft glow (no blur on text itself)
+                Text(breakMessage)
+                    .font(.system(size: 56, weight: .semibold, design: .rounded))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.white, .white.opacity(0.95)],
+                            startPoint: .top,
+                            endPoint: .bottom
                         )
-                        // Soft white glow
-                        .shadow(color: .white.opacity(0.5), radius: 20)
-                        .shadow(color: .white.opacity(0.3), radius: 40)
-                        .shadow(color: .black.opacity(0.3), radius: 6, x: 0, y: 3)
-                        .opacity(messageOpacity)
-                        .scaleEffect(textScale)
-                        .padding(.horizontal, 60)
-                        .multilineTextAlignment(.center)
-                    
-                    // Subtitle message if present
-                    if let subtitle = breakSubtitle {
-                        Text(subtitle)
-                            .font(.system(size: 24, weight: .regular, design: .rounded))
-                            .foregroundStyle(.white.opacity(0.7))
-                            .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
-                            .opacity(messageOpacity * 0.8)
-                            .scaleEffect(subtitleScale)
-                            .padding(.horizontal, 80)
-                            .multilineTextAlignment(.center)
-                    }
-                }
+                    )
+                    // Soft white glow
+                    .shadow(color: .white.opacity(0.5), radius: 20)
+                    .shadow(color: .white.opacity(0.3), radius: 40)
+                    .shadow(color: .black.opacity(0.3), radius: 6, x: 0, y: 3)
+                    .opacity(messageOpacity)
+                    .scaleEffect(textScale)
+                    .padding(.horizontal, 60)
+                    .multilineTextAlignment(.center)
                 
                 Spacer()
                 
@@ -200,13 +184,11 @@ struct OverlayWindow: View {
         .onAppear {
             // Generate contextual break message
             let context = appState.getBreakContext()
-            let messages = SpellTextGenerator.generateMessage(
+            breakMessage = SpellTextGenerator.generateMessage(
                 breakCount: context.breakCount,
                 skippedCount: context.skippedCount,
                 lastBreakInterval: context.lastBreakInterval
             )
-            breakMessage = messages.primary
-            breakSubtitle = messages.subtitle
             
             // Play break start chime
             soundManager.playBreakStartChime()
@@ -236,11 +218,6 @@ struct OverlayWindow: View {
             // Gentle breathing animation (90bpm feel from old version)
             withAnimation(.easeInOut(duration: 1.334).repeatForever(autoreverses: true).delay(1.0)) {
                 textScale = 1.05
-            }
-            
-            // Slightly different breathing for subtitle
-            withAnimation(.easeInOut(duration: 1.667).repeatForever(autoreverses: true).delay(1.2)) {
-                subtitleScale = 1.03
             }
             
             // Start ambient sound if enabled
