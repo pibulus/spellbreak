@@ -14,26 +14,26 @@ struct SpellTextGenerator {
     // ===================================================================
     
     private static let mysticalMessages = [
-        "what if the void is also waiting",
-        "pixels, sleeping",
-        "distance remembers",
-        "spells want to break",
-        "reality buffers here",
-        "forgotten rhythms",
-        "screens dreaming",
-        "infinity in periphery",
-        "time between frames",
-        "simulations resting",
-        "something at the edge",
-        "attention, elsewhere",
-        "looser here",
-        "water finding level",
-        "doors, both ways",
-        "what currency",
-        "self-breaking spells",
-        "this moment, forking",
-        "tired algorithms",
-        "static as signal"
+        "What if screens need breaks too?",
+        "Where do pixels go when you blink?",
+        "Can distance help you think?",
+        "Maybe the spell wants to break",
+        "Does reality feel different at 20 feet?",
+        "What rhythm did you have before this?",
+        "Do screens know when you're gone?",
+        "Is there something in your periphery?",
+        "Where does your mind go between tasks?",
+        "What if everything needs rest?",
+        "Something's different at the edges",
+        "Your attention might be split",
+        "Things feel looser from here",
+        "Everything finds its level",
+        "Every door works both ways",
+        "What are you paying with?",
+        "Patterns break themselves eventually",
+        "This moment could go anywhere",
+        "The system might be tired too",
+        "Background noise might be saying something"
     ]
     
     private static let playfulMessages = [
@@ -116,55 +116,53 @@ struct SpellTextGenerator {
     // SYMBOL-BASED MESSAGE SYSTEM
     // ===================================================================
     
-    private static let symbols = [
-        "eyes", "hands", "breath", "pulse", "thoughts",
-        "horizons", "distance", "patterns", "rhythms", "focus",
-        "light", "shadows", "edges", "thresholds", "signals",
-        "attention", "memory", "stillness", "motion", "time"
+    private static let bodySymbols = [
+        "your eyes", "your hands", "your breath", "your shoulders", 
+        "your neck", "your spine", "your feet", "your jaw"
     ]
     
-    private static let fragments = [
-        "[symbol] might be [verb]",
-        "something about [symbol]",
-        "[symbol] or [symbol2]?",
-        "the way [symbol] [verb]",
-        "between [symbol] and [symbol2]",
-        "[symbol], but [verb]",
-        "if [symbol] could [verb]",
-        "[symbol] without [symbol2]",
-        "where [symbol] [verb]",
-        "[symbol] becoming [symbol2]"
+    private static let sensationSymbols = [
+        "tension", "distance", "focus", "rhythm", "stillness",
+        "movement", "warmth", "weight", "space", "balance"
     ]
     
-    private static let verbs = [
-        "waiting", "shifting", "remembering", "dissolving",
-        "gathering", "escaping", "returning", "listening",
-        "opening", "closing", "breathing", "dreaming",
-        "searching", "finding", "losing", "becoming"
+    private static let bodyQuestions = [
+        "What are [symbol] trying to tell you?",
+        "How do [symbol] feel right now?",
+        "What do [symbol] need?",
+        "Where are [symbol] holding stress?",
+        "Can [symbol] relax from here?",
+        "What would [symbol] do if they could?",
+        "Notice what [symbol] are doing",
+        "When did [symbol] last move?",
+        "Are [symbol] comfortable?",
+        "What position are [symbol] in?"
     ]
     
-    private static let questions = [
-        "what if [symbol] [verb]?",
-        "do [symbol] ever [verb]?",
-        "when [symbol] [verb], what happens?",
-        "how do [symbol] know when to [verb]?",
-        "can [symbol] [verb] without you?",
-        "why do [symbol] [verb] here?",
-        "where do [symbol] go to [verb]?",
-        "who taught [symbol] to [verb]?"
+    private static let sensationQuestions = [
+        "Where do you feel [symbol]?",
+        "Is there [symbol] somewhere?",
+        "Can you find [symbol]?",
+        "What needs more [symbol]?",
+        "How much [symbol] is enough?",
+        "Notice the [symbol]",
+        "Does [symbol] help?",
+        "Where did the [symbol] go?",
+        "Can you create [symbol]?",
+        "What happens with more [symbol]?"
     ]
     
-    private static let whispers = [
-        "[symbol]...",
-        "...and [symbol]",
-        "[symbol]?",
-        "([symbol])",
-        "[symbol] → [symbol2]",
-        "[symbol] / [symbol2]",
-        "[symbol]. [symbol2].",
-        "[symbol] & [symbol2] &",
-        "–[symbol]–",
-        "[symbol]:[symbol2]"
+    private static let suggestions = [
+        "Maybe check in with [symbol]",
+        "Consider what [symbol] want",
+        "[symbol] might need attention",
+        "Notice [symbol]",
+        "Let [symbol] guide you",
+        "[symbol] know what to do",
+        "Trust [symbol]",
+        "Listen to [symbol]",
+        "[symbol] have wisdom",
+        "Follow what [symbol] suggest"
     ]
     
     // ===================================================================
@@ -224,39 +222,31 @@ struct SpellTextGenerator {
         
         var pool: [String] = []
         
-        // 50% chance to use symbol-based generation for more emergent meaning
-        let useSymbols = Int.random(in: 1...10) <= 5
+        // 40% chance to use symbol-based generation for body awareness
+        let useSymbols = Int.random(in: 1...10) <= 4
         
         if useSymbols {
-            // Generate a symbol-based message
-            let symbol1 = symbols.randomElement() ?? "distance"
-            let symbol2 = symbols.randomElement() ?? "time"
-            let verb = verbs.randomElement() ?? "waiting"
+            let symbolType = Int.random(in: 1...3)
+            var message: String
             
-            let templateType = Int.random(in: 1...10)
-            var template: String
-            
-            switch templateType {
-            case 1...3:  // 30% - Fragments (most abstract)
-                template = fragments.randomElement() ?? "[symbol] might be [verb]"
-            case 4...6:  // 30% - Questions
-                template = questions.randomElement() ?? "what if [symbol] [verb]?"
-            case 7...8:  // 20% - Whispers (minimal)
-                template = whispers.randomElement() ?? "[symbol]..."
-            default:     // 20% - Simple symbol
-                return symbol1  // Just the word alone
+            switch symbolType {
+            case 1:  // Body part questions
+                let bodyPart = bodySymbols.randomElement() ?? "your eyes"
+                let template = bodyQuestions.randomElement() ?? "How do [symbol] feel?"
+                message = template.replacingOccurrences(of: "[symbol]", with: bodyPart)
+                
+            case 2:  // Sensation questions
+                let sensation = sensationSymbols.randomElement() ?? "tension"
+                let template = sensationQuestions.randomElement() ?? "Where do you feel [symbol]?"
+                message = template.replacingOccurrences(of: "[symbol]", with: sensation)
+                
+            default:  // Suggestions
+                let bodyPart = bodySymbols.randomElement() ?? "your breath"
+                let template = suggestions.randomElement() ?? "Notice [symbol]"
+                message = template.replacingOccurrences(of: "[symbol]", with: bodyPart)
             }
             
-            // Replace placeholders
-            template = template.replacingOccurrences(of: "[symbol2]", with: symbol2)
-            template = template.replacingOccurrences(of: "[symbol]", with: symbol1)
-            template = template.replacingOccurrences(of: "[verb]", with: verb)
-            
-            // Capitalize first letter if needed
-            if let first = template.first, first.isLowercase {
-                return template.prefix(1).uppercased() + template.dropFirst()
-            }
-            return template
+            return message
         }
         
         // Otherwise use regular pool selection
@@ -300,19 +290,19 @@ struct SpellTextGenerator {
             pool += newMoonMessages
         }
         
-        // Time-based emergent fragments
+        // Time-based contextual messages
         let hour = Calendar.current.component(.hour, from: Date())
         switch hour {
         case 0..<5:
-            pool += ["3am knows", "smallest hours", "deep time", "thoughts pooling"]
+            pool += ["Late night eyes need different light", "3am thoughts need space"]
         case 5..<9:
-            pool += ["dawn erasing", "morning's honesty", "light returning", "pixels fading"]
+            pool += ["Morning light helps reset", "Dawn changes how things look"]
         case 12..<14:
-            pool += ["noon shadow", "peak light", "center holding", "day's middle"]
+            pool += ["Midday glare is real", "Noon light shows everything"]
         case 17..<20:
-            pool += ["golden forgiveness", "evening algorithm", "light softening", "edges blurring"]
+            pool += ["Golden hour changes perspective", "Evening light is gentler"]
         case 22..<24:
-            pool += ["night swimming", "day releasing", "darkness opening", "time slowing"]
+            pool += ["Night screens hit different", "Time to wind down maybe"]
         default:
             break
         }
