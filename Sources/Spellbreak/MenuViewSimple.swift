@@ -12,7 +12,6 @@ import SwiftUI
 struct MenuViewSimple: View {
     @EnvironmentObject var appState: AppState
     @State private var hoveredItem: String? = nil
-    @State private var isVisible = false
     @AppStorage("breakIntervalMin") private var breakInterval: Double = 20
     @AppStorage("fancyMenu") private var fancyMenu: Bool = true
     
@@ -144,20 +143,6 @@ struct MenuViewSimple: View {
         }
         .frame(width: 220)
         .background(.ultraThickMaterial)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.white.opacity(0.12), lineWidth: 0.5)
-        )
-        .shadow(color: Color.black.opacity(0.15), radius: 20, x: 0, y: 8)
-        .scaleEffect(isVisible ? 1.0 : 0.95)
-        .opacity(isVisible ? 1.0 : 0.0)
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isVisible)
-        .onAppear {
-            withAnimation {
-                isVisible = true
-            }
-        }
     }
     
     // MARK: - Plain Menu (macOS Standard)
@@ -175,22 +160,33 @@ struct MenuViewSimple: View {
             }
             
             VStack(spacing: 0) {
-                PlainMenuItem(title: "Break", action: appState.triggerBreak)
-                PlainMenuItem(title: appState.timerRunning ? "Pause" : "Resume") {
-                    if appState.timerRunning {
-                        appState.stopTimer()
-                    } else {
-                        appState.startTimer()
+                PlainMenuItem(
+                    title: "Break Now",
+                    action: appState.triggerBreak
+                )
+                PlainMenuItem(
+                    title: appState.timerRunning ? "Pause Timer" : "Start Timer",
+                    action: {
+                        if appState.timerRunning {
+                            appState.stopTimer()
+                        } else {
+                            appState.startTimer()
+                        }
                     }
-                }
+                )
                 
                 Divider()
                 
-                PlainMenuItem(title: "Settings", action: appState.showPreferences)
+                PlainMenuItem(
+                    title: "Preferences...",
+                    action: appState.showPreferences
+                )
                 
                 Divider()
                 
-                PlainMenuItem(title: "Quit") {
+                PlainMenuItem(
+                    title: "Quit Spellbreak"
+                ) {
                     NSApplication.shared.terminate(nil)
                 }
             }
