@@ -16,7 +16,8 @@
       "Bash(git push:*)",
       "WebSearch",
       "Bash(rm:*)",
-      "Bash(open /Users/pabloalvarado/Projects/active/mac/spellbreak/build/Spellbreak.app)"
+      "Bash(open /Users/pabloalvarado/Projects/active/mac/spellbreak/build/Spellbreak.app)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "additionalDirectories": [

@@ -221,7 +221,7 @@ struct PreferencesView: View {
                             .foregroundColor(.white.opacity(0.7))
                     }
                     
-                    GradientSlider(value: $breakIntervalMin, range: 5...60, step: 5)
+                    GradientSlider(value: $breakIntervalMin, options: [15, 30, 60, 90, 120, 180])
                 }
                 
                 // Break duration
@@ -248,7 +248,7 @@ struct PreferencesView: View {
                             .foregroundColor(.white.opacity(0.7))
                     }
                     
-                    GradientSlider(value: $breakDurationSec, range: 5...60, step: 5)
+                    GradientSlider(value: $breakDurationSec, options: [15, 30, 60, 90, 120, 180])
                 }
             }
             .padding(UI.cardPadding)
@@ -554,8 +554,7 @@ struct ToggleCard: View {
 // MARK: - Gradient Slider
 struct GradientSlider: View {
     @Binding var value: Double
-    let range: ClosedRange<Double>
-    let step: Double
+    let options: [Double]
     @State private var isDragging = false
     @State private var isHovering = false
     @State private var lastSoundTime: Date = Date()
@@ -611,11 +610,13 @@ struct GradientSlider: View {
                                     // Play grab sound on drag start
                                     playSliderSound(volume: 0.3, pitch: 1.2)
                                 }
-                                let oldValue = value
-                                let newValue = (drag.location.x / geometry.size.width) * (range.upperBound - range.lowerBound) + range.lowerBound
-                                let newSnappedValue = round(min(max(newValue, range.lowerBound), range.upperBound) / step) * step
-                                
-                                // Only play sound and update if we've moved to a new step
+                                // Map drag position to nearest option
+                                let normalizedPosition = max(0, min(1, drag.location.x / geometry.size.width))
+                                let indexFloat = normalizedPosition * Double(options.count - 1)
+                                let nearestIndex = Int(round(indexFloat))
+                                let newSnappedValue = options[nearestIndex]
+
+                                // Only play sound and update if we've moved to a new option
                                 if newSnappedValue != value {
                                     value = newSnappedValue
                                     // Play a subtle tick for each step change, but throttle to prevent spam
@@ -639,10 +640,12 @@ struct GradientSlider: View {
             }
             .contentShape(Rectangle())
             .onTapGesture { location in
-                // Allow clicking anywhere on the track to jump to that value
-                let newValue = (location.x / geometry.size.width) * (range.upperBound - range.lowerBound) + range.lowerBound
+                // Allow clicking anywhere on the track to jump to nearest option
+                let normalizedPosition = max(0, min(1, location.x / geometry.size.width))
+                let indexFloat = normalizedPosition * Double(options.count - 1)
+                let nearestIndex = Int(round(indexFloat))
                 withAnimation(.easeOut(duration: 0.2)) {
-                    value = round(min(max(newValue, range.lowerBound), range.upperBound) / step) * step
+                    value = options[nearestIndex]
                 }
                 // Play jump sound (grab sound)
                 playSliderSound(volume: 0.35, pitch: 1.2)
@@ -652,7 +655,13 @@ struct GradientSlider: View {
     }
     
     private var normalizedValue: Double {
-        (value - range.lowerBound) / (range.upperBound - range.lowerBound)
+        guard let index = options.firstIndex(of: value) else {
+            // If value not in options, find closest and return its normalized position
+            let closest = options.min(by: { abs($0 - value) < abs($1 - value) }) ?? options[0]
+            let closestIndex = options.firstIndex(of: closest) ?? 0
+            return Double(closestIndex) / Double(options.count - 1)
+        }
+        return Double(index) / Double(options.count - 1)
     }
     
     private func playSliderSound(volume: Float = 0.2, pitch: Float = 1.0) {
