@@ -28,8 +28,6 @@ struct AmbientParticles: View {
     var body: some View {
         TimelineView(.animation(minimumInterval: 1/30)) { timeline in
             Canvas { context, size in
-                // let time = timeline.date.timeIntervalSinceReferenceDate // unused for now
-                
                 for particle in particles {
                     let x = particle.x * size.width
                     let y = particle.y * size.height

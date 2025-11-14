@@ -23,9 +23,6 @@ let package = Package(
             resources: [
                 .process("Resources/Sounds"),
                 .process("Resources/Assets.xcassets")
-            ],
-            swiftSettings: [
-                .unsafeFlags(["-suppress-warnings"])
             ]
         )
     ]

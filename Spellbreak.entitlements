@@ -5,8 +5,8 @@
     <!-- App Sandbox is required for Mac App Store -->
     <key>com.apple.security.app-sandbox</key>
     <true/>
-    
-    <!-- Audio playback for ambient sounds -->
+
+    <!-- Explicitly disable microphone access (not needed for this app) -->
     <key>com.apple.security.device.audio-input</key>
     <false/>
     
