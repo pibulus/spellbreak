@@ -13,8 +13,6 @@ import SwiftUI
 /// Uses Canvas + TimelineView for smooth 60fps animation
 /// Colors shift based on time of day for mystical vibes
 struct AuroraBackground: View {
-    @State private var phase: Double = 0
-    
     // Get time-based palette
     private var timeColors: [Color] {
         let hour = Calendar.current.component(.hour, from: Date())

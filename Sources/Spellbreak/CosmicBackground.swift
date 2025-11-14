@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct CosmicBackground: View {
-    @State private var phase: Double = 0
-    
     var body: some View {
         TimelineView(.animation(minimumInterval: 1/30)) { timeline in
             Canvas { context, size in
