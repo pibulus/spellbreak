@@ -274,12 +274,13 @@ struct PreferencesView: View {
                     subtitle: lockMode ? "No skips!" : "Hold to skip",
                     isOn: lockMode,
                     isHovered: hoveredElement == "skip-toggle",
-                    onChange: { lockMode = $0 }
+                    onChange: { lockMode = $0 },
+                    soundManager: soundManager
                 )
                 .onHover { hovering in
                     hoveredElement = hovering ? "skip-toggle" : nil
                 }
-                
+
                 ToggleCard(
                     title: "Autostart",
                     subtitle: "Launch at login",
@@ -296,7 +297,8 @@ struct PreferencesView: View {
                         } catch {
                             // Silently fail - user can try again
                         }
-                    }
+                    },
+                    soundManager: soundManager
                 )
                 .onHover { hovering in
                     hoveredElement = hovering ? "auto-toggle" : nil
@@ -320,7 +322,8 @@ struct PreferencesView: View {
                 subtitle: "Mystical vibes vs clean text",
                 isOn: fancyMenu,
                 isHovered: hoveredElement == "menu-toggle",
-                onChange: { fancyMenu = $0 }
+                onChange: { fancyMenu = $0 },
+                soundManager: soundManager
             )
             .onHover { hovering in
                 hoveredElement = hovering ? "menu-toggle" : nil
@@ -462,7 +465,7 @@ struct ToggleCard: View {
     let isOn: Bool
     let isHovered: Bool
     let onChange: (Bool) -> Void
-    @StateObject private var soundManager = SoundManager()
+    let soundManager: SoundManager
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {

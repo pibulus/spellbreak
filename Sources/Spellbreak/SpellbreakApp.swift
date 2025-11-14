@@ -90,6 +90,7 @@ class AppState: ObservableObject {
     // MARK: - Private Properties
     private var timer: Timer?                    // Main timer for break intervals
     private var statusTimer: Timer?              // Timer for updating UI countdown
+    private var postponeTimer: Timer?            // Timer for call postponement
     private var lastBreakTime: Date = Date()     // When the last break was triggered
     private var overlayWindowController: OverlayWindowController?    // Break overlay window
     private var preferencesWindowController: NSWindowController?     // Preferences window
@@ -141,15 +142,16 @@ class AppState: ObservableObject {
         // Clean up timers
         timer?.invalidate()
         statusTimer?.invalidate()
-        
+        postponeTimer?.invalidate()
+
         // Remove notification observer
         NotificationCenter.default.removeObserver(self)
-        
+
         // Remove escape key monitor if present
         if let monitor = escapeKeyMonitor {
             NSEvent.removeMonitor(monitor)
         }
-        
+
         // Cancel Combine subscriptions
         overlayCancellable?.cancel()
         preferencesCancellable?.cancel()
@@ -182,9 +184,11 @@ class AppState: ObservableObject {
         timer = nil
         statusTimer?.invalidate()
         statusTimer = nil
+        postponeTimer?.invalidate()
+        postponeTimer = nil
         timerRunning = false
         timeRemaining = 0
-        
+
         // Clear persistence
         timerWasRunning = false
     }
@@ -200,12 +204,15 @@ class AppState: ObservableObject {
         if MediaDetector.isInCall() {
             // Postpone for 5 minutes if in a call
             // In call, postponing break for 5 minutes
-            
+
             // Reset the last break time to now to restart the countdown
             lastBreakTime = Date()
-            
+
+            // Cancel any existing postpone timer
+            postponeTimer?.invalidate()
+
             // Schedule a check in 5 minutes
-            Timer.scheduledTimer(withTimeInterval: 300, repeats: false) { [weak self] _ in
+            postponeTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: false) { [weak self] _ in
                 self?.checkAndTriggerBreak()
             }
         } else {
