@@ -20,6 +20,8 @@ class SoundManager: ObservableObject {
     // MARK: - Private Properties
     private var audioPlayer: AVAudioPlayer?
     private var fadeTimer: Timer?
+    private var fadeInTimer: Timer?
+    private var fadeOutTimer: Timer?
     private let logger = Logger(subsystem: "com.eyedrop", category: "SoundManager")
     
     // MARK: - Persisted Properties
@@ -33,6 +35,8 @@ class SoundManager: ObservableObject {
     
     deinit {
         fadeTimer?.invalidate()
+        fadeInTimer?.invalidate()
+        fadeOutTimer?.invalidate()
     }
     
     // MARK: - Private Methods
@@ -77,40 +81,55 @@ class SoundManager: ObservableObject {
     }
     
     func playAmbient() {
-        guard let player = audioPlayer else { 
+        guard let player = audioPlayer else {
             logger.warning("Audio player not available")
-            return 
+            return
         }
-        
-        do {
-            // Fade in
-            player.volume = 0
-            let success = player.play()
-            if !success {
-                logger.error("Failed to start audio playback")
+
+        // Cancel any existing fade timers
+        fadeInTimer?.invalidate()
+        fadeOutTimer?.invalidate()
+
+        // Fade in
+        player.volume = 0
+        let success = player.play()
+        if !success {
+            logger.error("Failed to start audio playback")
+            return
+        }
+
+        isPlaying = true
+
+        // Gradually increase volume over 2 seconds
+        let targetVolume = Float(soundVolume * 0.6)
+        fadeInTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] timer in
+            guard let self = self, let player = self.audioPlayer else {
+                timer.invalidate()
                 return
             }
-            
-            isPlaying = true
-            
-            // Gradually increase volume over 2 seconds
-            let targetVolume = Float(soundVolume * 0.6)
-            Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { timer in
-                if player.volume < targetVolume {
-                    player.volume += Float(targetVolume / 40) // 40 steps = 2 seconds
-                } else {
-                    player.volume = targetVolume
-                    timer.invalidate()
-                }
+            if player.volume < targetVolume {
+                player.volume += Float(targetVolume / 40) // 40 steps = 2 seconds
+            } else {
+                player.volume = targetVolume
+                timer.invalidate()
+                self.fadeInTimer = nil
             }
         }
     }
     
     func stopAmbient() {
         guard let player = audioPlayer, player.isPlaying else { return }
-        
+
+        // Cancel any existing fade timers
+        fadeInTimer?.invalidate()
+        fadeOutTimer?.invalidate()
+
         // Fade out over 1 second
-        Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { timer in
+        fadeOutTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] timer in
+            guard let self = self, let player = self.audioPlayer else {
+                timer.invalidate()
+                return
+            }
             if player.volume > 0 {
                 player.volume -= 0.015
             } else {
@@ -118,6 +137,7 @@ class SoundManager: ObservableObject {
                 player.volume = Float(self.soundVolume * 0.6)  // Reset for next time
                 self.isPlaying = false
                 timer.invalidate()
+                self.fadeOutTimer = nil
             }
         }
     }

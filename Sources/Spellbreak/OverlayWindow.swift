@@ -27,6 +27,7 @@ struct OverlayWindow: View {
     @State private var isHoveringRing = false
     @State private var escapePulse: Double = 0
     @State private var breakMessage: String = ""
+    @State private var escapeObserver: NSObjectProtocol?
     @AppStorage("lockMode") private var lockMode: Bool = false
     @AppStorage("breakDurationSec") private var breakDuration: Double = 20
     @AppStorage("musicEnabled") private var musicEnabled: Bool = false
@@ -196,7 +197,7 @@ struct OverlayWindow: View {
             soundManager.playBreakStartChime()
             
             // Listen for escape key presses
-            NotificationCenter.default.addObserver(
+            escapeObserver = NotificationCenter.default.addObserver(
                 forName: NSNotification.Name("EscapePressed"),
                 object: nil,
                 queue: .main
@@ -272,6 +273,11 @@ struct OverlayWindow: View {
             countdownTimer?.invalidate()
             dismissWorkItem?.cancel()
             soundManager.stopAmbient()
+            // Remove notification observer
+            if let observer = escapeObserver {
+                NotificationCenter.default.removeObserver(observer)
+                escapeObserver = nil
+            }
         }
     }
     
