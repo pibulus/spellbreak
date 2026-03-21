@@ -35,7 +35,7 @@ struct PreferencesView: View {
     @State private var testButtonPressed = false
     @State private var titleOffset: CGFloat = 0
     @State private var sparkleRotation: Double = 0
-    @StateObject private var soundManager = SoundManager()
+    @EnvironmentObject var soundManager: SoundManager
     
     var body: some View {
         VStack(spacing: 0) {

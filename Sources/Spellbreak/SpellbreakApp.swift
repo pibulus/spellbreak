@@ -104,7 +104,7 @@ class AppState: ObservableObject {
     private var lastBreakCompletedTime: Date?    // When last break was completed (not skipped)
     
     // MARK: - Persisted Properties
-    @AppStorage("breakInterval") private var breakIntervalMinutes: Double = 20.0 {
+    @AppStorage("breakIntervalMin") private var breakIntervalMinutes: Double = 20.0 {
         didSet {
             // Restart timer if running to apply new interval
             if timerRunning {
@@ -289,7 +289,10 @@ class AppState: ObservableObject {
             )
             window.title = "Spellbreak Preferences"
             window.center()
-            window.contentView = NSHostingView(rootView: PreferencesView())
+            let appDelegate = NSApp.delegate as! AppDelegate
+            window.contentView = NSHostingView(rootView: PreferencesView()
+                .environmentObject(appDelegate.soundManager as SoundManager)
+            )
             window.isMovableByWindowBackground = false  // Fixed: Don't allow dragging by background
             window.titlebarAppearsTransparent = true
             window.styleMask.remove(.resizable)  // Prevent resizing to lock the size
@@ -307,8 +310,10 @@ class AppState: ObservableObject {
         guard let window = overlayWindowController?.window else { return }
         
         // Use the good SwiftUI overlay with animated effects
+        let appDelegate = NSApp.delegate as! AppDelegate
         let overlayView = OverlayWindow()
             .environmentObject(self)
+            .environmentObject(appDelegate.soundManager as SoundManager)
         
         window.contentView = NSHostingView(rootView: overlayView)
         window.isOpaque = false
