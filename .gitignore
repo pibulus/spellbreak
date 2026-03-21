@@ -33,6 +33,11 @@ Package.resolved
 *.dSYM.zip
 *.dSYM/
 
+# Distribution builds
+dist/
+*.dmg
+*.zip
+
 # Backup files
 *.bak
 *~

@@ -13,7 +13,7 @@ import AppKit
 /// Full-screen break overlay with mystical animated effects
 struct OverlayWindow: View {
     @EnvironmentObject var appState: AppState
-    @StateObject private var soundManager = SoundManager()
+    @EnvironmentObject var soundManager: SoundManager
     @State private var opacity: Double = 0
     @State private var messageOpacity: Double = 0
     @State private var textScale: Double = 1.0
