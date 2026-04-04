@@ -23,7 +23,7 @@ Break the digital spell! A mystical break reminder app for macOS that helps you 
 
 1. Download the latest release from [spellbreak.app](https://spellbreak.app)
 2. Move Spellbreak.app to your Applications folder
-3. Launch and grant necessary permissions
+3. Launch it and allow notifications if you want the heads-up alerts
 
 ### Build from Source
 
@@ -31,13 +31,13 @@ Break the digital spell! A mystical break reminder app for macOS that helps you 
 git clone https://github.com/pabloalvarado/spellbreak.git
 cd spellbreak
 ./build-app.sh
-open Spellbreak.app
+open build/Spellbreak.app
 ```
 
 ## Usage
 
 - **Menu Bar**: Click the Spellbreak icon to access controls
-- **Preferences**: Customize break intervals, duration, and sounds
+- **Preferences**: Customize break intervals, duration, heads-up timing, sounds, and visuals
 - **Skip Break**: Hold the skip button for 1 second per minute of break time
 - **Pause/Resume**: Temporarily pause break reminders when needed
 
@@ -60,7 +60,7 @@ Built with:
 ### Project Structure
 
 ```
-Sources/Eyedrop/
+Sources/Spellbreak/
 ├── SpellbreakApp.swift     # Main app entry point
 ├── OverlayWindow.swift     # Break overlay interface
 ├── AuroraBackground.swift  # Animated wave effects
@@ -71,14 +71,13 @@ Sources/Eyedrop/
 
 ### Code Signing
 
-For Mac App Store distribution:
+For website / direct distribution:
 
 ```bash
-codesign --deep --force --verify --verbose \
-  --sign "Developer ID Application: Your Name" \
-  --entitlements Spellbreak.entitlements \
-  Spellbreak.app
+./build-dmg.sh --sign "Developer ID Application: Your Name (TEAMID)"
 ```
+
+For Mac App Store submission, archive the app in Xcode and upload that archive to App Store Connect with the proper App Store distribution workflow.
 
 ## License
 

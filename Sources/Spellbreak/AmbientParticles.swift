@@ -23,7 +23,27 @@ struct Particle: Identifiable {
 /// Minimal floating orb system for dreamy vibes
 struct AmbientParticles: View {
     @State private var particles: [Particle] = []
-    @AppStorage("visualStyle") private var visualStyle: String = "cozy"
+    @AppStorage("visualTheme") private var visualTheme: String = "aurora"
+
+    private var particleColors: [Color] {
+        switch visualTheme {
+        case "lava":
+            return [
+                Color(red: 1.0, green: 0.65, blue: 0.35),
+                Color(red: 1.0, green: 0.35, blue: 0.45)
+            ]
+        case "cosmic":
+            return [
+                Color(red: 0.8, green: 0.9, blue: 1.0),
+                Color(red: 0.45, green: 0.65, blue: 1.0)
+            ]
+        default:
+            return [
+                Color.white,
+                Color(red: 1.0, green: 0.7, blue: 0.55)
+            ]
+        }
+    }
     
     var body: some View {
         TimelineView(.animation(minimumInterval: 1/30)) { timeline in
@@ -34,8 +54,8 @@ struct AmbientParticles: View {
                     
                     // Simple glow effect
                     let gradient = Gradient(stops: [
-                        .init(color: Color.white.opacity(particle.opacity), location: 0),
-                        .init(color: Color.orange.opacity(particle.opacity * 0.5), location: 0.5),
+                        .init(color: particleColors[0].opacity(particle.opacity), location: 0),
+                        .init(color: particleColors[1].opacity(particle.opacity * 0.55), location: 0.5),
                         .init(color: Color.clear, location: 1)
                     ])
                     
@@ -69,7 +89,16 @@ struct AmbientParticles: View {
     }
     
     private func setupParticles() {
-        let count = visualStyle == "dreamy" ? 25 : 15  // More particles for dreamy
+        let count: Int
+        switch visualTheme {
+        case "cosmic":
+            count = 24
+        case "lava":
+            count = 18
+        default:
+            count = 15
+        }
+
         particles = (0..<count).map { _ in
             Particle(
                 x: Double.random(in: 0...1),
@@ -103,8 +132,8 @@ struct AmbientParticles: View {
             }
             
             // More dramatic pulsing
-            particles[i].opacity = (0.3 + sin(particles[i].lifetime * .pi) * 0.2) * 
-                                   (visualStyle == "dreamy" ? 1.5 : 1.0)
+            let pulseMultiplier = visualTheme == "cosmic" ? 1.35 : 1.0
+            particles[i].opacity = (0.3 + sin(particles[i].lifetime * .pi) * 0.2) * pulseMultiplier
         }
     }
 }

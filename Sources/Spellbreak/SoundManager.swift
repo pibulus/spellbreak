@@ -22,7 +22,7 @@ class SoundManager: ObservableObject {
     private var fadeTimer: Timer?
     private var fadeInTimer: Timer?
     private var fadeOutTimer: Timer?
-    private let logger = Logger(subsystem: "com.eyedrop", category: "SoundManager")
+    private let logger = Logger(subsystem: "com.pabloalvarado.spellbreak", category: "SoundManager")
     
     // MARK: - Persisted Properties
     @AppStorage("soundVolume") private var soundVolume: Double = 0.5
