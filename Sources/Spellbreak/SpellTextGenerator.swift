@@ -14,49 +14,33 @@ struct SpellTextGenerator {
     // ===================================================================
     
     private static let mysticalMessages = [
-        "What if screens need breaks too?",
-        "Where do pixels go when you blink?",
-        "Can distance help you think?",
-        "Maybe the spell wants to break",
-        "Does reality feel different at 20 feet?",
-        "What rhythm did you have before this?",
-        "Do screens know when you're gone?",
-        "Is there something in your periphery?",
-        "Where does your mind go between tasks?",
-        "What if everything needs rest?",
-        "Something's different at the edges",
-        "Your attention might be split",
-        "Things feel looser from here",
-        "Everything finds its level",
-        "Every door works both ways",
-        "What are you paying with?",
-        "Patterns break themselves eventually",
-        "This moment could go anywhere",
-        "The system might be tired too",
-        "Background noise might be saying something"
+        "The spell slips easy",
+        "Distance changes the story",
+        "Soft eyes, softer mind",
+        "The frame ain't everything",
+        "Let the edges talk",
+        "Reality has better lighting",
+        "The room feels bigger",
+        "Leave the pixels hungry",
+        "Your focus needs oxygen",
+        "The air knows more",
+        "Break the loop gently",
+        "Look past the rectangle"
     ]
     
     private static let playfulMessages = [
-        "What did your ancestors watch instead?",
-        "Do even gods need to blink?",
-        "What if you blinked with intention?",
-        "Have screens learned to follow you yet?",
-        "How many frames per second is reality?",
-        "Does the body keep score?",
-        "How do pixels age without you?",
-        "Why didn't nature make rectangles?",
-        "Can the third eye see from here?",
-        "Has the void been watching back?",
-        "What's the opposite of screen time?",
-        "Is vision a renewable resource?",
-        "What does the cursor dream of?",
-        "Does light remember how to scatter?",
-        "Where did your attention wander?",
-        "Does the internet notice you're gone?",
-        "Do atoms dance when nobody's watching?",
-        "Is your spine trying to tell you something?",
-        "Could you hide from your screen?",
-        "Is focus more like water or light?"
+        "Ancestors skipped this screen",
+        "Your retinas need gossip",
+        "Nature never made rectangles",
+        "The cursor misses you",
+        "Blink like you mean it",
+        "Even gods look away",
+        "The void wants eye contact",
+        "Your shoulders know first",
+        "Reality runs full frame",
+        "Focus ain't a prison",
+        "Let the room render",
+        "Your spine called timeout"
     ]
     
     private static let directMessages = [
@@ -83,33 +67,19 @@ struct SpellTextGenerator {
     ]
     
     private static let temporalMessages = [
-        // Morning
         "Dawn doesn't buffer",
-        "Morning light remembers your retinas",
-        "The day begins outside the frame",
-        
-        // Afternoon
-        "Afternoon light falls at angles screens can't calculate",
-        "Peak hours for remembering distance exists",
-        "The sun refuses to render in RGB",
-        
-        // Evening
-        "Twilight blurs all the hard edges",
-        "Evening asks for softer focal points",
-        "Golden hour happens without permissions",
-        
-        // Night
-        "The moon pulls tides and pupils equally",
-        "Darkness holds more colors than backlights",
-        "Night vision evolved before pixels",
-        "Stars auto-update every billion years",
-        "The void has been watching longer than screens",
-        
-        // Anytime
-        "Time moves in curves, not refresh rates",
-        "This moment refuses to compile",
-        "The present runs without loading",
-        "Now happens in continuous, not discrete"
+        "Morning light wants you",
+        "Daylight fixes bad trance",
+        "Afternoon glare talks back",
+        "Noon needs a soft gaze",
+        "Sunlight beats screenlight",
+        "Evening wants your eyes",
+        "Golden hour, not blue light",
+        "Night asks for mercy",
+        "Stars outlast every refresh",
+        "The moon hates crunch",
+        "Time moves without loading",
+        "Now won't hold still"
     ]
     
     // ===================================================================
@@ -309,12 +279,14 @@ struct SpellTextGenerator {
         var pool: [String] = []
         
         // Mix in some of the original messages for variety
-        let mixType = Int.random(in: 1...3)
+        let mixType = Int.random(in: 1...4)
         switch mixType {
         case 1:
             pool = mysticalMessages.shuffled().prefix(10).map { $0 }
         case 2:
             pool = playfulMessages.shuffled().prefix(10).map { $0 }
+        case 3:
+            pool = temporalMessages.shuffled().prefix(10).map { $0 }
         default:
             pool = directMessages.shuffled().prefix(10).map { $0 }
         }

@@ -17,17 +17,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Hide dock icon since we're a menu bar app
         NSApp.setActivationPolicy(.accessory)
 
-        // Create shared instances
-        appState = AppState()
         soundManager = SoundManager()
+        appState = AppState()
 
         // Create and configure status bar controller immediately
         statusBarController = StatusBarController()
         statusBarController.configure(with: appState)
-
-        // Start timer if it was running before
-        if appState.timerWasRunning {
-            appState.startTimer()
-        }
     }
 }

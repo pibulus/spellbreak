@@ -1,156 +1,78 @@
 # Spellbreak Distribution Guide
 
-## Current Status: Beta Distribution Ready ✅
+## Current Repo Reality
 
-### What's Available Now
+Spellbreak now builds locally as:
 
-**Unsigned Beta Download**
-- Location: `/static/Spellbreak-v1.0-unsigned.zip` (13MB)
-- Version: 1.0 (unsigned)
-- Installation: Right-click → Open (bypasses Gatekeeper warning)
-- Website: https://spellbreak.app
+- `build/Spellbreak.app`
+- `dist/Spellbreak-v1.0.0.dmg`
 
-### Website Changes Made
+The build scripts produce a universal app binary when both `arm64` and `x86_64` builds succeed, and they fall back cleanly to a single-arch app if the second architecture cannot be built on the current machine.
 
-1. **Download Button Added**
-   - Big amber "Download Beta - Free" button on homepage
-   - Replaces $9 payment button (commented out for now)
-   - Direct ZIP download from `/static/` folder
+## Direct Distribution
 
-2. **Installation Instructions Section**
-   - Step-by-step guide for unsigned app
-   - Explains right-click → Open process
-   - Sets expectations about beta status
+For friends, website downloads, and general outside-the-App-Store shipping:
 
-3. **User Journey**
-   - Hero → Download → Installation Guide → Features → Truth Moment
-
-### Installation Process for Users
-
-1. **Download**: Click "Download Beta - Free"
-2. **Extract**: Double-click ZIP to extract Spellbreak.app
-3. **First Launch**: Right-click app → "Open" → Click "Open" in dialog
-4. **Subsequent Launches**: Normal double-click works
-
-### What Happens With Developer ID ($99)
-
-Once you get Apple Developer ID, you can:
-
-1. **Sign the app**
+1. Build a signed app + DMG
    ```bash
-   codesign --deep --force --verify --verbose \
-     --sign "Developer ID Application: Your Name (TEAM_ID)" \
-     --options runtime \
-     --entitlements Spellbreak.entitlements \
-     Spellbreak.app
+   ./build-dmg.sh --sign "Developer ID Application: Your Name (TEAMID)"
    ```
-
-2. **Notarize it**
+2. Notarize the DMG
    ```bash
-   # Create DMG
-   hdiutil create -volname "Spellbreak" \
-     -srcfolder Spellbreak.app \
-     -ov -format UDZO \
-     Spellbreak-v1.0.dmg
-
-   # Submit for notarization
-   xcrun notarytool submit Spellbreak-v1.0.dmg \
+   xcrun notarytool submit dist/Spellbreak-v1.0.0.dmg \
      --keychain-profile "AC_PASSWORD" \
      --wait
 
-   # Staple the ticket
-   xcrun stapler staple Spellbreak-v1.0.dmg
+   xcrun stapler staple dist/Spellbreak-v1.0.0.dmg
    ```
+3. Upload the notarized DMG to `spellbreak.app`
 
-3. **Update website**
-   - Replace ZIP with signed DMG
-   - Remove "unsigned" warnings
-   - Change button to "Download Spellbreak"
-   - Remove installation instructions (installs normally)
+Unsigned builds are fine for local testing, but they should be treated as beta-only artifacts.
 
-4. **Submit to App Store**
-   - Follow SIGNING_GUIDE.md steps
-   - Create app in App Store Connect
-   - Upload via Xcode or Transporter
-   - Submit for review
+## Mac App Store
 
-### Website Deployment
+Mac App Store submission is a different path from Developer ID distribution.
 
-The spellbreak-site is a Deno Fresh app. To deploy changes:
+- Developer ID: website / direct download / notarized DMG
+- Mac App Store: archive in Xcode, upload to App Store Connect, submit for review
 
+Use the App Store path when you want:
+
+- native App Store installation
+- automatic update flow through Apple
+- App Store review and listing
+
+## Recommended Release Flow
+
+### Local dogfood
 ```bash
-cd /Users/pabloalvarado/Projects/active/mac/spellbreak-site
-
-# If you have a deployment setup:
-deno task deploy
-
-# Or via Deno Deploy:
-deployctl deploy
+./build-app.sh
+open build/Spellbreak.app
 ```
 
-### File Locations
-
+### Website beta
+```bash
+./build-dmg.sh --sign "Developer ID Application: Your Name (TEAMID)"
 ```
+
+### App Store prep
+- capture screenshots from the current build
+- archive in Xcode
+- upload that archive to App Store Connect
+
+## File Map
+
+```text
 spellbreak/
-├── build/Spellbreak.app          # Built app
-├── Spellbreak-v1.0-unsigned.zip  # Distribution package
-├── APP_STORE.md                  # Store listing
-├── SIGNING_GUIDE.md              # Code signing instructions
-└── PRIVACY.md                    # Privacy policy
-
-spellbreak-site/
-├── routes/index.tsx              # Homepage (updated with download)
-├── static/
-│   └── Spellbreak-v1.0-unsigned.zip  # Download file
-└── GLOSSARY.md                   # Site reference
+├── build/Spellbreak.app
+├── dist/Spellbreak-v1.0.0.dmg
+├── build-app.sh
+├── build-dmg.sh
+├── SIGNING_GUIDE.md
+└── APP_STORE.md
 ```
 
-### Next Steps
+## Notes
 
-**Immediate (Beta Distribution)**
-- [x] Create unsigned ZIP
-- [x] Add to website
-- [x] Add installation instructions
-- [ ] Deploy website updates
-- [ ] Test download flow
-- [ ] Share with early users
-
-**Once You Have Developer ID**
-- [ ] Purchase Apple Developer account ($99)
-- [ ] Sign the app with Developer ID
-- [ ] Notarize the app
-- [ ] Create signed DMG
-- [ ] Update website with signed version
-- [ ] Remove "unsigned" warnings
-
-**App Store Submission**
-- [ ] Create app icon images (10 sizes)
-- [ ] Take 6 screenshots
-- [ ] Set up App Store Connect
-- [ ] Upload build via Xcode
-- [ ] Submit for review
-
-### Testing the Download
-
-1. Visit https://spellbreak.app (once deployed)
-2. Click "Download Beta - Free"
-3. Extract and right-click → Open
-4. Set break interval
-5. Wait for first break
-6. Test hold-to-skip mechanism
-
-### Support Strategy
-
-**Common Issues:**
-- "App is damaged" → Make sure to right-click → Open, not double-click
-- "Unidentified developer" → Expected for unsigned builds
-- Won't open at all → Check macOS version (needs 13.0+)
-
-**Beta Feedback Loop:**
-- GitHub Issues: https://github.com/pibulus/spellbreak/issues
-- Direct feedback welcome before App Store launch
-- Use beta period to refine before charging $9
-
----
-
-*Ready to break the spell.* 🔮
+- `Spellbreak-v1.0-unsigned.zip` is a legacy beta artifact and should not be treated as the source of truth for current release status.
+- If Gatekeeper complains about an unsigned local build, that is expected until you sign + notarize the DMG.

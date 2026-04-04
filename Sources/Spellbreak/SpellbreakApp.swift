@@ -79,6 +79,11 @@ struct SpellbreakApp: App {
 /// Main application state manager handling timers, windows, and statistics
 /// This is the central state object that coordinates all app functionality
 class AppState: ObservableObject {
+    private enum NotificationName {
+        static let showTestBreak = NSNotification.Name("ShowTestBreak")
+        static let escapePressed = NSNotification.Name("EscapePressed")
+    }
+
     // MARK: - Published Properties
     @Published var timerRunning = false          // Whether the break timer is active
     @Published var showingOverlay = false        // Whether the break overlay is visible
@@ -97,6 +102,9 @@ class AppState: ObservableObject {
     private var overlayCancellable: AnyCancellable?
     private var preferencesCancellable: AnyCancellable?
     private var escapeKeyMonitor: Any?          // Event monitor for escape key
+    private var testBreakObserver: NSObjectProtocol?
+    private var didShowBreakWarning = false
+    private let breakWarningLeadTime: TimeInterval = 10
     
     // MARK: - Break Statistics (for message generation)
     private var sessionBreakCount: Int = 0       // Breaks taken this session
@@ -117,6 +125,8 @@ class AppState: ObservableObject {
     @AppStorage("lastBreakDate") private var lastBreakDateString: String = ""
     @AppStorage("timerWasRunning") var timerWasRunning: Bool = false
     @AppStorage("lastBreakTimestamp") private var lastBreakTimestamp: Double = 0
+    @AppStorage("breakDurationSec") private var breakDurationSeconds: Double = 20
+    @AppStorage("breakWarningEnabled") private var breakWarningEnabled: Bool = true
     
     // MARK: - Computed Properties
     private var breakInterval: TimeInterval {
@@ -129,8 +139,8 @@ class AppState: ObservableObject {
         restoreTimerState()
         
         // Listen for test break requests from preferences
-        NotificationCenter.default.addObserver(
-            forName: NSNotification.Name("ShowTestBreak"),
+        testBreakObserver = NotificationCenter.default.addObserver(
+            forName: NotificationName.showTestBreak,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -144,8 +154,9 @@ class AppState: ObservableObject {
         statusTimer?.invalidate()
         postponeTimer?.invalidate()
 
-        // Remove notification observer
-        NotificationCenter.default.removeObserver(self)
+        if let observer = testBreakObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
 
         // Remove escape key monitor if present
         if let monitor = escapeKeyMonitor {
@@ -162,6 +173,7 @@ class AppState: ObservableObject {
         timerRunning = true
         lastBreakTime = Date()
         timeRemaining = breakInterval  // Initialize with full time
+        didShowBreakWarning = false
         
         // Save state for persistence
         timerWasRunning = true
@@ -173,10 +185,9 @@ class AppState: ObservableObject {
         
         // Update time remaining every second
         statusTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
-            guard let self = self else { return }
-            let elapsed = Date().timeIntervalSince(self.lastBreakTime)
-            self.timeRemaining = max(0, self.breakInterval - elapsed)
+            self?.updateTimeRemainingAndWarning()
         }
+        updateTimeRemainingAndWarning()
     }
     
     func stopTimer() {
@@ -188,6 +199,7 @@ class AppState: ObservableObject {
         postponeTimer = nil
         timerRunning = false
         timeRemaining = 0
+        didShowBreakWarning = false
 
         // Clear persistence
         timerWasRunning = false
@@ -203,10 +215,9 @@ class AppState: ObservableObject {
         // Always check if in a call - no option to disable
         if MediaDetector.isInCall() {
             // Postpone for 5 minutes if in a call
-            // In call, postponing break for 5 minutes
-
             // Reset the last break time to now to restart the countdown
             lastBreakTime = Date()
+            didShowBreakWarning = false
 
             // Cancel any existing postpone timer
             postponeTimer?.invalidate()
@@ -222,9 +233,10 @@ class AppState: ObservableObject {
     
     func triggerBreak() {
         lastBreakTime = Date()
+        didShowBreakWarning = false
         showingOverlay = true
         showOverlayWindow()
-        showNotification()
+        showBreakNotification()
         
         // Don't update statistics here - we'll track completion/skip separately
         lastBreakDateString = DateFormatter.dateOnlyFormatter.string(from: Date())
@@ -282,7 +294,7 @@ class AppState: ObservableObject {
         
         if preferencesWindowController == nil {
             let window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 520, height: 640),
+                contentRect: NSRect(x: 0, y: 0, width: 560, height: 760),
                 styleMask: [.titled, .closable],
                 backing: .buffered,
                 defer: false
@@ -311,11 +323,11 @@ class AppState: ObservableObject {
         
         // Use the good SwiftUI overlay with animated effects
         let appDelegate = NSApp.delegate as! AppDelegate
-        let overlayView = OverlayWindow()
+            let overlayView = OverlayWindow()
             .environmentObject(self)
             .environmentObject(appDelegate.soundManager as SoundManager)
         
-        window.contentView = NSHostingView(rootView: overlayView)
+        window.contentView = TransparentHostingView(rootView: overlayView)
         window.isOpaque = false
         window.backgroundColor = NSColor.clear
         window.isReleasedWhenClosed = false
@@ -326,7 +338,7 @@ class AppState: ObservableObject {
             if event.keyCode == 53 { // Escape key
                 // Consume the event to prevent error sound
                 // Could trigger a visual feedback here if wanted
-                NotificationCenter.default.post(name: NSNotification.Name("EscapePressed"), object: nil)
+                NotificationCenter.default.post(name: NotificationName.escapePressed, object: nil)
                 return nil // Consume the event
             }
             return event
@@ -338,14 +350,51 @@ class AppState: ObservableObject {
         NSApp.activate(ignoringOtherApps: true)
     }
     
-    private func showNotification() {
+    private func showHeadsUpNotification() {
+        let content = UNMutableNotificationContent()
+        content.title = "Break incoming"
+        content.body = "Spellbreak lands in 10 seconds."
+        content.sound = .default
+
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
+        UNUserNotificationCenter.current().add(request)
+    }
+
+    private func showBreakNotification() {
         let content = UNMutableNotificationContent()
         content.title = "Time for a break"
-        content.body = "Look away from your screen for 20 seconds"
+        content.body = "Look away from your screen for \(formattedBreakDuration())."
         content.sound = .default
         
         let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
         UNUserNotificationCenter.current().add(request)
+    }
+
+    private func formattedBreakDuration() -> String {
+        let seconds = max(1, Int(breakDurationSeconds.rounded()))
+        if seconds % 60 == 0 {
+            let minutes = seconds / 60
+            return minutes == 1 ? "1 minute" : "\(minutes) minutes"
+        }
+
+        return seconds == 1 ? "1 second" : "\(seconds) seconds"
+    }
+
+    private func updateTimeRemainingAndWarning() {
+        let elapsed = Date().timeIntervalSince(lastBreakTime)
+        timeRemaining = max(0, breakInterval - elapsed)
+
+        guard breakWarningEnabled,
+              timerRunning,
+              !didShowBreakWarning,
+              timeRemaining > 0,
+              timeRemaining <= breakWarningLeadTime,
+              breakInterval > breakWarningLeadTime else {
+            return
+        }
+
+        didShowBreakWarning = true
+        showHeadsUpNotification()
     }
     
     private func checkDailyReset() {
@@ -383,10 +432,9 @@ class AppState: ObservableObject {
             
             // Update time remaining every second
             statusTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
-                guard let self = self else { return }
-                let elapsed = Date().timeIntervalSince(self.lastBreakTime)
-                self.timeRemaining = max(0, self.breakInterval - elapsed)
+                self?.updateTimeRemainingAndWarning()
             }
+            updateTimeRemainingAndWarning()
         } else {
             // Timer expired while app was closed, trigger break now if appropriate
             timerWasRunning = false

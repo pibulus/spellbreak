@@ -20,6 +20,8 @@ DerivedData
 
 # Swift Package Manager
 .build/
+.build-arm64/
+.build-x86_64/
 Package.resolved
 /*.xcodeproj
 

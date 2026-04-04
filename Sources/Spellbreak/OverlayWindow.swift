@@ -344,4 +344,3 @@ struct OverlayWindow: View {
         }
     }
 }
-

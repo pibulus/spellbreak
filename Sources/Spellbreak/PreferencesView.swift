@@ -25,9 +25,13 @@ struct PreferencesView: View {
     @AppStorage("breakIntervalMin") private var breakIntervalMin: Double = 20
     @AppStorage("breakDurationSec") private var breakDurationSec: Double = 20
     @AppStorage("lockMode") private var lockMode: Bool = true
+    @AppStorage("breakWarningEnabled") private var breakWarningEnabled: Bool = true
     @AppStorage("launchAtLogin") private var launchAtLogin: Bool = false
     @AppStorage("fancyMenu") private var fancyMenu: Bool = true
     @AppStorage("visualTheme") private var visualTheme: String = "aurora"
+    @AppStorage("musicEnabled") private var musicEnabled: Bool = false
+    @AppStorage("soundEffectsEnabled") private var soundEffectsEnabled: Bool = true
+    @AppStorage("soundVolume") private var soundVolume: Double = 0.5
     
     // MARK: - UI State
     @State private var selectedTab = 0
@@ -35,6 +39,8 @@ struct PreferencesView: View {
     @State private var testButtonPressed = false
     @State private var titleOffset: CGFloat = 0
     @State private var sparkleRotation: Double = 0
+    @State private var launchAtLoginStatus: SMAppService.Status = SMAppService.mainApp.status
+    @State private var launchAtLoginError: String?
     @EnvironmentObject var soundManager: SoundManager
     
     var body: some View {
@@ -121,7 +127,7 @@ struct PreferencesView: View {
                         .transition(.opacity)
                 }
             }
-            .frame(height: 360)  // Fixed height for consistent window size
+            .frame(height: 440)  // Extra room for real settings without crowding
             .animation(.easeInOut(duration: 0.2), value: selectedTab)
             }
             
@@ -169,7 +175,7 @@ struct PreferencesView: View {
         }
         .padding(.top, UI.windowPaddingY)
         .padding(.bottom, UI.windowPaddingY)
-        .frame(width: 520)
+        .frame(width: 560)
         .background(
             ZStack {
                 // Dark gradient background
@@ -188,6 +194,9 @@ struct PreferencesView: View {
                     .opacity(0.3)
             }
         )
+        .onAppear {
+            refreshLaunchAtLoginState()
+        }
     }
     
     // MARK: - Timer Tab Content  
@@ -282,29 +291,38 @@ struct PreferencesView: View {
                 }
 
                 ToggleCard(
-                    title: "Autostart",
-                    subtitle: "Launch at login",
-                    isOn: launchAtLogin,
-                    isHovered: hoveredElement == "auto-toggle",
-                    onChange: { newValue in
-                        launchAtLogin = newValue
-                        do {
-                            if newValue {
-                                try SMAppService.mainApp.register()
-                            } else {
-                                try SMAppService.mainApp.unregister()
-                            }
-                        } catch {
-                            // Silently fail - user can try again
-                        }
-                    },
+                    title: "Heads-Up",
+                    subtitle: breakWarningEnabled ? "10-second warning" : "Straight into the spell",
+                    isOn: breakWarningEnabled,
+                    isHovered: hoveredElement == "warning-toggle",
+                    onChange: { breakWarningEnabled = $0 },
                     soundManager: soundManager
                 )
                 .onHover { hovering in
-                    hoveredElement = hovering ? "auto-toggle" : nil
+                    hoveredElement = hovering ? "warning-toggle" : nil
                 }
             }
             .padding(.horizontal, UI.sidePadding)
+
+            ToggleCard(
+                    title: "Autostart",
+                    subtitle: launchAtLoginSubtitle,
+                    isOn: launchAtLogin,
+                    isHovered: hoveredElement == "auto-toggle",
+                    onChange: handleLaunchAtLoginToggle,
+                    soundManager: soundManager
+                )
+            .onHover { hovering in
+                hoveredElement = hovering ? "auto-toggle" : nil
+            }
+            .padding(.horizontal, UI.sidePadding)
+
+            if let launchAtLoginError {
+                Text(launchAtLoginError)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(Color(red: 1.0, green: 0.7, blue: 0.5))
+                    .padding(.horizontal, UI.sidePadding + 4)
+            }
             
             Spacer()  // Push content to top within fixed height
         }
@@ -328,6 +346,66 @@ struct PreferencesView: View {
             .onHover { hovering in
                 hoveredElement = hovering ? "menu-toggle" : nil
             }
+            .padding(.horizontal, UI.sidePadding)
+
+            HStack(spacing: 16) {
+                ToggleCard(
+                    title: "Ambient",
+                    subtitle: musicEnabled ? "Break bed switched on" : "Silence during breaks",
+                    isOn: musicEnabled,
+                    isHovered: hoveredElement == "music-toggle",
+                    onChange: { musicEnabled = $0 },
+                    soundManager: soundManager
+                )
+                .onHover { hovering in
+                    hoveredElement = hovering ? "music-toggle" : nil
+                }
+
+                ToggleCard(
+                    title: "SFX",
+                    subtitle: soundEffectsEnabled ? "Clicks and chimes" : "Quiet controls",
+                    isOn: soundEffectsEnabled,
+                    isHovered: hoveredElement == "sfx-toggle",
+                    onChange: { soundEffectsEnabled = $0 },
+                    soundManager: soundManager
+                )
+                .onHover { hovering in
+                    hoveredElement = hovering ? "sfx-toggle" : nil
+                }
+            }
+            .padding(.horizontal, UI.sidePadding)
+
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text("Effects Volume")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.9))
+                    Spacer()
+                    Text("\(Int(soundVolume * 100))%")
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [
+                                    Color(red: 0.95, green: 0.4, blue: 0.8),
+                                    Color(red: 1.0, green: 0.7, blue: 0.5)
+                                ],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                }
+
+                GradientSlider(value: $soundVolume, options: [0, 0.25, 0.5, 0.75, 1.0])
+            }
+            .padding(UI.cardPadding)
+            .background(
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(Color.white.opacity(0.06))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24)
+                            .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                    )
+            )
             .padding(.horizontal, UI.sidePadding)
             
             // Visual theme selector
@@ -411,6 +489,43 @@ struct PreferencesView: View {
             .padding(.horizontal, UI.sidePadding)
             
             Spacer()  // Push content to top within fixed height
+        }
+    }
+
+    private var launchAtLoginSubtitle: String {
+        switch launchAtLoginStatus {
+        case .enabled:
+            return "Starts when your Mac does"
+        case .requiresApproval:
+            return "Approve in Login Items"
+        case .notFound:
+            return "Installable build required"
+        case .notRegistered:
+            return "Launch at login"
+        @unknown default:
+            return "Launch at login"
+        }
+    }
+
+    private func refreshLaunchAtLoginState() {
+        launchAtLoginStatus = SMAppService.mainApp.status
+        launchAtLogin = launchAtLoginStatus == .enabled || launchAtLoginStatus == .requiresApproval
+        launchAtLoginError = nil
+    }
+
+    private func handleLaunchAtLoginToggle(_ newValue: Bool) {
+        do {
+            if newValue {
+                try SMAppService.mainApp.register()
+            } else {
+                try SMAppService.mainApp.unregister()
+            }
+            launchAtLoginStatus = SMAppService.mainApp.status
+            launchAtLogin = launchAtLoginStatus == .enabled || launchAtLoginStatus == .requiresApproval
+            launchAtLoginError = nil
+        } catch {
+            refreshLaunchAtLoginState()
+            launchAtLoginError = "macOS wouldn’t change login-item status just now."
         }
     }
 }
@@ -561,6 +676,7 @@ struct GradientSlider: View {
     @State private var isDragging = false
     @State private var isHovering = false
     @State private var lastSoundTime: Date = Date()
+    @AppStorage("soundEffectsEnabled") private var soundEffectsEnabled: Bool = true
     
     var body: some View {
         GeometryReader { geometry in
@@ -668,6 +784,8 @@ struct GradientSlider: View {
     }
     
     private func playSliderSound(volume: Float = 0.2, pitch: Float = 1.0) {
+        guard soundEffectsEnabled else { return }
+
         DispatchQueue.global(qos: .userInteractive).async {
             // Determine which sound to play based on pitch
             let soundName: String
