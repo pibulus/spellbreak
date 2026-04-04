@@ -19,11 +19,12 @@ Messages that know your patterns. "The trance gets comfortable." "Your jaw keepi
 Full-screen mystical overlays with flowing waves and particles. Need to skip? Hold the button—one second per minute of break time. Just enough friction to make you think twice.
 
 **Features that matter:**
-• Customizable break intervals (5-60 minutes)
+• Customizable break intervals (15-180 minutes)
 • Aurora, cosmic, or lava visual themes
 • Time-aware color palettes (dawn/day/evening/night)
 • Optional ambient sounds
-• Break completion tracking
+• 10-second break heads-up
+• Break tracking
 • Zero data collection
 
 **Privacy first:**
@@ -33,8 +34,6 @@ No accounts. No analytics. No network requests. Your break patterns stay on your
 • Native macOS app (Ventura 13.0+)
 • Lightweight menu bar presence
 • Works offline forever
-• Open source
-
 Break the spell. Your spine will thank you.
 
 ## Keywords
@@ -65,11 +64,11 @@ None
 2. Menu bar with timer countdown
 3. Preferences window
 4. Different visual themes
-5. Break completion stats
-6. Hold-to-skip interface
+5. Hold-to-skip interface
+6. Heads-up notification or warning state
 
 ## Support URL
-https://github.com/pibulus/spellbreak/issues
+https://spellbreak.app
 
 ## Marketing URL
 https://spellbreak.app
