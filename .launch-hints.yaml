@@ -1,0 +1,51 @@
+# Launch hints for Launch Arsenal.
+# Edit aggressively. These fields should pin the app's real audience, problem, and promise.
+name: Spellbreak
+slug: spellbreak
+app_type: mac-app
+audience: people who already feel the problem
+problem: >-
+  the default tools ask for too much tracking, too much polish theater, or too
+  much trust
+promise: >-
+  ❌ Needed - Apple Developer ID ($99/year) - App icon images (mystical crystal
+  ball design) - Screenshots (6 required)
+cta: Reply if you want the link.
+differentiators:
+  - 'Menu Bar Control : Unobtrusive icon with quick access to settings'
+  - >-
+    ✅ Completed - Privacy policy (zero data collection) - App Store description
+    - Entitlements configuration - Assets.xcassets structure - Code signing
+    guide
+  - >-
+    Files Created - PRIVACY.md - Privacy policy - APP STORE.md - Store listing
+    content - SIGNING GUIDE.md - Step-by-step signing instructions -
+    Assets.xcassets/AppIcon.appiconset/ - Icon structure
+  - >-
+    Break the digital spell! A mystical break reminder app for macOS that helps
+    you maintain healthy screen time habits with beautiful, immersive break
+    experiences.
+proof_points:
+  - >-
+    Mystical Break Experience : Full-screen overlay with flowing aurora waves
+    and ambient particles
+  - 'Smart Scheduling : Customizable break intervals (default: every 20 minutes)'
+  - >-
+    Hold-to-Skip : Press and hold to skip if needed (duration scales with break
+    length)
+  - >-
+    Time-Based Themes : Color palettes shift with time of day (dawn, day,
+    evening, night)
+objections:
+  - 'Still wants a human pass on audience, proof, and the sharpest angle.'
+keywords:
+  seed:
+    - Spellbreak
+    - spellbreak
+    - mac app
+  audience: people who already feel the problem
+  intent:
+    - launch faster
+    - clearer first draft
+manual_notes:
+  - Edit this aggressively. Keep only the lines that feel native to the app.
