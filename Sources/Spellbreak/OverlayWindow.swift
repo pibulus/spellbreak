@@ -142,6 +142,25 @@ struct OverlayWindow: View {
                     .onHover { hovering in
                         isHoveringRing = hovering
                     }
+                    .onLongPressGesture(minimumDuration: requiredHoldDuration, maximumDistance: .infinity) {
+                        if showSkipRing && !lockMode {
+                            skipBreak()
+                        }
+                    } onPressingChanged: { pressing in
+                        if showSkipRing && !lockMode {
+                            isHoldingToSkip = pressing
+                            if pressing {
+                                startHoldTimer()
+                            } else {
+                                holdTimer?.invalidate()
+                                if holdProgress < 1.0 {
+                                    withAnimation(.spring(duration: 0.3, bounce: 0.4)) {
+                                        holdProgress = 0
+                                    }
+                                }
+                            }
+                        }
+                    }
                     .padding(.bottom, 60)
                 }
             }
@@ -164,26 +183,6 @@ struct OverlayWindow: View {
             }
         }
         .opacity(opacity)
-        .onLongPressGesture(minimumDuration: requiredHoldDuration, maximumDistance: .infinity) {
-            // Long press completed
-            if showSkipRing && !lockMode {
-                skipBreak()
-            }
-        } onPressingChanged: { pressing in
-            if showSkipRing && !lockMode {
-                isHoldingToSkip = pressing
-                if pressing {
-                    startHoldTimer()
-                } else {
-                    holdTimer?.invalidate()
-                    if holdProgress < 1.0 {
-                        withAnimation(.spring(duration: 0.3, bounce: 0.4)) {
-                            holdProgress = 0
-                        }
-                    }
-                }
-            }
-        }
         .onAppear {
             // Generate contextual break message
             let context = appState.getBreakContext()
