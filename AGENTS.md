@@ -5,7 +5,7 @@ Spellbreak is a mystical break reminder app for macOS that creates immersive, un
 
 **Domain**: spellbreak.app  
 **Philosophy**: "Break the spell! You're not being productive, you're being hypnotized"  
-**Status**: 75% ready - Awaiting Developer ID for App Store submission
+**Status**: 85% ready - Awaiting signed/notarized distribution and screenshots
 
 ## Technical Stack
 - **Language**: Swift 5.9+
@@ -44,7 +44,7 @@ Spellbreak is a mystical break reminder app for macOS that creates immersive, un
 ## Key Features
 
 ### Hold-to-Skip Mechanism
-- Duration = 1 second per break minute
+- Duration scales with break length
 - Clamped between 2-15 seconds
 - Visual ring progress indicator
 - Shows percentage while holding
@@ -80,18 +80,20 @@ open /Users/pabloalvarado/Projects/active/mac/spellbreak/build/Spellbreak.app
 - App Store description 
 - Entitlements configuration
 - Assets.xcassets structure
+- App icon images
 - Code signing guide
 
 ### ❌ Needed
-- Apple Developer ID ($99/year)
-- App icon images (mystical crystal ball design)
-- Screenshots (6 required)
+- Apple Developer Program membership
+- Developer ID signing identity for website distribution
+- Notarized DMG for public download
+- Screenshots from current build
 
 ### Files Created
 - `PRIVACY.md` - Privacy policy
 - `APP_STORE.md` - Store listing content
 - `SIGNING_GUIDE.md` - Step-by-step signing instructions
-- `Assets.xcassets/AppIcon.appiconset/` - Icon structure
+- `Assets.xcassets/AppIcon.appiconset/` - Icon assets
 
 ## Performance Targets
 - **CPU**: <20% Intel, <10% Apple Silicon
@@ -101,13 +103,15 @@ open /Users/pabloalvarado/Projects/active/mac/spellbreak/build/Spellbreak.app
 ## App Store Requirements
 - ✅ Sandboxed
 - ✅ No network access
-- ✅ No microphone usage
+- ✅ No camera or microphone access
 - ✅ Privacy-focused
 - ✅ Proper entitlements
 - ⏳ Developer ID needed
 - ⏳ Notarization required
 
 ## Recent Updates
+- Removed camera/microphone probing and tightened privacy baseline (May 2026)
+- Moved notification permission request from launch to timer start (May 2026)
 - Transformed messages to NY tarot reader voice (Jan 2025)
 - Implemented 5-word message limit
 - Added body/spirit/state awareness system

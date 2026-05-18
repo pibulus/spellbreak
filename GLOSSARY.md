@@ -69,7 +69,7 @@ Quick reference for Spellbreak's break reminder architecture.
 - Examples: "Your shoulders holding court since Tuesday"
 
 **Hold-to-Skip Mechanism**
-- Duration = 1 second per break minute
+- Duration scales with break length
 - Clamped between 2-15 seconds
 - Visual ring progress indicator
 - Shows percentage while holding
