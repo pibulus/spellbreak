@@ -42,6 +42,7 @@ struct PreferencesView: View {
     @State private var launchAtLoginStatus: SMAppService.Status = SMAppService.mainApp.status
     @State private var launchAtLoginError: String?
     @EnvironmentObject var soundManager: SoundManager
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
     var body: some View {
         VStack(spacing: 0) {
@@ -62,6 +63,7 @@ struct PreferencesView: View {
                     )
                     .rotationEffect(.degrees(sparkleRotation))
                     .onAppear {
+                        guard !reduceMotion else { return }
                         withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) {
                             sparkleRotation = 8
                         }
@@ -72,6 +74,7 @@ struct PreferencesView: View {
                     .foregroundStyle(.white)
                     .offset(y: titleOffset)
                     .onAppear {
+                        guard !reduceMotion else { return }
                         withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) {
                             titleOffset = -3
                         }
@@ -160,8 +163,8 @@ struct PreferencesView: View {
                         endPoint: .trailing
                     )
                 )
-                .cornerRadius(28)
-                .scaleEffect(testButtonPressed ? 0.96 : (hoveredElement == "test-button" ? 1.03 : 1.0))
+                .clipShape(Capsule())
+                .scaleEffect(testButtonPressed ? 0.98 : (hoveredElement == "test-button" ? 1.01 : 1.0))
                 .shadow(color: .black.opacity(hoveredElement == "test-button" ? 0.3 : 0.15), 
                         radius: hoveredElement == "test-button" ? 12 : 8, 
                         x: 0, y: 4)
@@ -230,7 +233,13 @@ struct PreferencesView: View {
                             .foregroundColor(.white.opacity(0.7))
                     }
                     
-                    GradientSlider(value: $breakIntervalMin, options: [15, 30, 60, 90, 120, 180], soundManager: soundManager)
+                    GradientSlider(
+                        value: $breakIntervalMin,
+                        options: [15, 30, 60, 90, 120, 180],
+                        accessibilityLabel: "Break interval",
+                        accessibilityValueFormatter: { "\(Int($0)) minutes" },
+                        soundManager: soundManager
+                    )
                 }
                 
                 // Break duration
@@ -257,7 +266,13 @@ struct PreferencesView: View {
                             .foregroundColor(.white.opacity(0.7))
                     }
                     
-                    GradientSlider(value: $breakDurationSec, options: [15, 30, 60, 90, 120, 180], soundManager: soundManager)
+                    GradientSlider(
+                        value: $breakDurationSec,
+                        options: [15, 30, 60, 90, 120, 180],
+                        accessibilityLabel: "Break duration",
+                        accessibilityValueFormatter: { "\(Int($0)) seconds" },
+                        soundManager: soundManager
+                    )
                 }
             }
             .padding(UI.cardPadding)
@@ -269,7 +284,7 @@ struct PreferencesView: View {
                             .stroke(Color.white.opacity(0.08), lineWidth: 1)
                     )
             )
-            .scaleEffect(hoveredElement == "timing-card" ? 1.03 : 1.0)
+            .scaleEffect(hoveredElement == "timing-card" ? 1.01 : 1.0)
             .animation(.easeOut(duration: 0.2), value: hoveredElement)
             .onHover { hovering in
                 hoveredElement = hovering ? "timing-card" : nil
@@ -305,13 +320,13 @@ struct PreferencesView: View {
             .padding(.horizontal, UI.sidePadding)
 
             ToggleCard(
-                    title: "Autostart",
-                    subtitle: launchAtLoginSubtitle,
-                    isOn: launchAtLogin,
-                    isHovered: hoveredElement == "auto-toggle",
-                    onChange: handleLaunchAtLoginToggle,
-                    soundManager: soundManager
-                )
+                title: "Autostart",
+                subtitle: launchAtLoginSubtitle,
+                isOn: launchAtLogin,
+                isHovered: hoveredElement == "auto-toggle",
+                onChange: handleLaunchAtLoginToggle,
+                soundManager: soundManager
+            )
             .onHover { hovering in
                 hoveredElement = hovering ? "auto-toggle" : nil
             }
@@ -395,7 +410,13 @@ struct PreferencesView: View {
                         )
                 }
 
-                GradientSlider(value: $soundVolume, options: [0, 0.25, 0.5, 0.75, 1.0], soundManager: soundManager)
+                GradientSlider(
+                    value: $soundVolume,
+                    options: [0, 0.25, 0.5, 0.75, 1.0],
+                    accessibilityLabel: "Sound volume",
+                    accessibilityValueFormatter: { "\(Int($0 * 100)) percent" },
+                    soundManager: soundManager
+                )
             }
             .padding(UI.cardPadding)
             .background(
@@ -566,7 +587,7 @@ struct TabButton: View {
                 }
             )
             .cornerRadius(24)
-            .scaleEffect(isHovered && !isSelected ? 1.08 : 1.0)
+            .scaleEffect(isHovered && !isSelected ? 1.02 : 1.0)
             .animation(.easeOut(duration: 0.15), value: isHovered)
         }
         .buttonStyle(.plain)
@@ -581,80 +602,49 @@ struct ToggleCard: View {
     let isHovered: Bool
     let onChange: (Bool) -> Void
     let soundManager: SoundManager
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundStyle(
-                            isOn ? 
-                            LinearGradient(
-                                colors: [
-                                    Color(red: 1.0, green: 0.6, blue: 0.5),
-                                    Color(red: 0.95, green: 0.4, blue: 0.8)
-                                ],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            ) : 
-                            LinearGradient(
-                                colors: [.white, .white],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                    Text(subtitle)
-                        .font(.system(size: 14))
-                        .foregroundColor(.white.opacity(0.5))
-                }
-                Spacer()
-                
-                // Custom gradient toggle
-                ZStack {
-                    Capsule()
-                        .fill(
-                            isOn ? 
-                            LinearGradient(
-                                colors: [
-                                    Color(red: 0.95, green: 0.4, blue: 0.8),
-                                    Color(red: 1.0, green: 0.6, blue: 0.5)
-                                ],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            ) :
-                            LinearGradient(
-                                colors: [
-                                    Color.white.opacity(0.15),
-                                    Color.white.opacity(0.1)
-                                ],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .frame(width: 64, height: 36)
-                    
-                    Circle()
-                        .fill(.white)
-                        .frame(width: 28, height: 28)
-                        .offset(x: isOn ? 15 : -15)
-                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isOn)
-                }
-                .scaleEffect(isHovered ? 1.15 : 1.0)
-                .animation(.easeOut(duration: 0.15), value: isHovered)
-                .onTapGesture {
-                    let newValue = !isOn
-                    onChange(newValue)
-                    // Play sound based on new state
-                    if newValue {
-                        soundManager.playToggleOn()
-                    } else {
-                        soundManager.playToggleOff()
-                    }
-                }
+
+    private var toggleAction: () -> Void {
+        {
+            let newValue = !isOn
+            onChange(newValue)
+            if newValue {
+                soundManager.playToggleOn()
+            } else {
+                soundManager.playToggleOff()
             }
         }
+    }
+
+    private var titleColors: [Color] {
+        isOn
+            ? [Color(red: 1.0, green: 0.6, blue: 0.5), Color(red: 0.95, green: 0.4, blue: 0.8)]
+            : [.white, .white]
+    }
+
+    private var trackColors: [Color] {
+        isOn
+            ? [Color(red: 0.95, green: 0.4, blue: 0.8), Color(red: 1.0, green: 0.6, blue: 0.5)]
+            : [Color.white.opacity(0.15), Color.white.opacity(0.1)]
+    }
+
+    private var accessibilityState: String {
+        isOn ? "On, \(subtitle)" : "Off, \(subtitle)"
+    }
+    
+    var body: some View {
+        HStack {
+            label
+            Spacer()
+            switchControl
+        }
         .padding(12)
+        .contentShape(RoundedRectangle(cornerRadius: 20))
+        .onTapGesture(perform: toggleAction)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(title)
+        .accessibilityValue(accessibilityState)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction(named: Text(isOn ? "Turn Off" : "Turn On"), toggleAction)
         .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 20)
@@ -664,7 +654,46 @@ struct ToggleCard: View {
                         .stroke(Color.white.opacity(0.08), lineWidth: 1)
                 )
         )
-        .scaleEffect(isHovered ? 1.03 : 1.0)
+        .scaleEffect(isHovered ? 1.01 : 1.0)
+        .animation(.easeOut(duration: 0.15), value: isHovered)
+    }
+
+    private var label: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.system(size: 18, weight: .bold))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: titleColors,
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+            Text(subtitle)
+                .font(.system(size: 14))
+                .foregroundColor(.white.opacity(0.5))
+        }
+    }
+
+    private var switchControl: some View {
+        ZStack {
+            Capsule()
+                .fill(
+                    LinearGradient(
+                        colors: trackColors,
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .frame(width: 64, height: 36)
+
+            Circle()
+                .fill(.white)
+                .frame(width: 28, height: 28)
+                .offset(x: isOn ? 15 : -15)
+                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isOn)
+        }
+        .scaleEffect(isHovered ? 1.08 : 1.0)
         .animation(.easeOut(duration: 0.15), value: isHovered)
     }
 }
@@ -673,6 +702,8 @@ struct ToggleCard: View {
 struct GradientSlider: View {
     @Binding var value: Double
     let options: [Double]
+    let accessibilityLabel: String
+    var accessibilityValueFormatter: (Double) -> String
     var soundManager: SoundManager? = nil
     @State private var isDragging = false
     @State private var isHovering = false
@@ -713,69 +744,91 @@ struct GradientSlider: View {
                     .animation(.easeOut(duration: 0.15), value: isHovering)
                     .onHover { hovering in
                         isHovering = hovering
-                        if hovering {
-                            NSCursor.openHand.push()
-                        } else if !isDragging {
-                            NSCursor.pop()
-                        }
                     }
-                    .allowsHitTesting(true)
-                    .gesture(
-                        DragGesture(minimumDistance: 1, coordinateSpace: .local)
-                            .onChanged { drag in
-                                if !isDragging {
-                                    isDragging = true
-                                    NSCursor.closedHand.push()
-                                    soundManager?.playSliderGrab()
-                                }
-                                // Map drag position to nearest option
-                                let normalizedPosition = max(0, min(1, drag.location.x / geometry.size.width))
-                                let indexFloat = normalizedPosition * Double(options.count - 1)
-                                let nearestIndex = Int(round(indexFloat))
-                                let newSnappedValue = options[nearestIndex]
-
-                                // Only play sound and update if we've moved to a new option
-                                if newSnappedValue != value {
-                                    value = newSnappedValue
-                                    // Play a subtle tick for each step change, but throttle to prevent spam
-                                    let now = Date()
-                                    if now.timeIntervalSince(lastSoundTime) > 0.08 { // Max ~12 sounds per second
-                                        soundManager?.playSliderTick()
-                                        lastSoundTime = now
-                                    }
-                                }
-                            }
-                            .onEnded { _ in
-                                isDragging = false
-                                NSCursor.pop()
-                                if isHovering {
-                                    NSCursor.openHand.push()
-                                }
-                                soundManager?.playSliderRelease()
-                            }
-                    )
             }
             .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 1, coordinateSpace: .local)
+                    .onChanged { drag in
+                        if !isDragging {
+                            isDragging = true
+                            soundManager?.playSliderGrab()
+                        }
+                        updateValue(at: drag.location.x, width: geometry.size.width, animated: false)
+                    }
+                    .onEnded { _ in
+                        isDragging = false
+                        soundManager?.playSliderRelease()
+                    }
+            )
             .onTapGesture { location in
-                // Allow clicking anywhere on the track to jump to nearest option
-                let normalizedPosition = max(0, min(1, location.x / geometry.size.width))
-                let indexFloat = normalizedPosition * Double(options.count - 1)
-                let nearestIndex = Int(round(indexFloat))
-                withAnimation(.easeOut(duration: 0.2)) {
-                    value = options[nearestIndex]
-                }
+                updateValue(at: location.x, width: geometry.size.width, animated: true)
                 soundManager?.playSliderGrab()
             }
         }
         .frame(height: 24)
+        .accessibilityElement()
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityValue(accessibilityValueFormatter(value))
+        .accessibilityAdjustableAction { direction in
+            adjustValue(direction)
+        }
+    }
+
+    private func updateValue(at x: CGFloat, width: CGFloat, animated: Bool) {
+        let normalizedPosition = max(0, min(1, x / width))
+        let indexFloat = normalizedPosition * Double(options.count - 1)
+        let nearestIndex = Int(round(indexFloat))
+        let newSnappedValue = options[nearestIndex]
+
+        guard newSnappedValue != value else { return }
+
+        if animated {
+            withAnimation(.easeOut(duration: 0.2)) {
+                value = newSnappedValue
+            }
+        } else {
+            value = newSnappedValue
+        }
+
+        let now = Date()
+        if now.timeIntervalSince(lastSoundTime) > 0.08 {
+            soundManager?.playSliderTick()
+            lastSoundTime = now
+        }
+    }
+
+    private func adjustValue(_ direction: AccessibilityAdjustmentDirection) {
+        let currentIndex = options.firstIndex(of: value) ?? closestIndex(to: value)
+        let nextIndex: Int
+
+        switch direction {
+        case .increment:
+            nextIndex = min(currentIndex + 1, options.count - 1)
+        case .decrement:
+            nextIndex = max(currentIndex - 1, 0)
+        @unknown default:
+            return
+        }
+
+        guard options[nextIndex] != value else { return }
+
+        withAnimation(.easeOut(duration: 0.2)) {
+            value = options[nextIndex]
+        }
+        soundManager?.playSliderTick()
+    }
+
+    private func closestIndex(to target: Double) -> Int {
+        options.indices.min { first, second in
+            abs(options[first] - target) < abs(options[second] - target)
+        } ?? 0
     }
     
     private var normalizedValue: Double {
         guard let index = options.firstIndex(of: value) else {
             // If value not in options, find closest and return its normalized position
-            let closest = options.min(by: { abs($0 - value) < abs($1 - value) }) ?? options[0]
-            let closestIndex = options.firstIndex(of: closest) ?? 0
-            return Double(closestIndex) / Double(options.count - 1)
+            return Double(closestIndex(to: value)) / Double(options.count - 1)
         }
         return Double(index) / Double(options.count - 1)
     }
