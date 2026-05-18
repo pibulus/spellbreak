@@ -230,7 +230,7 @@ struct PreferencesView: View {
                             .foregroundColor(.white.opacity(0.7))
                     }
                     
-                    GradientSlider(value: $breakIntervalMin, options: [15, 30, 60, 90, 120, 180])
+                    GradientSlider(value: $breakIntervalMin, options: [15, 30, 60, 90, 120, 180], soundManager: soundManager)
                 }
                 
                 // Break duration
@@ -257,7 +257,7 @@ struct PreferencesView: View {
                             .foregroundColor(.white.opacity(0.7))
                     }
                     
-                    GradientSlider(value: $breakDurationSec, options: [15, 30, 60, 90, 120, 180])
+                    GradientSlider(value: $breakDurationSec, options: [15, 30, 60, 90, 120, 180], soundManager: soundManager)
                 }
             }
             .padding(UI.cardPadding)
@@ -377,7 +377,7 @@ struct PreferencesView: View {
 
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Text("Effects Volume")
+                    Text("Sound Volume")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.white.opacity(0.9))
                     Spacer()
@@ -395,7 +395,7 @@ struct PreferencesView: View {
                         )
                 }
 
-                GradientSlider(value: $soundVolume, options: [0, 0.25, 0.5, 0.75, 1.0])
+                GradientSlider(value: $soundVolume, options: [0, 0.25, 0.5, 0.75, 1.0], soundManager: soundManager)
             }
             .padding(UI.cardPadding)
             .background(
@@ -673,10 +673,10 @@ struct ToggleCard: View {
 struct GradientSlider: View {
     @Binding var value: Double
     let options: [Double]
+    var soundManager: SoundManager? = nil
     @State private var isDragging = false
     @State private var isHovering = false
     @State private var lastSoundTime: Date = Date()
-    @AppStorage("soundEffectsEnabled") private var soundEffectsEnabled: Bool = true
     
     var body: some View {
         GeometryReader { geometry in
@@ -726,8 +726,7 @@ struct GradientSlider: View {
                                 if !isDragging {
                                     isDragging = true
                                     NSCursor.closedHand.push()
-                                    // Play grab sound on drag start
-                                    playSliderSound(volume: 0.3, pitch: 1.2)
+                                    soundManager?.playSliderGrab()
                                 }
                                 // Map drag position to nearest option
                                 let normalizedPosition = max(0, min(1, drag.location.x / geometry.size.width))
@@ -741,7 +740,7 @@ struct GradientSlider: View {
                                     // Play a subtle tick for each step change, but throttle to prevent spam
                                     let now = Date()
                                     if now.timeIntervalSince(lastSoundTime) > 0.08 { // Max ~12 sounds per second
-                                        playSliderSound(volume: 0.25, pitch: 1.05)
+                                        soundManager?.playSliderTick()
                                         lastSoundTime = now
                                     }
                                 }
@@ -752,8 +751,7 @@ struct GradientSlider: View {
                                 if isHovering {
                                     NSCursor.openHand.push()
                                 }
-                                // Play release sound
-                                playSliderSound(volume: 0.35, pitch: 0.9)
+                                soundManager?.playSliderRelease()
                             }
                     )
             }
@@ -766,8 +764,7 @@ struct GradientSlider: View {
                 withAnimation(.easeOut(duration: 0.2)) {
                     value = options[nearestIndex]
                 }
-                // Play jump sound (grab sound)
-                playSliderSound(volume: 0.35, pitch: 1.2)
+                soundManager?.playSliderGrab()
             }
         }
         .frame(height: 24)
@@ -781,48 +778,6 @@ struct GradientSlider: View {
             return Double(closestIndex) / Double(options.count - 1)
         }
         return Double(index) / Double(options.count - 1)
-    }
-    
-    private func playSliderSound(volume: Float = 0.2, pitch: Float = 1.0) {
-        guard soundEffectsEnabled else { return }
-
-        DispatchQueue.global(qos: .userInteractive).async {
-            // Determine which sound to play based on pitch
-            let soundName: String
-            if pitch < 1.0 {
-                // Release sound
-                soundName = "slider-release"
-            } else if pitch > 1.1 {
-                // Jump/grab sound  
-                soundName = "slider-grab"
-            } else {
-                // Tick sound for dragging
-                soundName = "slider-tick"
-            }
-            
-            // Try to load and play our custom sound
-            if let soundURL = Bundle.main.url(forResource: soundName, withExtension: "mp3", subdirectory: "Sounds") {
-                if let sound = NSSound(contentsOf: soundURL, byReference: false) {
-                    sound.volume = volume
-                    sound.play()
-                    return
-                }
-            }
-            
-            // Fallback: try without subdirectory
-            if let soundURL = Bundle.main.url(forResource: soundName, withExtension: "mp3") {
-                if let sound = NSSound(contentsOf: soundURL, byReference: false) {
-                    sound.volume = volume
-                    sound.play()
-                    return
-                }
-            }
-            
-            // Ultimate fallback for development/testing
-            if volume > 0.25 {
-                NSSound.beep()
-            }
-        }
     }
 }
 

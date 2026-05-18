@@ -188,14 +188,19 @@ struct CosmicBackground: View {
         // Distant star field
         for i in 0..<30 {
             let seed = Double(i)
-            let x = size.width * (seed.truncatingRemainder(dividingBy: 1.0) * 1.618) // Golden ratio distribution
-            let y = size.height * ((seed * 2.718).truncatingRemainder(dividingBy: 1.0))
-            let brightness = 0.3 + (seed * 3.14).truncatingRemainder(dividingBy: 0.5)
+            let x = size.width * pseudoRandom(seed + 1)
+            let y = size.height * pseudoRandom(seed + 11)
+            let brightness = 0.25 + pseudoRandom(seed + 21) * 0.45
             
             context.fill(
                 Circle().path(in: CGRect(x: x, y: y, width: 1, height: 1)),
                 with: .color(Color.white.opacity(brightness))
             )
         }
+    }
+
+    private func pseudoRandom(_ seed: Double) -> Double {
+        let raw = sin(seed * 12.9898) * 43758.5453
+        return raw - floor(raw)
     }
 }

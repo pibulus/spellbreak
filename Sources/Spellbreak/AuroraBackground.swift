@@ -50,7 +50,7 @@ struct AuroraBackground: View {
     }
     
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1/60)) { timeline in
+        TimelineView(.animation(minimumInterval: 1/30)) { timeline in
             Canvas { context, size in
                 // Use time for smooth continuous animation
                 let time = timeline.date.timeIntervalSinceReferenceDate * 0.3 // Slower, more hypnotic
@@ -59,10 +59,10 @@ struct AuroraBackground: View {
                 let colors = timeColors
                 
                 // Draw multiple wave layers with varying dynamics
-                for layer in 0..<5 {
+                for layer in 0..<4 {
                     let layerOffset = Double(layer) * 0.5
                     let speed = 0.2 + Double(layer) * 0.15
-                    let opacity = 0.7 - Double(layer) * 0.12
+                    let opacity = 0.68 - Double(layer) * 0.12
                     
                     // More dramatic wave parameters for flowing effect
                     let waveAmplitude = size.height * (0.25 + Double(layer) * 0.05)
@@ -72,7 +72,7 @@ struct AuroraBackground: View {
                     path.move(to: CGPoint(x: 0, y: size.height))
                     
                     // Create complex flowing wave path
-                    for x in stride(from: 0, through: size.width, by: 2) {
+                    for x in stride(from: 0, through: size.width, by: 4) {
                         let relativeX = x / size.width
                         
                         // Multiple sine waves for organic flow (simplified)
@@ -95,17 +95,17 @@ struct AuroraBackground: View {
                         .init(color: colors[(layer + 3) % 4].opacity(opacity * 0.2), location: 1)
                     ])
                     
-                    context.fill(
-                        path,
-                        with: .linearGradient(
-                            gradient,
-                            startPoint: CGPoint(x: size.width * 0.3, y: 0),
-                            endPoint: CGPoint(x: size.width * 0.7, y: size.height)
+                    context.drawLayer { layerContext in
+                        layerContext.addFilter(.blur(radius: 8 + CGFloat(layer) * 6))
+                        layerContext.fill(
+                            path,
+                            with: .linearGradient(
+                                gradient,
+                                startPoint: CGPoint(x: size.width * 0.3, y: 0),
+                                endPoint: CGPoint(x: size.width * 0.7, y: size.height)
+                            )
                         )
-                    )
-                    
-                    // Varying blur for depth
-                    context.addFilter(.blur(radius: 8 + CGFloat(layer) * 6))
+                    }
                 }
             }
             .drawingGroup()
