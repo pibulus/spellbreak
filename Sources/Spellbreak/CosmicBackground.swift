@@ -32,6 +32,7 @@ struct CosmicBackground: View {
                 // Draw nebula clouds and stars
                 drawNebulaLayers(context: context, size: size, time: time)
                 drawStars(context: context, size: size, time: time)
+                drawComet(context: context, size: size, time: time)
             }
         }
         .ignoresSafeArea()
@@ -202,5 +203,42 @@ struct CosmicBackground: View {
     private func pseudoRandom(_ seed: Double) -> Double {
         let raw = sin(seed * 12.9898) * 43758.5453
         return raw - floor(raw)
+    }
+
+    private func drawComet(context: GraphicsContext, size: CGSize, time: Double) {
+        let progress = (time * 0.03).truncatingRemainder(dividingBy: 1.35) - 0.18
+        let head = CGPoint(
+            x: size.width * progress,
+            y: size.height * (0.22 + progress * 0.38)
+        )
+        let tail = CGPoint(x: head.x - size.width * 0.16, y: head.y - size.height * 0.07)
+
+        guard head.x > -size.width * 0.2,
+              head.x < size.width * 1.15,
+              head.y > -size.height * 0.1,
+              head.y < size.height * 1.1 else {
+            return
+        }
+
+        var trail = Path()
+        trail.move(to: tail)
+        trail.addLine(to: head)
+
+        let gradient = Gradient(stops: [
+            .init(color: Color.clear, location: 0),
+            .init(color: Color(red: 0.55, green: 0.78, blue: 1.0).opacity(0.28), location: 0.35),
+            .init(color: Color.white.opacity(0.9), location: 1)
+        ])
+
+        context.stroke(
+            trail,
+            with: .linearGradient(gradient, startPoint: tail, endPoint: head),
+            style: StrokeStyle(lineWidth: 7, lineCap: .round)
+        )
+        context.stroke(
+            trail,
+            with: .linearGradient(gradient, startPoint: tail, endPoint: head),
+            style: StrokeStyle(lineWidth: 2, lineCap: .round)
+        )
     }
 }

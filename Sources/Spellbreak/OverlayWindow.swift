@@ -38,6 +38,17 @@ struct OverlayWindow: View {
         let duration = breakDuration / 60.0
         return min(max(duration, 2.0), 15.0)
     }
+
+    private var themeGlowColor: Color {
+        switch visualTheme {
+        case "lava":
+            return Color(red: 1.0, green: 0.36, blue: 0.34)
+        case "cosmic":
+            return Color(red: 0.42, green: 0.68, blue: 1.0)
+        default:
+            return Color(red: 0.98, green: 0.46, blue: 0.78)
+        }
+    }
     
     var body: some View {
         ZStack {
@@ -51,15 +62,15 @@ struct OverlayWindow: View {
                 switch visualTheme {
                 case "lava":
                     LavaLampBackground()
-                        .blur(radius: 25)
+                        .blur(radius: 16)
                         .opacity(0.85)
                 case "cosmic":
                     CosmicBackground()
-                        .blur(radius: 20)
+                        .blur(radius: 4)
                         .opacity(0.9)
                 default: // "aurora"
                     AuroraBackground()
-                        .blur(radius: 30)
+                        .blur(radius: 24)
                         .opacity(0.8)
                 }
             }
@@ -91,6 +102,7 @@ struct OverlayWindow: View {
                     // Soft white glow
                     .shadow(color: .white.opacity(0.5), radius: 20)
                     .shadow(color: .white.opacity(0.3), radius: 40)
+                    .shadow(color: themeGlowColor.opacity(0.45), radius: 34)
                     .shadow(color: .black.opacity(0.3), radius: 6, x: 0, y: 3)
                     .opacity(messageOpacity)
                     .scaleEffect(textScale)
