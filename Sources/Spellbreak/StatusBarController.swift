@@ -31,6 +31,9 @@ class StatusBarController: NSObject {
     private var cancellables = Set<AnyCancellable>()
     private var currentIconStyle: MenuIconStyle = .mystical
     private var notificationObserver: Any?
+    private var cachedIcon: NSImage?
+    private var cachedIconStyle: MenuIconStyle?
+    private var cachedIconRunningState: Bool?
     
     override init() {
         super.init()
@@ -76,7 +79,9 @@ class StatusBarController: NSObject {
         self.appState = appState
         
         // Configure popover content
-        let menuView = MenuViewSimple()
+        let menuView = MenuViewSimple(onRequestClose: { [weak self] in
+            self?.closePopover()
+        })
             .environmentObject(appState)
         
         popover.contentViewController = NSHostingController(rootView: menuView)
@@ -260,23 +265,38 @@ class StatusBarController: NSObject {
     
     func updateIcon() {
         guard let button = statusItem.button else { return }
-        
-        // Create a custom drawn icon like RackOff does
-        button.image = createIconImage()
+        let timerRunning = appState?.timerRunning == true
+
+        if cachedIcon == nil ||
+            cachedIconStyle != currentIconStyle ||
+            cachedIconRunningState != timerRunning {
+            cachedIcon = createIconImage(isActive: timerRunning)
+            cachedIconStyle = currentIconStyle
+            cachedIconRunningState = timerRunning
+        }
+
+        button.image = cachedIcon
         
         // Update tooltip based on timer state
-        if let appState = appState {
-            if appState.timerRunning {
-                let minutes = Int(appState.timeRemaining) / 60
-                let seconds = Int(appState.timeRemaining) % 60
-                button.toolTip = String(format: "%d:%02d until break", minutes, seconds)
-            } else {
-                button.toolTip = "Spellbreak - Click to start"
-            }
-        }
+        let statusText = iconStatusText
+        button.toolTip = statusText
+        button.setAccessibilityLabel("Spellbreak")
+        button.setAccessibilityValue(statusText)
     }
     
-    private func createIconImage() -> NSImage {
+    private var iconStatusText: String {
+        guard let appState = appState else { return "Spellbreak" }
+
+        if appState.timerRunning {
+            let minutes = Int(appState.timeRemaining) / 60
+            let seconds = Int(appState.timeRemaining) % 60
+            return String(format: "Spellbreak: %d:%02d until break", minutes, seconds)
+        } else {
+            return "Spellbreak: timer paused"
+        }
+    }
+
+    private func createIconImage(isActive: Bool) -> NSImage {
         let size = NSSize(width: 18, height: 18)
         let image = NSImage(size: size)
         
@@ -290,11 +310,11 @@ class StatusBarController: NSObject {
         if let context = NSGraphicsContext.current?.cgContext {
             switch currentIconStyle {
             case .mystical:
-                drawMoonIcon(context: context, size: size, style: .mystical)
+                drawMoonIcon(context: context, size: size, style: .mystical, isActive: isActive)
             case .yellow:
-                drawMoonIcon(context: context, size: size, style: .yellow)
+                drawMoonIcon(context: context, size: size, style: .yellow, isActive: isActive)
             case .white:
-                drawMoonIcon(context: context, size: size, style: .white)
+                drawMoonIcon(context: context, size: size, style: .white, isActive: isActive)
             }
         }
         
@@ -304,24 +324,25 @@ class StatusBarController: NSObject {
         return image
     }
     
-    private func drawMoonIcon(context: CGContext, size: NSSize, style: MenuIconStyle) {
+    private func drawMoonIcon(context: CGContext, size: NSSize, style: MenuIconStyle, isActive: Bool) {
         // Set colors based on style
         let moonColor: NSColor
         let starColor: NSColor
+        let alpha: CGFloat = isActive ? 1.0 : 0.42
         
         switch style {
         case .mystical:
             // Purple/pink gradient colors for mystical theme
-            moonColor = NSColor(red: 0.7, green: 0.4, blue: 0.9, alpha: 1.0)
-            starColor = NSColor(red: 0.9, green: 0.3, blue: 0.6, alpha: 1.0)
+            moonColor = NSColor(red: 0.7, green: 0.4, blue: 0.9, alpha: alpha)
+            starColor = NSColor(red: 0.9, green: 0.3, blue: 0.6, alpha: alpha)
         case .yellow:
             // Golden yellow theme
-            moonColor = NSColor(red: 1.0, green: 0.85, blue: 0.4, alpha: 1.0)
-            starColor = NSColor(red: 1.0, green: 0.95, blue: 0.6, alpha: 1.0)
+            moonColor = NSColor(red: 1.0, green: 0.85, blue: 0.4, alpha: alpha)
+            starColor = NSColor(red: 1.0, green: 0.95, blue: 0.6, alpha: alpha)
         case .white:
             // Plain white theme
-            moonColor = NSColor(red: 0.95, green: 0.95, blue: 0.95, alpha: 1.0)
-            starColor = NSColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
+            moonColor = NSColor(red: 0.95, green: 0.95, blue: 0.95, alpha: alpha)
+            starColor = NSColor(red: 1.0, green: 1.0, blue: 1.0, alpha: alpha)
         }
         
         // Draw a crescent moon
@@ -347,14 +368,16 @@ class StatusBarController: NSObject {
         context.setBlendMode(.normal)
         context.setFillColor(starColor.cgColor)
         
-        // Small stars around moon
-        drawStar(context: context, 
-                center: CGPoint(x: size.width * 0.8, y: size.height * 0.3),
-                size: size.width * 0.12)
-        
-        drawStar(context: context,
-                center: CGPoint(x: size.width * 0.75, y: size.height * 0.7),
-                size: size.width * 0.1)
+        if isActive {
+            // Small stars around moon
+            drawStar(context: context,
+                    center: CGPoint(x: size.width * 0.8, y: size.height * 0.3),
+                    size: size.width * 0.12)
+
+            drawStar(context: context,
+                    center: CGPoint(x: size.width * 0.75, y: size.height * 0.7),
+                    size: size.width * 0.1)
+        }
     }
     
     private func drawStar(context: CGContext, center: CGPoint, size: CGFloat) {

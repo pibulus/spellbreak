@@ -14,6 +14,7 @@ struct MenuViewSimple: View {
     @State private var hoveredItem: String? = nil
     @AppStorage("breakIntervalMin") private var breakInterval: Double = 20
     @AppStorage("fancyMenu") private var fancyMenu: Bool = true
+    var onRequestClose: () -> Void = {}
     
     var body: some View {
         Group {
@@ -43,42 +44,17 @@ struct MenuViewSimple: View {
                 .padding(.top, 18)
                 .padding(.bottom, 12)
             
-            // Timer display with subtle styling
-            if appState.timerRunning {
-                VStack(spacing: 4) {
-                    Text(formatTime(appState.timeRemaining))
-                        .font(.system(size: 22, weight: .semibold, design: .rounded))
-                        .foregroundColor(.primary)
-                    
-                    Text("until break")
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(.secondary)
-                }
-                .padding(.vertical, 12)
-                .frame(maxWidth: .infinity)
-                .background(
-                    LinearGradient(
-                        colors: [
-                            Color.white.opacity(0.05),
-                            Color.white.opacity(0.02)
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-                .cornerRadius(8)
-                .padding(.horizontal, 10)
-                .padding(.bottom, 6)
-            }
+            timerStatusCard
             
             VStack(spacing: 2) {
                 // Break Now
                 SimpleMenuItem(
                     icon: "moon.stars.fill",
-                    title: "Break",
+                    title: "Break Now",
                     accent: true,
                     isHovered: hoveredItem == "break"
                 ) {
+                    onRequestClose()
                     appState.triggerBreak()
                 }
                 .onHover { hoveredItem = $0 ? "break" : nil }
@@ -86,9 +62,10 @@ struct MenuViewSimple: View {
                 // Pause/Resume
                 SimpleMenuItem(
                     icon: appState.timerRunning ? "pause.fill" : "play.fill",
-                    title: appState.timerRunning ? "Pause" : "Resume",
+                    title: appState.timerRunning ? "Pause" : "Start",
                     isHovered: hoveredItem == "timer"
                 ) {
+                    onRequestClose()
                     if appState.timerRunning {
                         appState.stopTimer()
                     } else {
@@ -107,6 +84,7 @@ struct MenuViewSimple: View {
                     title: "Settings",
                     isHovered: hoveredItem == "settings"
                 ) {
+                    onRequestClose()
                     appState.showPreferences()
                 }
                 .onHover { hoveredItem = $0 ? "settings" : nil }
@@ -117,6 +95,7 @@ struct MenuViewSimple: View {
                     title: "Quit",
                     isHovered: hoveredItem == "quit"
                 ) {
+                    onRequestClose()
                     NSApplication.shared.terminate(nil)
                 }
                 .onHover { hoveredItem = $0 ? "quit" : nil }
@@ -145,11 +124,15 @@ struct MenuViewSimple: View {
             VStack(spacing: 0) {
                 PlainMenuItem(
                     title: "Break Now",
-                    action: { appState.triggerBreak() }
+                    action: {
+                        onRequestClose()
+                        appState.triggerBreak()
+                    }
                 )
                 PlainMenuItem(
                     title: appState.timerRunning ? "Pause Timer" : "Start Timer",
                     action: {
+                        onRequestClose()
                         if appState.timerRunning {
                             appState.stopTimer()
                         } else {
@@ -162,7 +145,10 @@ struct MenuViewSimple: View {
                 
                 PlainMenuItem(
                     title: "Preferences...",
-                    action: appState.showPreferences
+                    action: {
+                        onRequestClose()
+                        appState.showPreferences()
+                    }
                 )
                 
                 Divider()
@@ -170,11 +156,43 @@ struct MenuViewSimple: View {
                 PlainMenuItem(
                     title: "Quit Spellbreak"
                 ) {
+                    onRequestClose()
                     NSApplication.shared.terminate(nil)
                 }
             }
         }
         .background(.regularMaterial)
+    }
+
+    private var timerStatusCard: some View {
+        VStack(spacing: 4) {
+            Text(appState.timerRunning ? formatTime(appState.timeRemaining) : "Paused")
+                .font(.system(size: appState.timerRunning ? 22 : 19, weight: .semibold, design: .rounded))
+                .foregroundColor(.primary)
+
+            Text(appState.timerRunning ? "until break" : "no break scheduled")
+                .font(.system(size: 10, weight: .medium))
+                .foregroundColor(.secondary)
+        }
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.white.opacity(appState.timerRunning ? 0.06 : 0.035),
+                    Color.white.opacity(0.02)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.white.opacity(appState.timerRunning ? 0.08 : 0.04), lineWidth: 1)
+        )
+        .cornerRadius(8)
+        .padding(.horizontal, 10)
+        .padding(.bottom, 6)
     }
     
     private func formatTime(_ seconds: TimeInterval) -> String {
