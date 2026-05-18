@@ -49,9 +49,6 @@ Quick reference for Spellbreak's break reminder architecture.
 **SoundManager** - Audio playback (chimes, ambient)
 `Sources/Spellbreak/SoundManager.swift` - AVAudioPlayer management
 
-**MediaDetector** - Detect active calls to skip breaks
-`Sources/Spellbreak/MediaDetector.swift` - Checks for Zoom/Meet/Teams
-
 **OverlayWindowController** - Full-screen window wrapper
 `Sources/Spellbreak/SpellbreakApp.swift` - NSWindowController for overlay
 
@@ -94,7 +91,7 @@ Quick reference for Spellbreak's break reminder architecture.
 - Daily reset at midnight
 - Persisted in @AppStorage
 
-**Call Detection** - Auto-skip breaks during meetings
-- Monitors system processes for Zoom, Google Meet, MS Teams
-- Reschedules break when call ends
-- No user prompt required
+**Privacy Boundary** - Local-only behavior
+- No network requests, accounts, analytics, or telemetry
+- No camera or microphone probing
+- Manual pause and heads-up notifications cover awkward timing
