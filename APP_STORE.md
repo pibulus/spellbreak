@@ -16,7 +16,7 @@ Spellbreak breaks the digital hypnosis with mystical break reminders that actual
 Messages that know your patterns. "The trance gets comfortable." "Your jaw keeping score?" "Screen's got your number." NY tarot reader energy, not corporate wellness speak.
 
 **Beautiful, unskippable (but skippable)**
-Full-screen mystical overlays with flowing waves and particles. Need to skip? Hold the button—one second per minute of break time. Just enough friction to make you think twice.
+Full-screen mystical overlays with flowing waves and particles. Need to skip? Hold the skip ring for a short duration that scales with break length. Just enough friction to make you think twice.
 
 **Features that matter:**
 • Customizable break intervals (15-180 minutes)
@@ -28,7 +28,7 @@ Full-screen mystical overlays with flowing waves and particles. Need to skip? Ho
 • Zero data collection
 
 **Privacy first:**
-No accounts. No analytics. No network requests. Your break patterns stay on your Mac where they belong.
+No accounts. No analytics. No network requests. No camera or microphone access. Your break patterns stay on your Mac where they belong.
 
 **The details:**
 • Native macOS app (Ventura 13.0+)

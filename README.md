@@ -6,7 +6,7 @@ Break the digital spell! A mystical break reminder app for macOS that helps you 
 
 - **Mystical Break Experience**: Full-screen overlay with flowing aurora waves and ambient particles
 - **Smart Scheduling**: Customizable break intervals (default: every 20 minutes)
-- **Hold-to-Skip**: Press and hold to skip if needed (duration scales with break length)
+- **Hold-to-Skip**: Press and hold the skip ring if needed (duration scales with break length)
 - **Time-Based Themes**: Color palettes shift with time of day (dawn, day, evening, night)
 - **Ambient Soundscape**: Optional relaxing sounds during breaks
 - **Menu Bar Control**: Unobtrusive icon with quick access to settings
@@ -38,7 +38,7 @@ open build/Spellbreak.app
 
 - **Menu Bar**: Click the Spellbreak icon to access controls
 - **Preferences**: Customize break intervals, duration, heads-up timing, sounds, and visuals
-- **Skip Break**: Hold the skip button for 1 second per minute of break time
+- **Skip Break**: Hold the skip ring for a short duration that scales with break length
 - **Pause/Resume**: Temporarily pause break reminders when needed
 
 ## Privacy & Security
@@ -48,7 +48,7 @@ Spellbreak respects your privacy:
 - ✅ All settings stored locally
 - ✅ No network connections
 - ✅ Fully sandboxed
-- ✅ No microphone access
+- ✅ No camera or microphone access
 
 ## Development
 

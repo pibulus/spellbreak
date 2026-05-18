@@ -67,14 +67,6 @@ struct SpellbreakApp: App {
     // MARK: - State
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
-    // MARK: - Initialization
-    init() {
-        // Request notification permissions on app launch
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in
-            // Silently handle - notifications are optional
-        }
-    }
-    
     // MARK: - Body
     var body: some Scene {
         // Empty scene - we're using NSStatusItem directly now
@@ -134,7 +126,6 @@ class AppState: ObservableObject {
     @AppStorage("lastBreakDate") private var lastBreakDateString: String = ""
     @AppStorage("timerWasRunning") var timerWasRunning: Bool = false
     @AppStorage("lastBreakTimestamp") private var lastBreakTimestamp: Double = 0
-    @AppStorage("breakDurationSec") private var breakDurationSeconds: Double = 20
     @AppStorage("breakWarningEnabled") private var breakWarningEnabled: Bool = true
     
     // MARK: - Computed Properties
@@ -186,6 +177,7 @@ class AppState: ObservableObject {
         // Save state for persistence
         timerWasRunning = true
         lastBreakTimestamp = lastBreakTime.timeIntervalSince1970
+        requestNotificationAuthorizationIfNeeded()
         
         scheduleRepeatingBreakTimer()
         
@@ -240,7 +232,6 @@ class AppState: ObservableObject {
 
         showingOverlay = true
         showOverlayWindow()
-        showBreakNotification()
         
         // Don't update statistics here - we'll track completion/skip separately
         lastBreakDateString = DateFormatter.dateOnlyFormatter.string(from: Date())
@@ -374,24 +365,15 @@ class AppState: ObservableObject {
         UNUserNotificationCenter.current().add(request)
     }
 
-    private func showBreakNotification() {
-        let content = UNMutableNotificationContent()
-        content.title = "Time for a break"
-        content.body = "Look away from your screen for \(formattedBreakDuration())."
-        content.sound = .default
-        
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
-        UNUserNotificationCenter.current().add(request)
-    }
+    private func requestNotificationAuthorizationIfNeeded() {
+        guard breakWarningEnabled else { return }
 
-    private func formattedBreakDuration() -> String {
-        let seconds = max(1, Int(breakDurationSeconds.rounded()))
-        if seconds % 60 == 0 {
-            let minutes = seconds / 60
-            return minutes == 1 ? "1 minute" : "\(minutes) minutes"
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            guard settings.authorizationStatus == .notDetermined else { return }
+            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in
+                // Notifications are optional; denied permission only disables heads-up alerts.
+            }
         }
-
-        return seconds == 1 ? "1 second" : "\(seconds) seconds"
     }
 
     private func updateTimeRemainingAndWarning() {
@@ -430,6 +412,7 @@ class AppState: ObservableObject {
         if elapsed < breakInterval {
             lastBreakTime = lastBreak
             timerRunning = true
+            requestNotificationAuthorizationIfNeeded()
             
             // Calculate remaining time until next break
             let remainingTime = breakInterval - elapsed
@@ -453,6 +436,7 @@ class AppState: ObservableObject {
                 // Only trigger if we're not too far past the scheduled time
                 timerRunning = true
                 timerWasRunning = true
+                requestNotificationAuthorizationIfNeeded()
                 triggerBreak()
 
                 statusTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
