@@ -29,6 +29,7 @@ struct LavaLampBackground: View {
                 
                 // Draw morphing lava blobs
                 drawLavaBlobs(context: context, size: size, time: time)
+                drawGlassSheen(context: context, size: size, time: time)
             }
         }
         .ignoresSafeArea()
@@ -150,6 +151,42 @@ struct LavaLampBackground: View {
                     center: CGPoint(x: bubbleX, y: bubbleY),
                     startRadius: 0,
                     endRadius: bubbleRadius
+                )
+            )
+        }
+    }
+
+    private func drawGlassSheen(context: GraphicsContext, size: CGSize, time: Double) {
+        for index in 0..<3 {
+            let phase = time * (0.08 + Double(index) * 0.018) + Double(index) * 1.6
+            let centerX = size.width * (0.18 + Double(index) * 0.28) + sin(phase) * size.width * 0.08
+            let width = size.width * (0.18 + Double(index) * 0.035)
+
+            let rect = CGRect(
+                x: centerX - width / 2,
+                y: -size.height * 0.08,
+                width: width,
+                height: size.height * 1.16
+            )
+
+            let gradient = Gradient(stops: [
+                .init(color: Color.clear, location: 0),
+                .init(color: Color.white.opacity(0.035), location: 0.38),
+                .init(color: Color(red: 1.0, green: 0.58, blue: 0.72).opacity(0.08), location: 0.52),
+                .init(color: Color.clear, location: 1)
+            ])
+
+            var transform = CGAffineTransform.identity
+            transform = transform.translatedBy(x: rect.midX, y: rect.midY)
+            transform = transform.rotated(by: -0.22 + CGFloat(index) * 0.09)
+            transform = transform.translatedBy(x: -rect.midX, y: -rect.midY)
+
+            context.fill(
+                Capsule().path(in: rect).applying(transform),
+                with: .linearGradient(
+                    gradient,
+                    startPoint: CGPoint(x: rect.minX, y: rect.midY),
+                    endPoint: CGPoint(x: rect.maxX, y: rect.midY)
                 )
             )
         }

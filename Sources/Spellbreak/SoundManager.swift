@@ -41,27 +41,28 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
     
     // MARK: - Private Methods
     private func loadAmbientSound() {
-        // Try with subdirectory first
-        if let soundURL = Bundle.main.url(forResource: "ambient_loop", withExtension: "mp3", subdirectory: "Sounds") {
+        if let soundURL = ambientSoundURL() {
             loadAudioFromURL(soundURL)
             return
         }
-        
-        // Try without subdirectory
-        if let soundURL = Bundle.main.url(forResource: "ambient_loop", withExtension: "mp3") {
-            loadAudioFromURL(soundURL)
-            return
-        }
-        
-        // Try in Sounds subdirectory with different path
-        if let soundURL = Bundle.main.url(forResource: "Sounds/ambient_loop", withExtension: "mp3") {
-            loadAudioFromURL(soundURL)
-            return
-        }
-        
-        let error = AudioError.fileNotFound("ambient_loop.mp3")
+
+        let error = AudioError.fileNotFound("ambient_loop.m4a")
         logger.error("Failed to find audio file: \(error.localizedDescription)")
         lastError = error
+    }
+
+    private func ambientSoundURL() -> URL? {
+        for ext in ["m4a", "mp3"] {
+            if let url = Bundle.main.url(forResource: "ambient_loop", withExtension: ext, subdirectory: "Sounds") {
+                return url
+            }
+
+            if let url = Bundle.main.url(forResource: "ambient_loop", withExtension: ext) {
+                return url
+            }
+        }
+
+        return nil
     }
     
     private func loadAudioFromURL(_ url: URL) {

@@ -107,9 +107,58 @@ struct AuroraBackground: View {
                         )
                     }
                 }
+
+                drawLightRibbons(context: context, size: size, time: time, colors: colors)
             }
             .drawingGroup()
         }
         .ignoresSafeArea()
+    }
+
+    private func drawLightRibbons(context: GraphicsContext, size: CGSize, time: Double, colors: [Color]) {
+        for ribbon in 0..<3 {
+            let offset = Double(ribbon) * 0.28
+            let speed = 0.12 + Double(ribbon) * 0.06
+            let amplitude = size.height * (0.12 + Double(ribbon) * 0.035)
+            let baseline = size.height * (0.36 + Double(ribbon) * 0.09)
+
+            var path = Path()
+            var didMove = false
+
+            for x in stride(from: 0, through: size.width, by: 8) {
+                let relativeX = x / size.width
+                let wave = sin((relativeX * 1.8 + time * speed + offset) * .pi * 2) * amplitude
+                let shimmer = cos((relativeX * 4.6 + time * speed * 0.6) * .pi * 2) * amplitude * 0.22
+                let point = CGPoint(x: x, y: baseline + wave + shimmer)
+
+                if didMove {
+                    path.addLine(to: point)
+                } else {
+                    path.move(to: point)
+                    didMove = true
+                }
+            }
+
+            let gradient = Gradient(stops: [
+                .init(color: Color.clear, location: 0),
+                .init(color: colors[(ribbon + 1) % colors.count].opacity(0.42), location: 0.28),
+                .init(color: Color.white.opacity(0.18), location: 0.5),
+                .init(color: colors[(ribbon + 2) % colors.count].opacity(0.36), location: 0.72),
+                .init(color: Color.clear, location: 1)
+            ])
+
+            context.drawLayer { layerContext in
+                layerContext.addFilter(.blur(radius: 7 + CGFloat(ribbon) * 3))
+                layerContext.stroke(
+                    path,
+                    with: .linearGradient(
+                        gradient,
+                        startPoint: CGPoint(x: 0, y: baseline),
+                        endPoint: CGPoint(x: size.width, y: baseline)
+                    ),
+                    style: StrokeStyle(lineWidth: 22 - CGFloat(ribbon) * 4, lineCap: .round, lineJoin: .round)
+                )
+            }
+        }
     }
 }
