@@ -16,7 +16,8 @@ struct Particle: Identifiable {
     var vy: Double
     var size: CGFloat
     var opacity: Double
-    var lifetime: Double
+    var phase: Double
+    var pulseSpeed: Double
 }
 
 // MARK: - Ambient Particles
@@ -48,14 +49,19 @@ struct AmbientParticles: View {
     var body: some View {
         TimelineView(.animation(minimumInterval: 1/30)) { timeline in
             Canvas { context, size in
+                let time = timeline.date.timeIntervalSinceReferenceDate
+
                 for particle in particles {
-                    let x = particle.x * size.width
-                    let y = particle.y * size.height
+                    let x = wrapped(particle.x + time * particle.vx) * size.width
+                    let y = wrapped(particle.y + time * particle.vy) * size.height
+                    let pulse = sin((time * particle.pulseSpeed + particle.phase) * .pi * 2) * 0.5 + 0.5
+                    let themeMultiplier = visualTheme == "cosmic" ? 1.25 : 1.0
+                    let opacity = min((particle.opacity + pulse * 0.16) * themeMultiplier, 0.7)
                     
                     // Simple glow effect
                     let gradient = Gradient(stops: [
-                        .init(color: particleColors[0].opacity(particle.opacity), location: 0),
-                        .init(color: particleColors[1].opacity(particle.opacity * 0.55), location: 0.5),
+                        .init(color: particleColors[0].opacity(opacity), location: 0),
+                        .init(color: particleColors[1].opacity(opacity * 0.55), location: 0.5),
                         .init(color: Color.clear, location: 1)
                     ])
                     
@@ -73,17 +79,14 @@ struct AmbientParticles: View {
                             endRadius: particle.size/2
                         )
                     )
-                    
-                    // Add blur for depth
-                    context.addFilter(.blur(radius: 2))
                 }
             }
             .drawingGroup()
             .onAppear {
                 setupParticles()
             }
-            .onChange(of: timeline.date) { _ in
-                updateParticles()
+            .onChange(of: visualTheme) { _ in
+                setupParticles()
             }
         }
     }
@@ -103,37 +106,19 @@ struct AmbientParticles: View {
             Particle(
                 x: Double.random(in: 0...1),
                 y: Double.random(in: 0...1),
-                vx: Double.random(in: -0.001...0.001),
-                vy: Double.random(in: -0.0015...0.0005),
+                vx: Double.random(in: -0.015...0.015),
+                vy: Double.random(in: -0.025...0.008),
                 size: CGFloat.random(in: 20...40),  // Bigger particles
-                opacity: Double.random(in: 0.2...0.5),  // More visible
-                lifetime: Double.random(in: 0...1)
+                opacity: Double.random(in: 0.18...0.36),  // More visible
+                phase: Double.random(in: 0...1),
+                pulseSpeed: Double.random(in: 0.08...0.18)
             )
         }
     }
-    
-    private func updateParticles() {
-        for i in particles.indices {
-            // Update position
-            particles[i].x += particles[i].vx
-            particles[i].y += particles[i].vy
-            
-            // Wrap around edges smoothly
-            if particles[i].x < -0.05 { particles[i].x = 1.05 }
-            if particles[i].x > 1.05 { particles[i].x = -0.05 }
-            if particles[i].y < -0.05 { particles[i].y = 1.05 }
-            if particles[i].y > 1.05 { particles[i].y = -0.05 }
-            
-            // Update lifetime for fade effect
-            particles[i].lifetime += 0.005
-            if particles[i].lifetime > 1 {
-                particles[i].lifetime = 0
-                particles[i].opacity = Double.random(in: 0.1...0.3)
-            }
-            
-            // More dramatic pulsing
-            let pulseMultiplier = visualTheme == "cosmic" ? 1.35 : 1.0
-            particles[i].opacity = (0.3 + sin(particles[i].lifetime * .pi) * 0.2) * pulseMultiplier
-        }
+
+    private func wrapped(_ value: Double) -> Double {
+        let range = 1.1
+        let shifted = (value + 0.05).truncatingRemainder(dividingBy: range)
+        return (shifted >= 0 ? shifted : shifted + range) - 0.05
     }
 }

@@ -33,7 +33,7 @@ struct OverlayWindow: View {
     @AppStorage("musicEnabled") private var musicEnabled: Bool = false
     @AppStorage("visualTheme") private var visualTheme: String = "aurora"
     
-    // Calculate required hold duration: 1s per minute, clamped 2-15s
+    // Calculate required hold duration from break length, clamped 2-15s.
     private var requiredHoldDuration: Double {
         let duration = breakDuration / 60.0
         return min(max(duration, 2.0), 15.0)

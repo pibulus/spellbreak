@@ -12,16 +12,16 @@ import os.log
 
 // MARK: - Sound Manager
 /// Manages audio playback with error handling and smooth fade effects
-class SoundManager: ObservableObject {
+class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
     // MARK: - Published Properties
     @Published var isPlaying = false
     @Published var lastError: Error?
     
     // MARK: - Private Properties
     private var audioPlayer: AVAudioPlayer?
-    private var fadeTimer: Timer?
     private var fadeInTimer: Timer?
     private var fadeOutTimer: Timer?
+    private var activeSounds: [NSSound] = []
     private let logger = Logger(subsystem: "com.pabloalvarado.spellbreak", category: "SoundManager")
     
     // MARK: - Persisted Properties
@@ -29,12 +29,12 @@ class SoundManager: ObservableObject {
     @AppStorage("soundEffectsEnabled") private var soundEffectsEnabled: Bool = true
     
     // MARK: - Initialization
-    init() {
+    override init() {
+        super.init()
         loadAmbientSound()
     }
     
     deinit {
-        fadeTimer?.invalidate()
         fadeInTimer?.invalidate()
         fadeOutTimer?.invalidate()
     }
@@ -125,13 +125,14 @@ class SoundManager: ObservableObject {
         fadeOutTimer?.invalidate()
 
         // Fade out over 1 second
+        let fadeStep = max(player.volume / 20, 0.001)
         fadeOutTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] timer in
             guard let self = self, let player = self.audioPlayer else {
                 timer.invalidate()
                 return
             }
-            if player.volume > 0 {
-                player.volume -= 0.015
+            if player.volume > fadeStep {
+                player.volume -= fadeStep
             } else {
                 player.stop()
                 player.volume = Float(self.soundVolume * 0.6)  // Reset for next time
@@ -147,23 +148,48 @@ class SoundManager: ObservableObject {
     /// Helper to play custom bundled sounds
     private func playCustomSound(named name: String, volume: Float = 0.5) {
         guard soundEffectsEnabled else { return }
-        
-        DispatchQueue.global(qos: .userInteractive).async {
-            // Try to load from Sounds subdirectory first
-            if let soundURL = Bundle.main.url(forResource: name, withExtension: "mp3", subdirectory: "Sounds") {
-                if let sound = NSSound(contentsOf: soundURL, byReference: false) {
-                    sound.volume = volume
-                    sound.play()
-                    return
-                }
+
+        let adjustedVolume = clampedVolume(volume * Float(soundVolume))
+        guard adjustedVolume > 0 else { return }
+
+        guard let soundURL = soundURL(named: name) else {
+            logger.warning("Sound effect not found: \(name).mp3")
+            return
+        }
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            guard let sound = NSSound(contentsOf: soundURL, byReference: false) else {
+                self.logger.warning("Failed to load sound effect: \(name).mp3")
+                return
             }
-            
-            // Fallback: try without subdirectory
-            if let soundURL = Bundle.main.url(forResource: name, withExtension: "mp3") {
-                if let sound = NSSound(contentsOf: soundURL, byReference: false) {
-                    sound.volume = volume
-                    sound.play()
-                }
+
+            sound.volume = adjustedVolume
+            sound.delegate = self
+            self.activeSounds.append(sound)
+
+            if !sound.play() {
+                self.activeSounds.removeAll { $0 === sound }
+                self.logger.warning("Failed to play sound effect: \(name).mp3")
+            }
+        }
+    }
+
+    private func soundURL(named name: String) -> URL? {
+        Bundle.main.url(forResource: name, withExtension: "mp3", subdirectory: "Sounds")
+            ?? Bundle.main.url(forResource: name, withExtension: "mp3")
+    }
+
+    private func clampedVolume(_ volume: Float) -> Float {
+        min(max(volume, 0), 1)
+    }
+
+    func sound(_ sound: NSSound, didFinishPlaying finished: Bool) {
+        if Thread.isMainThread {
+            activeSounds.removeAll { $0 === sound }
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                self?.activeSounds.removeAll { $0 === sound }
             }
         }
     }
@@ -186,6 +212,21 @@ class SoundManager: ObservableObject {
     /// Play button press sound
     func playButtonPress() {
         playCustomSound(named: "button-press", volume: 0.5)
+    }
+
+    /// Play slider grab sound
+    func playSliderGrab() {
+        playCustomSound(named: "slider-grab", volume: 0.35)
+    }
+
+    /// Play slider movement tick
+    func playSliderTick() {
+        playCustomSound(named: "slider-tick", volume: 0.25)
+    }
+
+    /// Play slider release sound
+    func playSliderRelease() {
+        playCustomSound(named: "slider-release", volume: 0.35)
     }
     
     /// Play hold feedback sound (using slider tick)
