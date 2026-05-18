@@ -1,6 +1,6 @@
 # Privacy Policy for Spellbreak
 
-*Last updated: January 20, 2025*
+*Last updated: May 19, 2026*
 
 ## Your Privacy Matters
 
@@ -17,6 +17,7 @@ Spellbreak respects your privacy. We built this app to help you take healthy bre
 - ❌ No network requests
 - ❌ No user accounts
 - ❌ No cloud storage
+- ❌ No camera or microphone access
 
 ## What Stays on Your Device
 

@@ -28,7 +28,7 @@ struct OverlayWindow: View {
     @State private var escapePulse: Double = 0
     @State private var breakMessage: String = ""
     @State private var escapeObserver: NSObjectProtocol?
-    @AppStorage("lockMode") private var lockMode: Bool = false
+    @AppStorage("lockMode") private var lockMode: Bool = true
     @AppStorage("breakDurationSec") private var breakDuration: Double = 20
     @AppStorage("musicEnabled") private var musicEnabled: Bool = false
     @AppStorage("visualTheme") private var visualTheme: String = "aurora"

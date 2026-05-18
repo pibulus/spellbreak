@@ -32,7 +32,5 @@
     <string>Copyright © 2025-2026 Pablo Alvarado. All rights reserved.</string>
     <key>NSUserNotificationAlertStyle</key>
     <string>alert</string>
-    <key>NSMicrophoneUsageDescription</key>
-    <string>Spellbreak does not use the microphone.</string>
 </dict>
 </plist>

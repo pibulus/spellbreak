@@ -145,7 +145,7 @@ struct MenuViewSimple: View {
             VStack(spacing: 0) {
                 PlainMenuItem(
                     title: "Break Now",
-                    action: appState.triggerBreak
+                    action: { appState.triggerBreak() }
                 )
                 PlainMenuItem(
                     title: appState.timerRunning ? "Pause Timer" : "Start Timer",
