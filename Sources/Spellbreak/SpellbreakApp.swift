@@ -103,6 +103,7 @@ class AppState: ObservableObject {
     private var preferencesCancellable: AnyCancellable?
     private var escapeKeyMonitor: Any?          // Event monitor for escape key
     private var testBreakObserver: NSObjectProtocol?
+    private var wakeObserver: NSObjectProtocol?
     private var didShowBreakWarning = false
     private var currentBreakCountsTowardStats = true
     private let breakWarningLeadTime: TimeInterval = 10
@@ -130,7 +131,8 @@ class AppState: ObservableObject {
     
     // MARK: - Computed Properties
     private var breakInterval: TimeInterval {
-        breakIntervalMinutes * 60
+        guard breakIntervalMinutes.isFinite else { return 20 * 60 }
+        return max(60, breakIntervalMinutes * 60)
     }
     
     init() {
@@ -144,7 +146,19 @@ class AppState: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.triggerBreak(resetTimerSchedule: false, countsTowardStats: false)
+            self?.triggerBreak(
+                resetTimerSchedule: false,
+                countsTowardStats: false,
+                resetsTimerAnchor: false
+            )
+        }
+
+        wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.updateTimeRemainingAndWarning()
         }
     }
     
@@ -155,6 +169,10 @@ class AppState: ObservableObject {
 
         if let observer = testBreakObserver {
             NotificationCenter.default.removeObserver(observer)
+        }
+
+        if let observer = wakeObserver {
+            NSWorkspace.shared.notificationCenter.removeObserver(observer)
         }
 
         // Remove escape key monitor if present
@@ -181,10 +199,7 @@ class AppState: ObservableObject {
         
         scheduleRepeatingBreakTimer()
         
-        // Update time remaining every second
-        statusTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
-            self?.updateTimeRemainingAndWarning()
-        }
+        startStatusTimer()
         updateTimeRemainingAndWarning()
     }
     
@@ -209,22 +224,30 @@ class AppState: ObservableObject {
 
     private func scheduleRepeatingBreakTimer() {
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: breakInterval, repeats: true) { [weak self] _ in
+        timer = scheduleTimer(withTimeInterval: breakInterval, repeats: true) { [weak self] _ in
             self?.checkAndTriggerBreak()
         }
     }
 
     func checkAndTriggerBreak() {
+        guard timerRunning else { return }
         triggerBreak(resetTimerSchedule: false)
     }
 
-    func triggerBreak(resetTimerSchedule: Bool = true, countsTowardStats: Bool = true) {
+    func triggerBreak(
+        resetTimerSchedule: Bool = true,
+        countsTowardStats: Bool = true,
+        resetsTimerAnchor: Bool = true
+    ) {
         guard !showingOverlay else { return }
 
         currentBreakCountsTowardStats = countsTowardStats
-        lastBreakTime = Date()
-        lastBreakTimestamp = lastBreakTime.timeIntervalSince1970
-        didShowBreakWarning = false
+
+        if resetsTimerAnchor {
+            lastBreakTime = Date()
+            lastBreakTimestamp = lastBreakTime.timeIntervalSince1970
+            didShowBreakWarning = false
+        }
 
         if timerRunning && resetTimerSchedule {
             scheduleRepeatingBreakTimer()
@@ -232,9 +255,6 @@ class AppState: ObservableObject {
 
         showingOverlay = true
         showOverlayWindow()
-        
-        // Don't update statistics here - we'll track completion/skip separately
-        lastBreakDateString = DateFormatter.dateOnlyFormatter.string(from: Date())
     }
     
     func markBreakCompleted() {
@@ -243,11 +263,11 @@ class AppState: ObservableObject {
             return
         }
 
+        checkDailyReset()
         totalCompletedBreaks += 1
         todayCompletedBreaks += 1
         sessionBreakCount += 1
         lastBreakCompletedTime = Date()
-        checkDailyReset()
     }
     
     func markBreakSkipped() {
@@ -256,10 +276,10 @@ class AppState: ObservableObject {
             return
         }
 
+        checkDailyReset()
         totalSkippedBreaks += 1
         todaySkippedBreaks += 1
         sessionSkippedCount += 1
-        checkDailyReset()
     }
     
     // Get break context for message generation
@@ -376,13 +396,48 @@ class AppState: ObservableObject {
         }
     }
 
+    private func scheduleTimer(
+        withTimeInterval interval: TimeInterval,
+        repeats: Bool,
+        block: @escaping (Timer) -> Void
+    ) -> Timer {
+        let timer = Timer(timeInterval: max(0.1, interval), repeats: repeats, block: block)
+        RunLoop.main.add(timer, forMode: .common)
+        return timer
+    }
+
+    private func startStatusTimer() {
+        statusTimer?.invalidate()
+        statusTimer = scheduleTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            self?.updateTimeRemainingAndWarning()
+        }
+    }
+
     private func updateTimeRemainingAndWarning() {
+        checkDailyReset()
+
+        guard timerRunning else {
+            timeRemaining = 0
+            return
+        }
+
         let elapsed = Date().timeIntervalSince(lastBreakTime)
-        timeRemaining = max(0, breakInterval - elapsed)
+        let remaining = breakInterval - elapsed
+
+        if remaining <= 0 {
+            timeRemaining = 0
+
+            if !showingOverlay {
+                triggerBreak(resetTimerSchedule: true)
+            }
+            return
+        }
+
+        timeRemaining = remaining
 
         guard breakWarningEnabled,
-              timerRunning,
               !didShowBreakWarning,
+              !showingOverlay,
               timeRemaining > 0,
               timeRemaining <= breakWarningLeadTime,
               breakInterval > breakWarningLeadTime else {
@@ -398,6 +453,7 @@ class AppState: ObservableObject {
         if lastBreakDateString != today {
             todayCompletedBreaks = 0
             todaySkippedBreaks = 0
+            lastBreakDateString = today
         }
     }
     
@@ -418,17 +474,14 @@ class AppState: ObservableObject {
             let remainingTime = breakInterval - elapsed
             
             // Set up timer for the remaining time
-            timer = Timer.scheduledTimer(withTimeInterval: remainingTime, repeats: false) { [weak self] _ in
+            timer = scheduleTimer(withTimeInterval: remainingTime, repeats: false) { [weak self] _ in
                 self?.checkAndTriggerBreak()
                 // After this break, continue with regular intervals
                 guard let self = self else { return }
                 self.scheduleRepeatingBreakTimer()
             }
             
-            // Update time remaining every second
-            statusTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
-                self?.updateTimeRemainingAndWarning()
-            }
+            startStatusTimer()
             updateTimeRemainingAndWarning()
         } else {
             // Timer expired while app was closed, trigger break now if appropriate
@@ -439,9 +492,7 @@ class AppState: ObservableObject {
                 requestNotificationAuthorizationIfNeeded()
                 triggerBreak()
 
-                statusTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
-                    self?.updateTimeRemainingAndWarning()
-                }
+                startStatusTimer()
                 updateTimeRemainingAndWarning()
             } else {
                 timerWasRunning = false
