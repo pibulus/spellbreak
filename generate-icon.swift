@@ -215,7 +215,7 @@ func savePNG(_ image: NSImage, path: String, size: Int) {
 
 // Generate at high resolution, then scale down for each size
 let masterIcon = generateIcon(size: 1024)
-let iconDir = "Assets.xcassets/AppIcon.appiconset"
+let iconDir = "Sources/Spellbreak/Resources/Assets.xcassets/AppIcon.appiconset"
 
 // All required macOS icon sizes
 let sizes: [(name: String, px: Int)] = [

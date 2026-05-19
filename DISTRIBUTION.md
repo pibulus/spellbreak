@@ -25,7 +25,11 @@ For friends, website downloads, and general outside-the-App-Store shipping:
 
    xcrun stapler staple dist/Spellbreak-v1.0.0.dmg
    ```
-3. Upload the notarized DMG to `spellbreak.app`
+3. Validate the release artifact
+   ```bash
+   ./release-check.sh
+   ```
+4. Upload the notarized DMG to `spellbreak.app`
 
 Unsigned builds are fine for local testing, but they should be treated as beta-only artifacts.
 
@@ -34,7 +38,7 @@ Unsigned builds are fine for local testing, but they should be treated as beta-o
 Mac App Store submission is a different path from Developer ID distribution.
 
 - Developer ID: website / direct download / notarized DMG
-- Mac App Store: archive in Xcode, upload to App Store Connect, submit for review
+- Mac App Store: Xcode archive, App Store Connect upload, App Review
 
 Use the App Store path when you want:
 
@@ -57,7 +61,8 @@ open build/Spellbreak.app
 
 ### App Store prep
 - capture screenshots from the current build
-- archive in Xcode
+- create/confirm a real Xcode app target if App Store submission is the chosen path
+- archive in Xcode with Mac App Store signing
 - upload that archive to App Store Connect
 
 ## File Map
@@ -68,6 +73,7 @@ spellbreak/
 ├── dist/Spellbreak-v1.0.0.dmg
 ├── build-app.sh
 ├── build-dmg.sh
+├── release-check.sh
 ├── SIGNING_GUIDE.md
 └── APP_STORE.md
 ```
@@ -76,3 +82,4 @@ spellbreak/
 
 - `Spellbreak-v1.0-unsigned.zip` is a legacy beta artifact and should not be treated as the source of truth for current release status.
 - If Gatekeeper complains about an unsigned local build, that is expected until you sign + notarize the DMG.
+- This repo currently has no Developer ID certificate or notary credentials installed locally.

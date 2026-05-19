@@ -28,7 +28,7 @@ Break the digital spell! A mystical break reminder app for macOS that helps you 
 ### Build from Source
 
 ```bash
-git clone https://github.com/pabloalvarado/spellbreak.git
+git clone https://github.com/pibulus/spellbreak.git
 cd spellbreak
 ./build-app.sh
 open build/Spellbreak.app
@@ -81,8 +81,8 @@ For Mac App Store submission, archive the app in Xcode and upload that archive t
 
 ## License
 
-Copyright © 2025 Pablo Alvarado. All rights reserved.
+Copyright © 2025-2026 Pablo Alvarado. All rights reserved.
 
 ## Support
 
-For issues or feature requests, visit [github.com/pabloalvarado/spellbreak](https://github.com/pabloalvarado/spellbreak)
+For issues or feature requests, visit [github.com/pibulus/spellbreak](https://github.com/pibulus/spellbreak)

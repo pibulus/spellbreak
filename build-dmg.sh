@@ -12,14 +12,34 @@ DMG_DIR="dist"
 
 SIGN_IDENTITY=""
 
+usage() {
+    cat <<EOF
+Usage: ./build-dmg.sh [--sign "Developer ID Application: Name (TEAMID)"]
+
+Builds dist/Spellbreak-vVERSION.dmg. Without --sign, the app and DMG are
+unsigned for local testing only.
+EOF
+}
+
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --sign)
+            if [[ $# -lt 2 || "$2" == --* ]]; then
+                echo "Missing value for --sign"
+                usage
+                exit 2
+            fi
             SIGN_IDENTITY="$2"
             shift 2
             ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
         *)
-            shift
+            echo "Unknown option: $1"
+            usage
+            exit 2
             ;;
     esac
 done
