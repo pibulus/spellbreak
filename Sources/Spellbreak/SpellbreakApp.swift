@@ -59,6 +59,27 @@ final class OverlayWindowController: NSWindowController {
     }
 }
 
+// MARK: - Preferences Window Controller
+/// Keeps AppState in sync with normal macOS window close behavior.
+final class PreferencesWindowController: NSWindowController, NSWindowDelegate {
+    private let onClose: () -> Void
+
+    init(window: NSWindow, onClose: @escaping () -> Void) {
+        self.onClose = onClose
+        super.init(window: window)
+        window.delegate = self
+        window.isReleasedWhenClosed = false
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        onClose()
+    }
+}
+
 // MARK: - Main App
 /// Spellbreak: Break the spell of screen hypnosis
 /// Mystical, unskippable breaks that set you free
@@ -98,7 +119,7 @@ class AppState: ObservableObject {
     private var statusTimer: Timer?              // Timer for updating UI countdown
     private var lastBreakTime: Date = Date()     // When the last break was triggered
     private var overlayWindowController: OverlayWindowController?    // Break overlay window
-    private var preferencesWindowController: NSWindowController?     // Preferences window
+    private var preferencesWindowController: PreferencesWindowController?     // Preferences window
     private var overlayCancellable: AnyCancellable?
     private var preferencesCancellable: AnyCancellable?
     private var escapeKeyMonitor: Any?          // Event monitor for escape key
@@ -308,8 +329,9 @@ class AppState: ObservableObject {
             .removeDuplicates()
             .sink { [weak self] showing in
                 if !showing {
-                    self?.preferencesWindowController?.close()
+                    guard let controller = self?.preferencesWindowController else { return }
                     self?.preferencesWindowController = nil
+                    controller.close()
                 }
             }
     }
@@ -334,12 +356,21 @@ class AppState: ObservableObject {
             window.titlebarAppearsTransparent = true
             window.styleMask.remove(.resizable)  // Prevent resizing to lock the size
             
-            preferencesWindowController = NSWindowController(window: window)
+            preferencesWindowController = PreferencesWindowController(window: window) { [weak self] in
+                self?.handlePreferencesWindowClosed()
+            }
         }
         
         preferencesWindowController?.showWindow(nil)
         preferencesWindowController?.window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    private func handlePreferencesWindowClosed() {
+        preferencesWindowController = nil
+        if showingPreferences {
+            showingPreferences = false
+        }
     }
     
     private func showOverlayWindow() {
@@ -421,7 +452,7 @@ class AppState: ObservableObject {
             return
         }
 
-        let elapsed = Date().timeIntervalSince(lastBreakTime)
+        let elapsed = max(0, Date().timeIntervalSince(lastBreakTime))
         let remaining = breakInterval - elapsed
 
         if remaining <= 0 {
@@ -462,7 +493,7 @@ class AppState: ObservableObject {
         guard timerWasRunning && lastBreakTimestamp > 0 else { return }
         
         let lastBreak = Date(timeIntervalSince1970: lastBreakTimestamp)
-        let elapsed = Date().timeIntervalSince(lastBreak)
+        let elapsed = max(0, Date().timeIntervalSince(lastBreak))
         
         // If we're still within the break interval, restore the timer
         if elapsed < breakInterval {

@@ -37,6 +37,12 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
     deinit {
         fadeInTimer?.invalidate()
         fadeOutTimer?.invalidate()
+        audioPlayer?.stop()
+        activeSounds.forEach {
+            $0.stop()
+            $0.delegate = nil
+        }
+        activeSounds.removeAll()
     }
     
     // MARK: - Private Methods
@@ -103,7 +109,7 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
 
         // Gradually increase volume over 2 seconds
         let targetVolume = Float(soundVolume * 0.6)
-        fadeInTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] timer in
+        fadeInTimer = scheduleTimer(withTimeInterval: 0.05, repeats: true) { [weak self] timer in
             guard let self = self, let player = self.audioPlayer else {
                 timer.invalidate()
                 return
@@ -127,7 +133,7 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
 
         // Fade out over 1 second
         let fadeStep = max(player.volume / 20, 0.001)
-        fadeOutTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { [weak self] timer in
+        fadeOutTimer = scheduleTimer(withTimeInterval: 0.05, repeats: true) { [weak self] timer in
             guard let self = self, let player = self.audioPlayer else {
                 timer.invalidate()
                 return
@@ -183,6 +189,12 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
 
     private func clampedVolume(_ volume: Float) -> Float {
         min(max(volume, 0), 1)
+    }
+
+    private func scheduleTimer(withTimeInterval interval: TimeInterval, repeats: Bool, block: @escaping (Timer) -> Void) -> Timer {
+        let timer = Timer(timeInterval: interval, repeats: repeats, block: block)
+        RunLoop.main.add(timer, forMode: .common)
+        return timer
     }
 
     func sound(_ sound: NSSound, didFinishPlaying finished: Bool) {
