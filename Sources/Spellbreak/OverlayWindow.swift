@@ -20,9 +20,14 @@ struct OverlayWindow: View {
     @State private var timeRemaining: Int = 0
     @State private var countdownTimer: Timer?
     @State private var dismissWorkItem: DispatchWorkItem?
+    @State private var closeWorkItem: DispatchWorkItem?
+    @State private var skipRingWorkItem: DispatchWorkItem?
+    @State private var escapePulseResetWorkItem: DispatchWorkItem?
     @State private var isHoldingToSkip = false
     @State private var holdProgress: Double = 0
     @State private var holdTimer: Timer?
+    @State private var breakEndsAt: Date?
+    @State private var hasResolvedBreak = false
     @State private var showSkipRing = false
     @State private var isHoveringRing = false
     @State private var escapePulse: Double = 0
@@ -35,8 +40,13 @@ struct OverlayWindow: View {
     
     // Calculate required hold duration from break length, clamped 2-15s.
     private var requiredHoldDuration: Double {
-        let duration = breakDuration / 60.0
+        let duration = actualBreakDuration / 60.0
         return min(max(duration, 2.0), 15.0)
+    }
+
+    private var actualBreakDuration: TimeInterval {
+        guard breakDuration.isFinite else { return 20 }
+        return max(1, breakDuration)
     }
 
     private var themeGlowColor: Color {
@@ -215,9 +225,12 @@ struct OverlayWindow: View {
             ) { _ in
                 // Subtle pulse effect when escape is pressed
                 escapePulse = 1
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                escapePulseResetWorkItem?.cancel()
+                let resetWork = DispatchWorkItem {
                     escapePulse = 0
                 }
+                escapePulseResetWorkItem = resetWork
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: resetWork)
             }
             
             // Slower, more gentle fade in
@@ -239,50 +252,15 @@ struct OverlayWindow: View {
                 soundManager.playAmbient()
             }
             
-            // Start countdown
-            timeRemaining = Int(breakDuration)
-            countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
-                if timeRemaining > 0 {
-                    timeRemaining -= 1
-                } else {
-                    timer.invalidate()
-                }
-            }
-            
-            // Show skip ring after 2 seconds
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                withAnimation(.spring(duration: 0.6, bounce: 0.3)) {
-                    showSkipRing = true
-                }
-            }
-            
-            // Auto dismiss after break duration
-            let actualBreakDuration = breakDuration > 0 ? breakDuration : 20
-            let work = DispatchWorkItem { [weak appState] in
-                guard let appState, appState.showingOverlay else { return }
-                appState.markBreakCompleted()
-                
-                // Smooth fade out
-                withAnimation(.easeInOut(duration: 0.8)) {
-                    messageOpacity = 0
-                }
-                
-                withAnimation(.easeInOut(duration: 1.0).delay(0.2)) {
-                    opacity = 0
-                }
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-                    appState.showingOverlay = false
-                }
-                soundManager.stopAmbient()
-            }
-            dismissWorkItem?.cancel()
-            dismissWorkItem = work
-            DispatchQueue.main.asyncAfter(deadline: .now() + actualBreakDuration, execute: work)
+            hasResolvedBreak = false
+            breakEndsAt = Date().addingTimeInterval(actualBreakDuration)
+            updateCountdown()
+            startCountdownTimer()
+            scheduleSkipRingReveal()
+            scheduleAutoCompletion()
         }
         .onDisappear {
-            countdownTimer?.invalidate()
-            dismissWorkItem?.cancel()
+            cleanupScheduledWork()
             soundManager.stopAmbient()
             // Remove notification observer
             if let observer = escapeObserver {
@@ -291,13 +269,7 @@ struct OverlayWindow: View {
             }
         }
     }
-    
-    private func formatTime(_ seconds: Int) -> String {
-        let mins = seconds / 60
-        let secs = seconds % 60
-        return String(format: "%d:%02d", mins, secs)
-    }
-    
+
     private func formatTimeShort(_ seconds: Int) -> String {
         if seconds >= 60 {
             return "\(seconds / 60)m"
@@ -305,33 +277,142 @@ struct OverlayWindow: View {
             return "\(seconds)"  // Just the number, no "s"
         }
     }
-    
-    private func skipBreak() {
-        // Play skip complete sound
-        soundManager.playSkipComplete()
-        
-        appState.markBreakSkipped()
-        
-        // Quick but smooth fade out for skip
-        withAnimation(.easeOut(duration: 0.4)) {
-            messageOpacity = 0
-            showSkipRing = false
+
+    private func scheduleTimer(withTimeInterval interval: TimeInterval, repeats: Bool, block: @escaping (Timer) -> Void) -> Timer {
+        let timer = Timer(timeInterval: interval, repeats: repeats, block: block)
+        RunLoop.main.add(timer, forMode: .common)
+        return timer
+    }
+
+    private func startCountdownTimer() {
+        countdownTimer?.invalidate()
+        countdownTimer = scheduleTimer(withTimeInterval: 0.5, repeats: true) { timer in
+            updateCountdown()
+            if timeRemaining <= 0 {
+                timer.invalidate()
+                countdownTimer = nil
+                completeBreak()
+            }
         }
-        
-        withAnimation(.easeInOut(duration: 0.6).delay(0.1)) {
-            opacity = 0
+    }
+
+    private func updateCountdown() {
+        guard let breakEndsAt else {
+            timeRemaining = Int(ceil(actualBreakDuration))
+            return
         }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+
+        let remaining = max(0, breakEndsAt.timeIntervalSinceNow)
+        timeRemaining = Int(ceil(remaining))
+    }
+
+    private func scheduleSkipRingReveal() {
+        guard !lockMode else { return }
+
+        skipRingWorkItem?.cancel()
+        let work = DispatchWorkItem {
+            guard !hasResolvedBreak else { return }
+            withAnimation(.spring(duration: 0.6, bounce: 0.3)) {
+                showSkipRing = true
+            }
+        }
+
+        skipRingWorkItem = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: work)
+    }
+
+    private func scheduleAutoCompletion() {
+        dismissWorkItem?.cancel()
+        let work = DispatchWorkItem {
+            completeBreak()
+        }
+
+        dismissWorkItem = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + actualBreakDuration, execute: work)
+    }
+
+    private func scheduleOverlayClose(after delay: TimeInterval) {
+        closeWorkItem?.cancel()
+        let work = DispatchWorkItem { [weak appState] in
+            guard let appState, appState.showingOverlay else { return }
             appState.showingOverlay = false
         }
-        soundManager.stopAmbient()
-        
-        // Clean up timers
+
+        closeWorkItem = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
+    }
+
+    private func completeBreak() {
+        resolveBreak(asSkipped: false)
+    }
+
+    private func skipBreak() {
+        resolveBreak(asSkipped: true)
+    }
+
+    private func resolveBreak(asSkipped skipped: Bool) {
+        guard !hasResolvedBreak, appState.showingOverlay else { return }
+
+        hasResolvedBreak = true
+        isHoldingToSkip = false
+        holdProgress = 0
+        countdownTimer?.invalidate()
+        countdownTimer = nil
         holdTimer?.invalidate()
         holdTimer = nil
-        countdownTimer?.invalidate()
         dismissWorkItem?.cancel()
+        skipRingWorkItem?.cancel()
+        escapePulseResetWorkItem?.cancel()
+        escapePulse = 0
+
+        if skipped {
+            soundManager.playSkipComplete()
+            appState.markBreakSkipped()
+
+            withAnimation(.easeOut(duration: 0.4)) {
+                messageOpacity = 0
+                showSkipRing = false
+            }
+
+            withAnimation(.easeInOut(duration: 0.6).delay(0.1)) {
+                opacity = 0
+            }
+
+            scheduleOverlayClose(after: 0.7)
+        } else {
+            appState.markBreakCompleted()
+
+            withAnimation(.easeInOut(duration: 0.8)) {
+                messageOpacity = 0
+            }
+
+            withAnimation(.easeInOut(duration: 1.0).delay(0.2)) {
+                opacity = 0
+            }
+
+            scheduleOverlayClose(after: 1.2)
+        }
+
+        soundManager.stopAmbient()
+    }
+
+    private func cleanupScheduledWork() {
+        countdownTimer?.invalidate()
+        countdownTimer = nil
+        holdTimer?.invalidate()
+        holdTimer = nil
+        dismissWorkItem?.cancel()
+        closeWorkItem?.cancel()
+        skipRingWorkItem?.cancel()
+        escapePulseResetWorkItem?.cancel()
+        isHoldingToSkip = false
+        showSkipRing = false
+        escapePulse = 0
+        breakEndsAt = nil
+        dismissWorkItem = nil
+        closeWorkItem = nil
+        skipRingWorkItem = nil
+        escapePulseResetWorkItem = nil
     }
     
     private func startHoldTimer() {
@@ -340,7 +421,7 @@ struct OverlayWindow: View {
         let increments = requiredHoldDuration / updateInterval
         
         holdTimer?.invalidate()
-        holdTimer = Timer.scheduledTimer(withTimeInterval: updateInterval, repeats: true) { timer in
+        holdTimer = scheduleTimer(withTimeInterval: updateInterval, repeats: true) { timer in
             if isHoldingToSkip {
                 holdProgress = min(holdProgress + (1.0 / increments), 1.0)
                 if holdProgress >= 1.0 {
