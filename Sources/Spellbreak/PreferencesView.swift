@@ -200,6 +200,9 @@ struct PreferencesView: View {
         .onAppear {
             refreshLaunchAtLoginState()
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            refreshLaunchAtLoginState()
+        }
     }
     
     // MARK: - Timer Tab Content  
