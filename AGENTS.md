@@ -93,7 +93,7 @@ open /Users/pabloalvarado/Projects/active/mac/spellbreak/build/Spellbreak.app
 - `PRIVACY.md` - Privacy policy
 - `APP_STORE.md` - Store listing content
 - `SIGNING_GUIDE.md` - Step-by-step signing instructions
-- `Assets.xcassets/AppIcon.appiconset/` - Icon assets
+- `Sources/Spellbreak/Resources/Assets.xcassets/AppIcon.appiconset/` - Icon assets
 
 ## Performance Targets
 - **CPU**: <20% Intel, <10% Apple Silicon

@@ -10,21 +10,42 @@ MACOS_DIR="${CONTENTS_DIR}/MacOS"
 RESOURCES_DIR="${CONTENTS_DIR}/Resources"
 INFO_PLIST="Sources/Spellbreak/Resources/Info.plist"
 SOUNDS_DIR="Sources/Spellbreak/Resources/Sounds"
-ICONSET_SOURCE="Assets.xcassets/AppIcon.appiconset"
+ICONSET_SOURCE="Sources/Spellbreak/Resources/Assets.xcassets/AppIcon.appiconset"
 ARM64_SCRATCH=".build-arm64"
 X86_SCRATCH=".build-x86_64"
 UNIVERSAL_BINARY="/tmp/${APP_NAME}-universal-$$"
 
 SIGN_IDENTITY=""
 
+usage() {
+    cat <<EOF
+Usage: ./build-app.sh [--sign "Developer ID Application: Name (TEAMID)"]
+
+Builds build/Spellbreak.app as a universal app when both arm64 and x86_64
+release builds are available. Without --sign, the app is unsigned for local
+testing only.
+EOF
+}
+
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --sign)
+            if [[ $# -lt 2 || "$2" == --* ]]; then
+                echo "Missing value for --sign"
+                usage
+                exit 2
+            fi
             SIGN_IDENTITY="$2"
             shift 2
             ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
         *)
-            shift
+            echo "Unknown option: $1"
+            usage
+            exit 2
             ;;
     esac
 done
