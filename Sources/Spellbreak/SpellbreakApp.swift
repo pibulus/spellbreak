@@ -348,9 +348,9 @@ class AppState: ObservableObject {
             )
             window.title = "Spellbreak Preferences"
             window.center()
-            let appDelegate = NSApp.delegate as! AppDelegate
+            guard let appDelegate = NSApp.delegate as? AppDelegate else { return }
             window.contentView = NSHostingView(rootView: PreferencesView()
-                .environmentObject(appDelegate.soundManager as SoundManager)
+                .environmentObject(appDelegate.soundManager)
             )
             window.isMovableByWindowBackground = false  // Fixed: Don't allow dragging by background
             window.titlebarAppearsTransparent = true
@@ -378,10 +378,10 @@ class AppState: ObservableObject {
         guard let window = overlayWindowController?.window else { return }
         
         // Use the good SwiftUI overlay with animated effects
-        let appDelegate = NSApp.delegate as! AppDelegate
+        guard let appDelegate = NSApp.delegate as? AppDelegate else { return }
             let overlayView = OverlayWindow()
             .environmentObject(self)
-            .environmentObject(appDelegate.soundManager as SoundManager)
+            .environmentObject(appDelegate.soundManager)
         
         window.contentView = TransparentHostingView(rootView: overlayView)
         window.isOpaque = false
