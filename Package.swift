@@ -22,7 +22,8 @@ let package = Package(
             ],
             resources: [
                 .process("Resources/Sounds"),
-                .process("Resources/Assets.xcassets")
+                .process("Resources/Assets.xcassets"),
+                .copy("Resources/PrivacyInfo.xcprivacy")
             ]
         )
     ]
