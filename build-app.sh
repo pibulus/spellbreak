@@ -96,6 +96,9 @@ fi
 
 chmod +x "${MACOS_DIR}/${APP_NAME}"
 cp "$INFO_PLIST" "${CONTENTS_DIR}/Info.plist"
+
+AUTO_BUILD_VERSION=$(git -C "$(dirname "$0")" rev-list --count HEAD 2>/dev/null || echo "1")
+/usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${AUTO_BUILD_VERSION}" "${CONTENTS_DIR}/Info.plist" 2>/dev/null || true
 cp -R "$SOUNDS_DIR" "${RESOURCES_DIR}/"
 
 echo "🎨 Creating app icon..."

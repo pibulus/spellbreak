@@ -175,21 +175,17 @@ struct SpellTextGenerator {
     ]
     
     // ===================================================================
-    // MOON PHASE CALCULATION
+    // MOON PHASE CALCULATION (approximate)
     // ===================================================================
     
     private static func getMoonPhase() -> String {
-        // Simple moon phase calculation (approximate)
-        let calendar = Calendar.current
-        let now = Date()
-        
-        // Known new moon date (Jan 11, 2024)
-        let knownNewMoon = calendar.date(from: DateComponents(year: 2024, month: 1, day: 11))!
-        let daysSinceNewMoon = calendar.dateComponents([.day], from: knownNewMoon, to: now).day ?? 0
-        
-        // Lunar cycle is ~29.53 days
-        let lunarCycle = 29.53
-        let moonAge = Double(daysSinceNewMoon).truncatingRemainder(dividingBy: lunarCycle)
+        // Reference: known new moon Jan 6, 2000 18:14 UTC
+        // Uses astronomical lunar cycle: 29.53058867 days
+        let referenceNewMoon = Date(timeIntervalSince1970: 947182440)
+        let lunarCycleSeconds: TimeInterval = 29.53058867 * 86400
+        let moonAgeSeconds = Date().timeIntervalSince(referenceNewMoon)
+            .truncatingRemainder(dividingBy: lunarCycleSeconds)
+        let moonAge = moonAgeSeconds / 86400
         
         switch moonAge {
         case 0..<2: return "new"
