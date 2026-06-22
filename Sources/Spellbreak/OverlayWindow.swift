@@ -99,7 +99,6 @@ struct OverlayWindow: View {
             VStack(spacing: 0) {
                 Spacer()
                 
-                // Main message with soft glow (no blur on text itself)
                 Text(breakMessage)
                     .font(.system(size: 56, weight: .semibold, design: .rounded))
                     .foregroundStyle(
@@ -119,7 +118,8 @@ struct OverlayWindow: View {
                     .padding(.horizontal, 60)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
-                    .offset(y: lockMode ? 0 : -30)  // Offset up slightly when skip ring is shown
+                    .offset(y: lockMode ? 0 : -30)
+                    .accessibilityLabel(breakMessage)
                 
                 Spacer()
                 
@@ -183,6 +183,10 @@ struct OverlayWindow: View {
                             }
                         }
                     }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("Hold to skip")
+                    .accessibilityValue(isHoldingToSkip ? "\(Int(holdProgress * 100)) percent" : "idle")
+                    .accessibilityAddTraits(.allowsDirectInteraction)
                     .padding(.bottom, 60)
                 }
             }
@@ -199,7 +203,8 @@ struct OverlayWindow: View {
                             .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
                             .opacity(messageOpacity * 0.8)
                             .padding(.trailing, 50)
-                            .padding(.bottom, 68)  // Aligned with skip ring (60 + 8 for visual balance)
+                            .padding(.bottom, 68)
+                            .accessibilityLabel("\(timeRemaining / 60) minutes \(timeRemaining % 60) seconds remaining")
                     }
                 }
             }
