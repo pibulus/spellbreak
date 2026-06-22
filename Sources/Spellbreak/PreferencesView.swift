@@ -169,9 +169,9 @@ struct PreferencesView: View {
                         radius: hoveredElement == "test-button" ? 12 : 8, 
                         x: 0, y: 4)
             }
-            .buttonStyle(.plain)
-            .onHover { hovering in
-                hoveredElement = hovering ? "test-button" : nil
+        .buttonStyle(.plain)
+        .onHover { hovering in
+            hoveredElement = hovering ? "test-button" : nil
             }
             .padding(.top, UI.buttonSpacing)
             .padding(.horizontal, UI.sidePadding)
@@ -594,6 +594,8 @@ struct TabButton: View {
             .animation(.easeOut(duration: 0.15), value: isHovered)
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("\(title) tab")
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 }
 
@@ -907,6 +909,10 @@ struct ThemeOption: View {
             )
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title) theme")
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+        .accessibilityAction(named: "Select") { action() }
     }
 }
 
