@@ -14,8 +14,6 @@
     <string>Spellbreak</string>
     <key>CFBundleDisplayName</key>
     <string>Spellbreak</string>
-    <key>CFBundlePackageType</key>
-    <string>APPL</string>
     <key>CFBundleShortVersionString</key>
     <string>1.0.0</string>
     <key>CFBundleVersion</key>
@@ -23,14 +21,13 @@
     <key>LSMinimumSystemVersion</key>
     <string>13.0</string>
     <key>LSApplicationCategoryType</key>
-    <string>public.app-category.healthcare-fitness</string>
+    <string>public.app-category.productivity</string>
     <key>LSUIElement</key>
     <true/>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>NSHumanReadableCopyright</key>
     <string>Copyright © 2025-2026 Pablo Alvarado. All rights reserved.</string>
-    <key>NSUserNotificationAlertStyle</key>
-    <string>alert</string>
+
 </dict>
 </plist>
