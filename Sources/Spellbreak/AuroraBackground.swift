@@ -18,33 +18,33 @@ struct AuroraBackground: View {
         let hour = Calendar.current.component(.hour, from: Date())
         
         switch hour {
-        case 5..<10: // Dawn - soft rose gold
+        case 5..<10: // Dawn - rich rose gold
             return [
-                Color(red: 1.0, green: 0.75, blue: 0.6),   // Rose gold
-                Color(red: 0.95, green: 0.6, blue: 0.7),   // Dusty rose
-                Color(red: 0.8, green: 0.5, blue: 0.8),    // Lavender
-                Color(red: 0.6, green: 0.4, blue: 0.7)     // Soft purple
+                Color(red: 1.0, green: 0.55, blue: 0.4),   // Rose gold
+                Color(red: 0.95, green: 0.4, blue: 0.62),  // Deep rose
+                Color(red: 0.72, green: 0.35, blue: 0.9),  // Violet
+                Color(red: 0.4, green: 0.18, blue: 0.55)   // Deep plum
             ]
         case 10..<17: // Day - vibrant energy
             return [
-                Color(red: 1.0, green: 0.7, blue: 0.2),    // Golden
-                Color(red: 0.95, green: 0.5, blue: 0.4),   // Coral
-                Color(red: 0.7, green: 0.3, blue: 0.6),    // Magenta
-                Color(red: 0.4, green: 0.2, blue: 0.7)     // Royal purple
+                Color(red: 1.0, green: 0.62, blue: 0.15),  // Rich gold
+                Color(red: 0.96, green: 0.44, blue: 0.32), // Coral
+                Color(red: 0.88, green: 0.27, blue: 0.62), // Magenta
+                Color(red: 0.36, green: 0.16, blue: 0.68)  // Royal purple
             ]
         case 17..<21: // Evening - sunset vibes
             return [
-                Color(red: 1.0, green: 0.4, blue: 0.3),    // Sunset orange
-                Color(red: 0.9, green: 0.3, blue: 0.5),    // Hot pink
-                Color(red: 0.6, green: 0.2, blue: 0.6),    // Deep magenta
-                Color(red: 0.3, green: 0.1, blue: 0.5)     // Twilight purple
+                Color(red: 1.0, green: 0.42, blue: 0.22),  // Sunset orange
+                Color(red: 0.94, green: 0.31, blue: 0.61), // Hot magenta-pink
+                Color(red: 0.68, green: 0.18, blue: 0.66), // Deep magenta
+                Color(red: 0.28, green: 0.09, blue: 0.48)  // Twilight purple
             ]
-        default: // Night - cosmic depths
+        default: // Night - hexbloop jewel tones
             return [
-                Color(red: 0.6, green: 0.3, blue: 0.8),    // Electric purple
-                Color(red: 0.4, green: 0.2, blue: 0.7),    // Deep violet
-                Color(red: 0.2, green: 0.1, blue: 0.5),    // Midnight blue
-                Color(red: 0.1, green: 0.05, blue: 0.3)    // Deep space
+                Color(red: 0.66, green: 0.30, blue: 0.98), // Electric purple
+                Color(red: 0.94, green: 0.31, blue: 0.61), // Hot magenta-pink
+                Color(red: 0.94, green: 0.58, blue: 0.37), // Coral glow
+                Color(red: 0.30, green: 0.12, blue: 0.55)  // Deep violet
             ]
         }
     }
@@ -96,7 +96,7 @@ struct AuroraBackground: View {
                     ])
                     
                     context.drawLayer { layerContext in
-                        layerContext.addFilter(.blur(radius: 8 + CGFloat(layer) * 6))
+                        layerContext.addFilter(.blur(radius: 12 + CGFloat(layer) * 14))
                         layerContext.fill(
                             path,
                             with: .linearGradient(

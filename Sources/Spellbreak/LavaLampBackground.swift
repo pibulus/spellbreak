@@ -31,6 +31,7 @@ struct LavaLampBackground: View {
                 drawLavaBlobs(context: context, size: size, time: time)
                 drawGlassSheen(context: context, size: size, time: time)
             }
+            .drawingGroup()
         }
         .ignoresSafeArea()
     }
@@ -129,7 +130,8 @@ struct LavaLampBackground: View {
         
         // Rising bubble effect - multiple small blobs
         for i in 0..<5 {
-            let bubbleTime = time * 0.15 + Double(i) * 2
+            // Per-bubble rise rate so they don't move in lockstep
+            let bubbleTime = time * (0.12 + Double(i) * 0.025) + Double(i) * 2
             let bubbleY = size.height - (bubbleTime.truncatingRemainder(dividingBy: size.height + 200))
             let bubbleX = size.width * (0.2 + Double(i) * 0.15) + sin(bubbleTime) * 20
             let bubbleRadius = 20 + Double(i) * 5

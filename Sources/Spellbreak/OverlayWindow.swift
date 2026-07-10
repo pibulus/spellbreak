@@ -62,9 +62,17 @@ struct OverlayWindow: View {
     
     var body: some View {
         ZStack {
-            // Desktop blur with thick material for frosted glass
+            // Near-black grounding so the themed colors read as jewel tones —
+            // without it everything composites on the material's grey haze
+            Rectangle()
+                .fill(Color(red: 0.04, green: 0.04, blue: 0.05))
+                .ignoresSafeArea()
+
+            // Desktop blur kept for the frosted-glass depth, dialed back so it
+            // frosts without greying the palette
             Rectangle()
                 .fill(.ultraThickMaterial)
+                .opacity(0.35)
                 .ignoresSafeArea()
             
             // Theme-based animated background

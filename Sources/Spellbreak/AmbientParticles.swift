@@ -35,13 +35,13 @@ struct AmbientParticles: View {
             ]
         case "cosmic":
             return [
-                Color(red: 0.8, green: 0.9, blue: 1.0),
-                Color(red: 0.45, green: 0.65, blue: 1.0)
+                Color(red: 0.75, green: 0.55, blue: 1.0),
+                Color(red: 0.66, green: 0.30, blue: 0.98)
             ]
         default:
             return [
                 Color.white,
-                Color(red: 1.0, green: 0.7, blue: 0.55)
+                Color(red: 1.0, green: 0.6, blue: 0.4)
             ]
         }
     }

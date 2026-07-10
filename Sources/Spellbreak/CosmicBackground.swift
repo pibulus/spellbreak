@@ -34,6 +34,7 @@ struct CosmicBackground: View {
                 drawStars(context: context, size: size, time: time)
                 drawComet(context: context, size: size, time: time)
             }
+            .drawingGroup()
         }
         .ignoresSafeArea()
     }
@@ -85,9 +86,9 @@ struct CosmicBackground: View {
             let rotation = time * -0.03 + Double(i) * 0.8
             
             let nebula2Gradient = Gradient(stops: [
-                .init(color: Color(red: 0.1, green: 0.4, blue: 0.9).opacity(0.25), location: 0),
-                .init(color: Color(red: 0.2, green: 0.6, blue: 1.0).opacity(0.1), location: 0.4),
-                .init(color: Color(red: 0.1, green: 0.3, blue: 0.7).opacity(0.03), location: 0.8),
+                .init(color: Color(red: 0.25, green: 0.15, blue: 0.85).opacity(0.25), location: 0),
+                .init(color: Color(red: 0.45, green: 0.3, blue: 0.95).opacity(0.1), location: 0.4),
+                .init(color: Color(red: 0.2, green: 0.1, blue: 0.65).opacity(0.03), location: 0.8),
                 .init(color: Color.clear, location: 1)
             ])
             
@@ -117,24 +118,24 @@ struct CosmicBackground: View {
         let nebula3CenterY = size.height * 0.3 + cos(time * 0.12) * 20
         
         let nebula3Gradient = Gradient(stops: [
-            .init(color: Color(red: 0.9, green: 0.3, blue: 0.6).opacity(0.2), location: 0),
-            .init(color: Color(red: 1.0, green: 0.4, blue: 0.7).opacity(0.08), location: 0.5),
-            .init(color: Color(red: 0.7, green: 0.2, blue: 0.5).opacity(0.02), location: 0.9),
+            .init(color: Color(red: 0.94, green: 0.31, blue: 0.61).opacity(0.4), location: 0),
+            .init(color: Color(red: 1.0, green: 0.4, blue: 0.7).opacity(0.18), location: 0.5),
+            .init(color: Color(red: 0.7, green: 0.2, blue: 0.5).opacity(0.04), location: 0.9),
             .init(color: Color.clear, location: 1)
         ])
-        
+
         context.fill(
             Ellipse().path(in: CGRect(
-                x: nebula3CenterX - 100,
-                y: nebula3CenterY - 70,
-                width: 200,
-                height: 140
+                x: nebula3CenterX - 140,
+                y: nebula3CenterY - 100,
+                width: 280,
+                height: 200
             )),
             with: .radialGradient(
                 nebula3Gradient,
                 center: CGPoint(x: nebula3CenterX, y: nebula3CenterY),
                 startRadius: 0,
-                endRadius: 150
+                endRadius: 220
             )
         )
     }
