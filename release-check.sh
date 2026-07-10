@@ -128,7 +128,7 @@ if [[ -f "$DMG_PATH" ]]; then
         sed 's/^/   /' /tmp/spellbreak-stapler.log
     fi
 
-    if spctl -a -vvv -t open "$DMG_PATH" >/tmp/spellbreak-spctl-dmg.log 2>&1; then
+    if spctl -a -vvv -t open --context context:primary-signature "$DMG_PATH" >/tmp/spellbreak-spctl-dmg.log 2>&1; then
         pass "Gatekeeper accepts the DMG"
     else
         warn "Gatekeeper does not accept the DMG yet"
