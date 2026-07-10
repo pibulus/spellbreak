@@ -531,8 +531,19 @@ class AppState: ObservableObject {
     }
 
     private func hideCountdownPill() {
-        countdownWindowController?.close()
+        guard let controller = countdownWindowController else { return }
         countdownWindowController = nil
+
+        guard let window = controller.window else {
+            controller.close()
+            return
+        }
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = 0.35
+            window.animator().alphaValue = 0
+        }, completionHandler: {
+            controller.close()
+        })
     }
     
     private func checkDailyReset() {
