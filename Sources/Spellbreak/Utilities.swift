@@ -6,6 +6,15 @@
 //
 
 import Foundation
+import SwiftUI
+
+// MARK: - Palette
+extension Color {
+    /// Spellbreak's signature gradient colors
+    static let spellPink = Color(red: 0.95, green: 0.4, blue: 0.8)
+    static let spellCoral = Color(red: 1.0, green: 0.6, blue: 0.5)
+    static let spellPeach = Color(red: 1.0, green: 0.7, blue: 0.5)
+}
 
 extension Timer {
     /// Creates a timer on the main run loop in .common mode so it keeps

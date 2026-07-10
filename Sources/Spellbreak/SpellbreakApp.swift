@@ -122,6 +122,7 @@ class AppState: ObservableObject {
     private var preferencesWindowController: PreferencesWindowController?     // Preferences window
     private var overlayCancellable: AnyCancellable?
     private var overlayFailsafe: DispatchWorkItem?
+    private var countdownWindowController: BreakCountdownWindowController?
     private var preferencesCancellable: AnyCancellable?
     private var escapeKeyMonitor: Any?          // Event monitor for escape key
     private var testBreakObserver: NSObjectProtocol?
@@ -189,6 +190,7 @@ class AppState: ObservableObject {
         timer?.invalidate()
         statusTimer?.invalidate()
         overlayFailsafe?.cancel()
+        countdownWindowController?.close()
 
         if let observer = testBreakObserver {
             NotificationCenter.default.removeObserver(observer)
@@ -234,6 +236,7 @@ class AppState: ObservableObject {
         timerRunning = false
         timeRemaining = 0
         didShowBreakWarning = false
+        hideCountdownPill()
 
         // Clear persistence
         timerWasRunning = false
@@ -276,6 +279,7 @@ class AppState: ObservableObject {
             scheduleRepeatingBreakTimer()
         }
 
+        hideCountdownPill()
         showingOverlay = true
         showOverlayWindow()
         armOverlayFailsafe()
@@ -440,10 +444,10 @@ class AppState: ObservableObject {
         }
     }
     
-    private func showHeadsUpNotification() {
+    private func showHeadsUpNotification(secondsAway: Int = 10) {
         let content = UNMutableNotificationContent()
         content.title = "Break incoming"
-        content.body = "Spellbreak lands in 10 seconds."
+        content.body = "Spellbreak lands in \(secondsAway) seconds."
         content.sound = .default
 
         let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
@@ -473,6 +477,7 @@ class AppState: ObservableObject {
 
         guard timerRunning else {
             timeRemaining = 0
+            hideCountdownPill()
             return
         }
 
@@ -481,6 +486,7 @@ class AppState: ObservableObject {
 
         if remaining <= 0 {
             timeRemaining = 0
+            hideCountdownPill()
 
             if !showingOverlay {
                 triggerBreak(resetTimerSchedule: true)
@@ -489,6 +495,7 @@ class AppState: ObservableObject {
         }
 
         timeRemaining = remaining
+        updateCountdownPill()
 
         guard breakWarningEnabled,
               !didShowBreakWarning,
@@ -500,7 +507,32 @@ class AppState: ObservableObject {
         }
 
         didShowBreakWarning = true
-        showHeadsUpNotification()
+        showHeadsUpNotification(secondsAway: Int(timeRemaining.rounded(.up)))
+    }
+
+    /// Show the floating countdown pill during the final seconds before a
+    /// break; hide it the moment it no longer applies
+    private func updateCountdownPill() {
+        let shouldShow = breakWarningEnabled
+            && timerRunning
+            && !showingOverlay
+            && timeRemaining > 0
+            && timeRemaining <= breakWarningLeadTime
+
+        guard shouldShow else {
+            hideCountdownPill()
+            return
+        }
+
+        if countdownWindowController == nil {
+            countdownWindowController = BreakCountdownWindowController(appState: self)
+        }
+        countdownWindowController?.window?.orderFrontRegardless()
+    }
+
+    private func hideCountdownPill() {
+        countdownWindowController?.close()
+        countdownWindowController = nil
     }
     
     private func checkDailyReset() {

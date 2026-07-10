@@ -10,14 +10,6 @@ import SwiftUI
 import ServiceManagement
 import AppKit
 
-// MARK: - Palette
-extension Color {
-    /// Spellbreak's signature gradient colors
-    static let spellPink = Color(red: 0.95, green: 0.4, blue: 0.8)
-    static let spellCoral = Color(red: 1.0, green: 0.6, blue: 0.5)
-    static let spellPeach = Color(red: 1.0, green: 0.7, blue: 0.5)
-}
-
 // MARK: - Frosted Card Background
 private struct FrostedCard: ViewModifier {
     var cornerRadius: CGFloat = 24
@@ -334,7 +326,7 @@ struct PreferencesView: View {
 
                 ToggleCard(
                     title: "Heads-Up",
-                    subtitle: breakWarningEnabled ? "10-second warning" : "Straight into the spell",
+                    subtitle: breakWarningEnabled ? "Countdown before the spell lands" : "Straight into the spell",
                     isOn: breakWarningEnabled,
                     isHovered: hoveredElement == "warning-toggle",
                     onChange: { breakWarningEnabled = $0 },
