@@ -109,7 +109,7 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
 
         // Gradually increase volume over 2 seconds
         let targetVolume = Float(soundVolume * 0.6)
-        fadeInTimer = scheduleTimer(withTimeInterval: 0.05, repeats: true) { [weak self] timer in
+        fadeInTimer = Timer.scheduledCommonTimer(withTimeInterval: 0.05, repeats: true) { [weak self] timer in
             guard let self = self, let player = self.audioPlayer else {
                 timer.invalidate()
                 return
@@ -133,7 +133,7 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
 
         // Fade out over 1 second
         let fadeStep = max(player.volume / 20, 0.001)
-        fadeOutTimer = scheduleTimer(withTimeInterval: 0.05, repeats: true) { [weak self] timer in
+        fadeOutTimer = Timer.scheduledCommonTimer(withTimeInterval: 0.05, repeats: true) { [weak self] timer in
             guard let self = self, let player = self.audioPlayer else {
                 timer.invalidate()
                 return
@@ -191,12 +191,6 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
         min(max(volume, 0), 1)
     }
 
-    private func scheduleTimer(withTimeInterval interval: TimeInterval, repeats: Bool, block: @escaping (Timer) -> Void) -> Timer {
-        let timer = Timer(timeInterval: interval, repeats: repeats, block: block)
-        RunLoop.main.add(timer, forMode: .common)
-        return timer
-    }
-
     func sound(_ sound: NSSound, didFinishPlaying finished: Bool) {
         if Thread.isMainThread {
             activeSounds.removeAll { $0 === sound }
@@ -242,23 +236,8 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
         playCustomSound(named: "slider-release", volume: 0.35)
     }
     
-    /// Play hold feedback sound (using slider tick)
-    func playHoldFeedback() {
-        playCustomSound(named: "slider-tick", volume: 0.3)
-    }
-    
     /// Play skip complete sound (using slider release)
     func playSkipComplete() {
         playCustomSound(named: "slider-release", volume: 0.5)
-    }
-    
-    /// Play typewriter keystroke (using slider tick quietly)
-    func playTypewriterKey() {
-        playCustomSound(named: "slider-tick", volume: 0.2)
-    }
-    
-    /// Play milestone reached sound (using break start)
-    func playMilestone() {
-        playCustomSound(named: "break-start", volume: 0.7)
     }
 }

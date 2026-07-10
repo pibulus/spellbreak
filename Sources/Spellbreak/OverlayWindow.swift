@@ -283,15 +283,9 @@ struct OverlayWindow: View {
         }
     }
 
-    private func scheduleTimer(withTimeInterval interval: TimeInterval, repeats: Bool, block: @escaping (Timer) -> Void) -> Timer {
-        let timer = Timer(timeInterval: interval, repeats: repeats, block: block)
-        RunLoop.main.add(timer, forMode: .common)
-        return timer
-    }
-
     private func startCountdownTimer() {
         countdownTimer?.invalidate()
-        countdownTimer = scheduleTimer(withTimeInterval: 0.5, repeats: true) { timer in
+        countdownTimer = Timer.scheduledCommonTimer(withTimeInterval: 0.5, repeats: true) { timer in
             updateCountdown()
             if timeRemaining <= 0 {
                 timer.invalidate()
@@ -426,7 +420,7 @@ struct OverlayWindow: View {
         let increments = requiredHoldDuration / updateInterval
         
         holdTimer?.invalidate()
-        holdTimer = scheduleTimer(withTimeInterval: updateInterval, repeats: true) { timer in
+        holdTimer = Timer.scheduledCommonTimer(withTimeInterval: updateInterval, repeats: true) { timer in
             if isHoldingToSkip {
                 holdProgress = min(holdProgress + (1.0 / increments), 1.0)
                 if holdProgress >= 1.0 {

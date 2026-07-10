@@ -340,23 +340,12 @@ struct SpellTextGenerator {
         default:
             break
         }
-        
+
+        // Full and new moon nights slip their own messages into the mix
+        if let lunarMessages = moonMessages[getMoonPhase()] {
+            pool += lunarMessages
+        }
+
         return pool.randomElement() ?? "Break the spell"
-    }
-    
-    static func generateSpellName() -> String {
-        let spells = [
-            "Digital Unbinding",
-            "Screen Liberation Ritual", 
-            "Pixel Dispersion",
-            "Focus Restoration",
-            "Vision Renewal Protocol",
-            "Retinal Rebellion",
-            "The Great Unfocusing",
-            "Photon Scattering Technique",
-            "Monitor Exorcism",
-            "Blue Light Banishment"
-        ]
-        return spells.randomElement() ?? "Digital Unbinding"
     }
 }

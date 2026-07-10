@@ -10,6 +10,37 @@ import SwiftUI
 import ServiceManagement
 import AppKit
 
+// MARK: - Palette
+extension Color {
+    /// Spellbreak's signature gradient colors
+    static let spellPink = Color(red: 0.95, green: 0.4, blue: 0.8)
+    static let spellCoral = Color(red: 1.0, green: 0.6, blue: 0.5)
+    static let spellPeach = Color(red: 1.0, green: 0.7, blue: 0.5)
+}
+
+// MARK: - Frosted Card Background
+private struct FrostedCard: ViewModifier {
+    var cornerRadius: CGFloat = 24
+    var fillOpacity: Double = 0.06
+
+    func body(content: Content) -> some View {
+        content.background(
+            RoundedRectangle(cornerRadius: cornerRadius)
+                .fill(Color.white.opacity(fillOpacity))
+                .overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                )
+        )
+    }
+}
+
+extension View {
+    func frostedCard(cornerRadius: CGFloat = 24, fillOpacity: Double = 0.06) -> some View {
+        modifier(FrostedCard(cornerRadius: cornerRadius, fillOpacity: fillOpacity))
+    }
+}
+
 // MARK: - Preferences View
 struct PreferencesView: View {
     // MARK: - UI Constants
@@ -54,8 +85,8 @@ struct PreferencesView: View {
                     .foregroundStyle(
                         LinearGradient(
                             colors: [
-                                Color(red: 0.95, green: 0.4, blue: 0.8),
-                                Color(red: 1.0, green: 0.6, blue: 0.5)
+                                Color.spellPink,
+                                Color.spellCoral
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -155,8 +186,8 @@ struct PreferencesView: View {
                 .background(
                     LinearGradient(
                         colors: [
-                            Color(red: 0.95, green: 0.4, blue: 0.8),
-                            Color(red: 1.0, green: 0.7, blue: 0.5),
+                            Color.spellPink,
+                            Color.spellPeach,
                             Color(red: 1.0, green: 0.8, blue: 0.4)
                         ],
                         startPoint: .leading,
@@ -224,8 +255,8 @@ struct PreferencesView: View {
                             .foregroundStyle(
                                 LinearGradient(
                                     colors: [
-                                        Color(red: 0.95, green: 0.4, blue: 0.8),
-                                        Color(red: 1.0, green: 0.6, blue: 0.5)
+                                        Color.spellPink,
+                                        Color.spellCoral
                                     ],
                                     startPoint: .leading,
                                     endPoint: .trailing
@@ -279,14 +310,7 @@ struct PreferencesView: View {
                 }
             }
             .padding(UI.cardPadding)
-            .background(
-                RoundedRectangle(cornerRadius: 24)
-                    .fill(Color.white.opacity(hoveredElement == "timing-card" ? 0.10 : 0.06))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 24)
-                            .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                    )
-            )
+            .frostedCard(fillOpacity: hoveredElement == "timing-card" ? 0.10 : 0.06)
             .scaleEffect(hoveredElement == "timing-card" ? 1.01 : 1.0)
             .animation(.easeOut(duration: 0.2), value: hoveredElement)
             .onHover { hovering in
@@ -338,7 +362,7 @@ struct PreferencesView: View {
             if let launchAtLoginError {
                 Text(launchAtLoginError)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(Color(red: 1.0, green: 0.7, blue: 0.5))
+                    .foregroundColor(Color.spellPeach)
                     .padding(.horizontal, UI.sidePadding + 4)
             }
             
@@ -404,8 +428,8 @@ struct PreferencesView: View {
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [
-                                    Color(red: 0.95, green: 0.4, blue: 0.8),
-                                    Color(red: 1.0, green: 0.7, blue: 0.5)
+                                    Color.spellPink,
+                                    Color.spellPeach
                                 ],
                                 startPoint: .leading,
                                 endPoint: .trailing
@@ -422,14 +446,7 @@ struct PreferencesView: View {
                 )
             }
             .padding(UI.cardPadding)
-            .background(
-                RoundedRectangle(cornerRadius: 24)
-                    .fill(Color.white.opacity(0.06))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 24)
-                            .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                    )
-            )
+            .frostedCard()
             .padding(.horizontal, UI.sidePadding)
             
             // Visual theme selector
@@ -446,8 +463,8 @@ struct PreferencesView: View {
                         subtitle: "Time-aware flowing waves",
                         icon: "sparkles",
                         colors: [
-                            Color(red: 0.95, green: 0.4, blue: 0.8),
-                            Color(red: 1.0, green: 0.6, blue: 0.5),
+                            Color.spellPink,
+                            Color.spellCoral,
                             Color(red: 0.7, green: 0.4, blue: 0.9)
                         ],
                         isSelected: visualTheme == "aurora",
@@ -502,14 +519,7 @@ struct PreferencesView: View {
                 }
             }
             .padding(UI.cardPadding)
-            .background(
-                RoundedRectangle(cornerRadius: 24)
-                    .fill(Color.white.opacity(0.06))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 24)
-                            .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                    )
-            )
+            .frostedCard()
             .padding(.horizontal, UI.sidePadding)
             
             Spacer()  // Push content to top within fixed height
@@ -578,8 +588,8 @@ struct TabButton: View {
                     if isSelected {
                         LinearGradient(
                             colors: [
-                                Color(red: 0.95, green: 0.4, blue: 0.8),
-                                Color(red: 1.0, green: 0.7, blue: 0.5)
+                                Color.spellPink,
+                                Color.spellPeach
                             ],
                             startPoint: .leading,
                             endPoint: .trailing
@@ -622,13 +632,13 @@ struct ToggleCard: View {
 
     private var titleColors: [Color] {
         isOn
-            ? [Color(red: 1.0, green: 0.6, blue: 0.5), Color(red: 0.95, green: 0.4, blue: 0.8)]
+            ? [Color.spellCoral, Color.spellPink]
             : [.white, .white]
     }
 
     private var trackColors: [Color] {
         isOn
-            ? [Color(red: 0.95, green: 0.4, blue: 0.8), Color(red: 1.0, green: 0.6, blue: 0.5)]
+            ? [Color.spellPink, Color.spellCoral]
             : [Color.white.opacity(0.15), Color.white.opacity(0.1)]
     }
 
@@ -651,14 +661,7 @@ struct ToggleCard: View {
         .accessibilityAddTraits(.isButton)
         .accessibilityAction(named: Text(isOn ? "Turn Off" : "Turn On"), toggleAction)
         .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.white.opacity(isHovered ? 0.10 : 0.06))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                )
-        )
+        .frostedCard(cornerRadius: 20, fillOpacity: isHovered ? 0.10 : 0.06)
         .scaleEffect(isHovered ? 1.01 : 1.0)
         .animation(.easeOut(duration: 0.15), value: isHovered)
     }
@@ -727,8 +730,8 @@ struct GradientSlider: View {
                     .fill(
                         LinearGradient(
                             colors: [
-                                Color(red: 0.95, green: 0.4, blue: 0.8),
-                                Color(red: 1.0, green: 0.7, blue: 0.5)
+                                Color.spellPink,
+                                Color.spellPeach
                             ],
                             startPoint: .leading,
                             endPoint: .trailing
@@ -781,6 +784,8 @@ struct GradientSlider: View {
     }
 
     private func updateValue(at x: CGFloat, width: CGFloat, animated: Bool) {
+        // width can be 0 for a frame during layout; x/width would be NaN and Int(round(.nan)) traps
+        guard width > 0, x.isFinite else { return }
         let normalizedPosition = max(0, min(1, x / width))
         let indexFloat = normalizedPosition * Double(options.count - 1)
         let nearestIndex = Int(round(indexFloat))

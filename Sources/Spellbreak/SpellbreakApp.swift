@@ -121,6 +121,7 @@ class AppState: ObservableObject {
     private var overlayWindowController: OverlayWindowController?    // Break overlay window
     private var preferencesWindowController: PreferencesWindowController?     // Preferences window
     private var overlayCancellable: AnyCancellable?
+    private var overlayFailsafe: DispatchWorkItem?
     private var preferencesCancellable: AnyCancellable?
     private var escapeKeyMonitor: Any?          // Event monitor for escape key
     private var testBreakObserver: NSObjectProtocol?
@@ -187,6 +188,7 @@ class AppState: ObservableObject {
         // Clean up timers
         timer?.invalidate()
         statusTimer?.invalidate()
+        overlayFailsafe?.cancel()
 
         if let observer = testBreakObserver {
             NotificationCenter.default.removeObserver(observer)
@@ -245,7 +247,7 @@ class AppState: ObservableObject {
 
     private func scheduleRepeatingBreakTimer() {
         timer?.invalidate()
-        timer = scheduleTimer(withTimeInterval: breakInterval, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledCommonTimer(withTimeInterval: max(0.1, breakInterval), repeats: true) { [weak self] _ in
             self?.checkAndTriggerBreak()
         }
     }
@@ -276,6 +278,20 @@ class AppState: ObservableObject {
 
         showingOverlay = true
         showOverlayWindow()
+        armOverlayFailsafe()
+    }
+
+    /// Last-resort unwedge: if the overlay never resolves (e.g. its window never
+    /// reached the screen), reset showingOverlay so future breaks can still fire
+    private func armOverlayFailsafe() {
+        overlayFailsafe?.cancel()
+        let failsafe = DispatchWorkItem { [weak self] in
+            guard let self = self, self.showingOverlay else { return }
+            self.showingOverlay = false
+        }
+        overlayFailsafe = failsafe
+        let breakSeconds = UserDefaults.standard.object(forKey: "breakDurationSec") as? Double ?? 20
+        DispatchQueue.main.asyncAfter(deadline: .now() + breakSeconds + 30, execute: failsafe)
     }
     
     func markBreakCompleted() {
@@ -315,6 +331,8 @@ class AppState: ObservableObject {
             .removeDuplicates()
             .sink { [weak self] showing in
                 if !showing {
+                    self?.overlayFailsafe?.cancel()
+                    self?.overlayFailsafe = nil
                     // Remove escape key monitor when closing overlay
                     if let monitor = self?.escapeKeyMonitor {
                         NSEvent.removeMonitor(monitor)
@@ -404,6 +422,22 @@ class AppState: ObservableObject {
         window.orderFrontRegardless()
         window.makeKeyAndOrderFront(self)
         NSApp.activate(ignoringOtherApps: true)
+
+        // The window server can drop an order-front issued while the app is
+        // still settling (launch, wake) — re-assert until it's actually visible
+        reassertOverlayVisibility(attempt: 1)
+    }
+
+    private func reassertOverlayVisibility(attempt: Int) {
+        guard attempt <= 5 else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5 * Double(attempt)) { [weak self] in
+            guard let self = self,
+                  self.showingOverlay,
+                  let window = self.overlayWindowController?.window,
+                  !window.occlusionState.contains(.visible) else { return }
+            window.orderFrontRegardless()
+            self.reassertOverlayVisibility(attempt: attempt + 1)
+        }
     }
     
     private func showHeadsUpNotification() {
@@ -427,19 +461,9 @@ class AppState: ObservableObject {
         }
     }
 
-    private func scheduleTimer(
-        withTimeInterval interval: TimeInterval,
-        repeats: Bool,
-        block: @escaping (Timer) -> Void
-    ) -> Timer {
-        let timer = Timer(timeInterval: max(0.1, interval), repeats: repeats, block: block)
-        RunLoop.main.add(timer, forMode: .common)
-        return timer
-    }
-
     private func startStatusTimer() {
         statusTimer?.invalidate()
-        statusTimer = scheduleTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+        statusTimer = Timer.scheduledCommonTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             self?.updateTimeRemainingAndWarning()
         }
     }
@@ -505,7 +529,7 @@ class AppState: ObservableObject {
             let remainingTime = breakInterval - elapsed
             
             // Set up timer for the remaining time
-            timer = scheduleTimer(withTimeInterval: remainingTime, repeats: false) { [weak self] _ in
+            timer = Timer.scheduledCommonTimer(withTimeInterval: max(0.1, remainingTime), repeats: false) { [weak self] _ in
                 self?.checkAndTriggerBreak()
                 // After this break, continue with regular intervals
                 guard let self = self else { return }
@@ -515,13 +539,23 @@ class AppState: ObservableObject {
             startStatusTimer()
             updateTimeRemainingAndWarning()
         } else {
-            // Timer expired while app was closed, trigger break now if appropriate
+            // Timer expired while app was closed, trigger break shortly if appropriate
             if elapsed < breakInterval * 2 {
                 // Only trigger if we're not too far past the scheduled time
                 timerRunning = true
                 timerWasRunning = true
                 requestNotificationAuthorizationIfNeeded()
-                triggerBreak()
+
+                // Land the break a few seconds out instead of mid-launch: a window
+                // ordered front before the app finishes launching can stay offscreen,
+                // leaving showingOverlay wedged true and blocking all future breaks
+                let grace: TimeInterval = 5
+                lastBreakTime = Date().addingTimeInterval(grace - breakInterval)
+                timer = Timer.scheduledCommonTimer(withTimeInterval: grace, repeats: false) { [weak self] _ in
+                    guard let self = self else { return }
+                    self.checkAndTriggerBreak()
+                    self.scheduleRepeatingBreakTimer()
+                }
 
                 startStatusTimer()
                 updateTimeRemainingAndWarning()

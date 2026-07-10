@@ -147,9 +147,7 @@ class StatusBarController: NSObject {
         
         // Timer display (if running)
         if appState?.timerRunning == true {
-            let minutes = Int(appState?.timeRemaining ?? 0) / 60
-            let seconds = Int(appState?.timeRemaining ?? 0) % 60
-            let timerText = String(format: "%d:%02d until break", minutes, seconds)
+            let timerText = "\((appState?.timeRemaining ?? 0).mmss) until break"
             let timerItem = NSMenuItem(title: timerText, action: nil, keyEquivalent: "")
             timerItem.isEnabled = false
             contextMenu.addItem(timerItem)
@@ -288,9 +286,7 @@ class StatusBarController: NSObject {
         guard let appState = appState else { return "Spellbreak" }
 
         if appState.timerRunning {
-            let minutes = Int(appState.timeRemaining) / 60
-            let seconds = Int(appState.timeRemaining) % 60
-            return String(format: "Spellbreak: %d:%02d until break", minutes, seconds)
+            return "Spellbreak: \(appState.timeRemaining.mmss) until break"
         } else {
             return "Spellbreak: timer paused"
         }

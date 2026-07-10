@@ -112,7 +112,7 @@ struct MenuViewSimple: View {
         VStack(spacing: 0) {
             // Simple timer display
             if appState.timerRunning {
-                Text(formatTime(appState.timeRemaining))
+                Text(appState.timeRemaining.mmss)
                     .font(.system(size: 14, weight: .medium, design: .monospaced))
                     .foregroundColor(.primary)
                     .padding(.vertical, 8)
@@ -166,7 +166,7 @@ struct MenuViewSimple: View {
 
     private var timerStatusCard: some View {
         VStack(spacing: 4) {
-            Text(appState.timerRunning ? formatTime(appState.timeRemaining) : "Paused")
+            Text(appState.timerRunning ? appState.timeRemaining.mmss : "Paused")
                 .font(.system(size: appState.timerRunning ? 22 : 19, weight: .semibold, design: .rounded))
                 .foregroundColor(.primary)
 
@@ -193,12 +193,6 @@ struct MenuViewSimple: View {
         .cornerRadius(8)
         .padding(.horizontal, 10)
         .padding(.bottom, 6)
-    }
-    
-    private func formatTime(_ seconds: TimeInterval) -> String {
-        let mins = Int(seconds) / 60
-        let secs = Int(seconds) % 60
-        return String(format: "%d:%02d", mins, secs)
     }
 }
 
