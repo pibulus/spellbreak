@@ -47,7 +47,7 @@ struct PreferencesView: View {
     // MARK: - Core Settings
     @AppStorage("breakIntervalMin") private var breakIntervalMin: Double = 20
     @AppStorage("breakDurationSec") private var breakDurationSec: Double = 20
-    @AppStorage("lockMode") private var lockMode: Bool = true
+    @AppStorage("lockMode") private var lockMode: Bool = false
     @AppStorage("breakWarningEnabled") private var breakWarningEnabled: Bool = true
     @AppStorage("launchAtLogin") private var launchAtLogin: Bool = false
     @AppStorage("fancyMenu") private var fancyMenu: Bool = true

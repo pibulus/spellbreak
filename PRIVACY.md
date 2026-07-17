@@ -43,7 +43,7 @@ Spellbreak uses no third-party services. No data is sent anywhere, ever.
 
 ## Open Source
 
-Spellbreak's source code is available at [github.com/pibulus/spellbreak](https://github.com/pibulus/spellbreak)
+Find out more about Spellbreak at [spellbreak.app](https://spellbreak.app)
 
 ## Contact
 

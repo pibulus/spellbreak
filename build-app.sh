@@ -97,10 +97,11 @@ fi
 chmod +x "${MACOS_DIR}/${APP_NAME}"
 cp "$INFO_PLIST" "${CONTENTS_DIR}/Info.plist"
 
-AUTO_BUILD_VERSION=$(git -C "$(dirname "$0")" rev-list --count HEAD 2>/dev/null || echo "1")
+AUTO_BUILD_VERSION=$(date +%Y%m%d%H%M)
 /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${AUTO_BUILD_VERSION}" "${CONTENTS_DIR}/Info.plist" 2>/dev/null \
     || /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string ${AUTO_BUILD_VERSION}" "${CONTENTS_DIR}/Info.plist"
 cp -R "$SOUNDS_DIR" "${RESOURCES_DIR}/"
+cp "Sources/Spellbreak/Resources/PrivacyInfo.xcprivacy" "${RESOURCES_DIR}/"
 
 echo "🎨 Creating app icon..."
 if command -v iconutil >/dev/null 2>&1 && [[ -d "$ICONSET_SOURCE" ]]; then

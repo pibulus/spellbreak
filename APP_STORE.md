@@ -37,7 +37,7 @@ No accounts. No analytics. No network requests. No camera or microphone access. 
 Break the spell. Your spine will thank you.
 
 ## Keywords
-break reminder, eye strain, posture, health, wellness, productivity, timer, pomodoro, RSI prevention, screen time, focus, meditation, mindfulness, desktop health
+eye strain, posture, rest, timer, pomodoro, RSI, wellness, reminder, focus, health, stretch
 
 ## Categories
 Primary: Health & Fitness
