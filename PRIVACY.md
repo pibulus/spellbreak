@@ -47,7 +47,7 @@ Find out more about Spellbreak at [spellbreak.app](https://spellbreak.app)
 
 ## Contact
 
-Questions about privacy? Email pablo@spellbreak.app
+Questions about privacy? Email pibulus@gmail.com
 
 ## Changes
 
