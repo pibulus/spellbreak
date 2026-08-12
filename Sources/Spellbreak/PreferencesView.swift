@@ -153,7 +153,7 @@ struct PreferencesView: View {
                         .transition(.opacity)
                 }
             }
-            .frame(height: 440)  // Extra room for real settings without crowding
+            .frame(height: 480, alignment: .top)  // Top-aligned: overflow can only grow down, never over the tabs
             .animation(.easeInOut(duration: 0.2), value: selectedTab)
             }
             
@@ -231,8 +231,8 @@ struct PreferencesView: View {
     // MARK: - Timer Tab Content  
     private var timerContent: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Color.clear.frame(height: 12)  // Alignment spacer to match Vibes tab
-            
+            Color.clear.frame(height: 4)  // Breathing room below tabs
+
             // Main timing card
             VStack(spacing: 32) {
                 // Break interval
@@ -365,21 +365,73 @@ struct PreferencesView: View {
     // MARK: - Vibes Tab Content
     private var vibesContent: some View {
         VStack(alignment: .leading, spacing: 18) {
-            // Add spacing to match timer tab's card placement
-            Color.clear.frame(height: 12)  // Alignment spacer
-            
-            // Menu style toggle
-            ToggleCard(
-                title: "Fancy Menu",
-                subtitle: "Mystical vibes vs clean text",
-                isOn: fancyMenu,
-                isHovered: hoveredElement == "menu-toggle",
-                onChange: { fancyMenu = $0 },
-                soundManager: soundManager
-            )
-            .onHover { hovering in
-                hoveredElement = hovering ? "menu-toggle" : nil
+            Color.clear.frame(height: 4)  // Breathing room below tabs
+
+            // Visual theme selector — the main event, so it leads
+            VStack(alignment: .leading, spacing: 14) {
+                Text("Visual Theme")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.9))
+                    .padding(.horizontal, 4)
+
+                HStack(spacing: 12) {
+                    ThemeChip(
+                        title: "Aurora",
+                        subtitle: "Time-aware flowing waves",
+                        colors: [
+                            Color.spellPink,
+                            Color.spellCoral,
+                            Color(red: 0.7, green: 0.4, blue: 0.9)
+                        ],
+                        isSelected: visualTheme == "aurora",
+                        isHovered: hoveredElement == "theme-aurora"
+                    ) {
+                        visualTheme = "aurora"
+                        soundManager.playToggleOn()
+                    }
+                    .onHover { hovering in
+                        hoveredElement = hovering ? "theme-aurora" : nil
+                    }
+
+                    ThemeChip(
+                        title: "Cosmic",
+                        subtitle: "Deep space nebula",
+                        colors: [
+                            Color(red: 0.1, green: 0.1, blue: 0.3),
+                            Color(red: 0.4, green: 0.1, blue: 0.8),
+                            Color(red: 0.2, green: 0.6, blue: 1.0)
+                        ],
+                        isSelected: visualTheme == "cosmic",
+                        isHovered: hoveredElement == "theme-cosmic"
+                    ) {
+                        visualTheme = "cosmic"
+                        soundManager.playToggleOn()
+                    }
+                    .onHover { hovering in
+                        hoveredElement = hovering ? "theme-cosmic" : nil
+                    }
+
+                    ThemeChip(
+                        title: "Lava Lamp",
+                        subtitle: "Retro morphing blobs",
+                        colors: [
+                            Color(red: 1.0, green: 0.3, blue: 0.4),
+                            Color(red: 1.0, green: 0.1, blue: 0.6),
+                            Color(red: 1.0, green: 0.5, blue: 0.2)
+                        ],
+                        isSelected: visualTheme == "lava",
+                        isHovered: hoveredElement == "theme-lava"
+                    ) {
+                        visualTheme = "lava"
+                        soundManager.playToggleOn()
+                    }
+                    .onHover { hovering in
+                        hoveredElement = hovering ? "theme-lava" : nil
+                    }
+                }
             }
+            .padding(UI.cardPadding)
+            .frostedCard()
             .padding(.horizontal, UI.sidePadding)
 
             HStack(spacing: 16) {
@@ -440,80 +492,21 @@ struct PreferencesView: View {
             .padding(UI.cardPadding)
             .frostedCard()
             .padding(.horizontal, UI.sidePadding)
-            
-            // Visual theme selector
-            VStack(alignment: .leading, spacing: 16) {
-                Text("Visual Theme")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.9))
-                    .padding(.horizontal, 4)
-                
-                VStack(spacing: 12) {
-                    // Aurora theme
-                    ThemeOption(
-                        title: "Aurora",
-                        subtitle: "Time-aware flowing waves",
-                        icon: "sparkles",
-                        colors: [
-                            Color.spellPink,
-                            Color.spellCoral,
-                            Color(red: 0.7, green: 0.4, blue: 0.9)
-                        ],
-                        isSelected: visualTheme == "aurora",
-                        isHovered: hoveredElement == "theme-aurora"
-                    ) {
-                        visualTheme = "aurora"
-                        soundManager.playToggleOn()
-                    }
-                    .onHover { hovering in
-                        hoveredElement = hovering ? "theme-aurora" : nil
-                    }
-                    
-                    // Cosmic theme
-                    ThemeOption(
-                        title: "Cosmic",
-                        subtitle: "Deep space nebula",
-                        icon: "moon.stars.fill",
-                        colors: [
-                            Color(red: 0.1, green: 0.1, blue: 0.3),
-                            Color(red: 0.4, green: 0.1, blue: 0.8),
-                            Color(red: 0.2, green: 0.6, blue: 1.0)
-                        ],
-                        isSelected: visualTheme == "cosmic",
-                        isHovered: hoveredElement == "theme-cosmic"
-                    ) {
-                        visualTheme = "cosmic"
-                        soundManager.playToggleOn()
-                    }
-                    .onHover { hovering in
-                        hoveredElement = hovering ? "theme-cosmic" : nil
-                    }
-                    
-                    // Lava Lamp theme
-                    ThemeOption(
-                        title: "Lava Lamp",
-                        subtitle: "Retro morphing blobs",
-                        icon: "lava.floor.fill",
-                        colors: [
-                            Color(red: 1.0, green: 0.3, blue: 0.4),
-                            Color(red: 1.0, green: 0.1, blue: 0.6),
-                            Color(red: 1.0, green: 0.5, blue: 0.2)
-                        ],
-                        isSelected: visualTheme == "lava",
-                        isHovered: hoveredElement == "theme-lava"
-                    ) {
-                        visualTheme = "lava"
-                        soundManager.playToggleOn()
-                    }
-                    .onHover { hovering in
-                        hoveredElement = hovering ? "theme-lava" : nil
-                    }
-                }
+
+            // Menu style toggle — menu-bar cosmetics, least-reached-for, so it sits last
+            ToggleCard(
+                title: "Fancy Menu",
+                subtitle: "Mystical vibes vs clean text",
+                isOn: fancyMenu,
+                isHovered: hoveredElement == "menu-toggle",
+                onChange: { fancyMenu = $0 },
+                soundManager: soundManager
+            )
+            .onHover { hovering in
+                hoveredElement = hovering ? "menu-toggle" : nil
             }
-            .padding(UI.cardPadding)
-            .frostedCard()
             .padding(.horizontal, UI.sidePadding)
-            
+
             Spacer()  // Push content to top within fixed height
         }
     }
@@ -836,25 +829,24 @@ struct GradientSlider: View {
     }
 }
 
-// MARK: - Theme Option
-struct ThemeOption: View {
+// MARK: - Theme Chip
+/// Compact 3-across theme picker card: color dots + name, gradient ring when selected.
+struct ThemeChip: View {
     let title: String
     let subtitle: String
-    let icon: String
     let colors: [Color]
     let isSelected: Bool
     let isHovered: Bool
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 16) {
-                // Color preview circles
+            VStack(spacing: 10) {
                 HStack(spacing: -8) {
                     ForEach(0..<colors.count, id: \.self) { i in
                         Circle()
                             .fill(colors[i])
-                            .frame(width: 24, height: 24)
+                            .frame(width: 22, height: 22)
                             .overlay(
                                 Circle()
                                     .stroke(Color.black.opacity(0.2), lineWidth: 1)
@@ -862,33 +854,14 @@ struct ThemeOption: View {
                             .zIndex(Double(colors.count - i))
                     }
                 }
-                .frame(width: 60)
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.white.opacity(isSelected ? 0.95 : 0.8))
-                    Text(subtitle)
-                        .font(.system(size: 12))
-                        .foregroundColor(.white.opacity(isSelected ? 0.6 : 0.4))
-                }
-                
-                Spacer()
-                
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 20))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: colors,
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                }
+
+                Text(title)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white.opacity(isSelected ? 0.95 : 0.75))
+                    .lineLimit(1)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color.white.opacity(isSelected ? 0.12 : (isHovered ? 0.08 : 0.04)))
@@ -904,10 +877,14 @@ struct ThemeOption: View {
                             )
                     )
             )
+            .scaleEffect(isHovered && !isSelected ? 1.02 : 1.0)
+            .animation(.easeOut(duration: 0.15), value: isHovered)
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.plain)
+        .help(subtitle)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(title) theme")
+        .accessibilityHint(subtitle)
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
         .accessibilityAction(named: "Select") { action() }
     }
