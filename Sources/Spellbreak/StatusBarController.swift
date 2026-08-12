@@ -9,41 +9,17 @@ import AppKit
 import SwiftUI
 import Combine
 
-enum MenuIconStyle: String, CaseIterable {
-    case mystical = "mystical"
-    case yellow = "yellow"
-    case white = "white"
-    
-    var displayName: String {
-        switch self {
-        case .mystical: return "Purple"
-        case .yellow: return "Yellow"
-        case .white: return "White"
-        }
-    }
-}
-
 class StatusBarController: NSObject {
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
     private var contextMenu: NSMenu!
     weak var appState: AppState?
     private var cancellables = Set<AnyCancellable>()
-    private var currentIconStyle: MenuIconStyle = .mystical
     private var notificationObserver: Any?
-    private var cachedIcon: NSImage?
-    private var cachedIconStyle: MenuIconStyle?
-    private var cachedIconRunningState: Bool?
-    
+
     override init() {
         super.init()
-        
-        // Load saved icon style
-        if let savedStyle = UserDefaults.standard.string(forKey: "menuIconStyle"),
-           let style = MenuIconStyle(rawValue: savedStyle) {
-            currentIconStyle = style
-        }
-        
+
         // Create status bar item
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         
@@ -168,21 +144,7 @@ class StatusBarController: NSObject {
         contextMenu.addItem(timerItem)
         
         contextMenu.addItem(NSMenuItem.separator())
-        
-        // Icon Style submenu
-        let styleMenu = NSMenu()
-        for style in MenuIconStyle.allCases {
-            let item = NSMenuItem(title: style.displayName, action: #selector(changeIconStyle(_:)), keyEquivalent: "")
-            item.target = self
-            item.representedObject = style
-            item.state = (style == currentIconStyle) ? .on : .off
-            styleMenu.addItem(item)
-        }
-        
-        let styleMenuItem = NSMenuItem(title: "Icon Style", action: nil, keyEquivalent: "")
-        styleMenuItem.submenu = styleMenu
-        contextMenu.addItem(styleMenuItem)
-        
+
         // Preferences
         let prefsItem = NSMenuItem(title: "Preferences...", action: #selector(showPreferences), keyEquivalent: "")
         prefsItem.target = self
@@ -254,27 +216,20 @@ class StatusBarController: NSObject {
         NSApplication.shared.terminate(nil)
     }
     
-    @objc private func changeIconStyle(_ sender: NSMenuItem) {
-        guard let style = sender.representedObject as? MenuIconStyle else { return }
-        currentIconStyle = style
-        UserDefaults.standard.set(style.rawValue, forKey: "menuIconStyle")
-        updateIcon()
-    }
-    
     func updateIcon() {
         guard let button = statusItem.button else { return }
         let timerRunning = appState?.timerRunning == true
 
-        if cachedIcon == nil ||
-            cachedIconStyle != currentIconStyle ||
-            cachedIconRunningState != timerRunning {
-            cachedIcon = createIconImage(isActive: timerRunning)
-            cachedIconStyle = currentIconStyle
-            cachedIconRunningState = timerRunning
+        if button.image == nil {
+            let config = NSImage.SymbolConfiguration(pointSize: 15, weight: .medium)
+            let image = NSImage(systemSymbolName: "moon.stars", accessibilityDescription: "Spellbreak")?
+                .withSymbolConfiguration(config)
+            image?.isTemplate = true  // System tints for light/dark menu bars
+            button.image = image
         }
 
-        button.image = cachedIcon
-        
+        button.appearsDisabled = !timerRunning  // Native dim when paused
+
         // Update tooltip based on timer state
         let statusText = iconStatusText
         button.toolTip = statusText
@@ -292,112 +247,4 @@ class StatusBarController: NSObject {
         }
     }
 
-    private func createIconImage(isActive: Bool) -> NSImage {
-        let size = NSSize(width: 18, height: 18)
-        let image = NSImage(size: size)
-        
-        image.lockFocus()
-        
-        // Clear background
-        NSColor.clear.setFill()
-        NSRect(origin: .zero, size: size).fill()
-        
-        // Draw icon based on style - all use same moon design with different colors
-        if let context = NSGraphicsContext.current?.cgContext {
-            switch currentIconStyle {
-            case .mystical:
-                drawMoonIcon(context: context, size: size, style: .mystical, isActive: isActive)
-            case .yellow:
-                drawMoonIcon(context: context, size: size, style: .yellow, isActive: isActive)
-            case .white:
-                drawMoonIcon(context: context, size: size, style: .white, isActive: isActive)
-            }
-        }
-        
-        image.unlockFocus()
-        image.isTemplate = false  // Keep colors for all styles
-        
-        return image
-    }
-    
-    private func drawMoonIcon(context: CGContext, size: NSSize, style: MenuIconStyle, isActive: Bool) {
-        // Set colors based on style
-        let moonColor: NSColor
-        let starColor: NSColor
-        let alpha: CGFloat = isActive ? 1.0 : 0.42
-        
-        switch style {
-        case .mystical:
-            // Purple/pink gradient colors for mystical theme
-            moonColor = NSColor(red: 0.7, green: 0.4, blue: 0.9, alpha: alpha)
-            starColor = NSColor(red: 0.9, green: 0.3, blue: 0.6, alpha: alpha)
-        case .yellow:
-            // Golden yellow theme
-            moonColor = NSColor(red: 1.0, green: 0.85, blue: 0.4, alpha: alpha)
-            starColor = NSColor(red: 1.0, green: 0.95, blue: 0.6, alpha: alpha)
-        case .white:
-            // Plain white theme
-            moonColor = NSColor(red: 0.95, green: 0.95, blue: 0.95, alpha: alpha)
-            starColor = NSColor(red: 1.0, green: 1.0, blue: 1.0, alpha: alpha)
-        }
-        
-        // Draw a crescent moon
-        context.setFillColor(moonColor.cgColor)
-        
-        let moonRadius = size.width * 0.35
-        let center = CGPoint(x: size.width * 0.5, y: size.height * 0.5)
-        
-        // Main moon circle
-        let moonRect = CGRect(x: center.x - moonRadius, y: center.y - moonRadius, 
-                              width: moonRadius * 2, height: moonRadius * 2)
-        context.fillEllipse(in: moonRect)
-        
-        // Cut out crescent shape
-        context.setBlendMode(.clear)
-        let cutRadius = moonRadius * 0.8
-        let cutOffset = moonRadius * 0.4
-        let cutRect = CGRect(x: center.x - cutRadius + cutOffset, y: center.y - cutRadius,
-                             width: cutRadius * 2, height: cutRadius * 2)
-        context.fillEllipse(in: cutRect)
-        
-        // Reset blend mode and draw stars
-        context.setBlendMode(.normal)
-        context.setFillColor(starColor.cgColor)
-        
-        if isActive {
-            // Small stars around moon
-            drawStar(context: context,
-                    center: CGPoint(x: size.width * 0.8, y: size.height * 0.3),
-                    size: size.width * 0.12)
-
-            drawStar(context: context,
-                    center: CGPoint(x: size.width * 0.75, y: size.height * 0.7),
-                    size: size.width * 0.1)
-        }
-    }
-    
-    private func drawStar(context: CGContext, center: CGPoint, size: CGFloat) {
-        let radius = size / 2
-        let innerRadius = radius * 0.4
-        let points = 4
-        
-        let path = CGMutablePath()
-        
-        for i in 0..<points * 2 {
-            let angle = CGFloat(i) * .pi / CGFloat(points)
-            let currentRadius = i % 2 == 0 ? radius : innerRadius
-            let x = center.x + cos(angle) * currentRadius
-            let y = center.y + sin(angle) * currentRadius
-            
-            if i == 0 {
-                path.move(to: CGPoint(x: x, y: y))
-            } else {
-                path.addLine(to: CGPoint(x: x, y: y))
-            }
-        }
-        path.closeSubpath()
-        
-        context.addPath(path)
-        context.fillPath()
-    }
 }
