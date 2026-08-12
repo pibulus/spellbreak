@@ -9,7 +9,8 @@ CONTENTS_DIR="${APP_BUNDLE}/Contents"
 PROVISION_PROFILE="Spellbreak_MAS.provisionprofile"
 ENTITLEMENTS="Spellbreak.entitlements"
 DIST_DIR="dist"
-PKG_PATH="${DIST_DIR}/${APP_NAME}-v1.0.0-mas.pkg"
+VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "Sources/Spellbreak/Resources/Info.plist")
+PKG_PATH="${DIST_DIR}/${APP_NAME}-v${VERSION}-mas.pkg"
 
 APP_SIGN_IDENTITY="Apple Distribution: Pablo Alvarado (V433H655PN)"
 INSTALLER_SIGN_IDENTITY="3rd Party Mac Developer Installer: Pablo Alvarado (V433H655PN)"

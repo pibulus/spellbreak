@@ -15,8 +15,8 @@ Spellbreak breaks the digital hypnosis with mystical break reminders that actual
 **Street-smart break wisdom**
 Messages that know your patterns. "The trance gets comfortable." "Your jaw keeping score?" "Screen's got your number." NY tarot reader energy, not corporate wellness speak.
 
-**Beautiful, unskippable (but skippable)**
-Full-screen mystical overlays with flowing waves and particles. Need to skip? Hold the skip ring for a short duration that scales with break length. Just enough friction to make you think twice.
+**Beautiful, hard to ignore, easy to leave**
+Full-screen mystical overlays with flowing waves and particles. Need to get back? Hold the skip ring for a moment that scales with break length. Just enough friction to make you think twice — you're always in control.
 
 **Features that matter:**
 • Customizable break intervals (15-180 minutes)
@@ -37,7 +37,7 @@ No accounts. No analytics. No network requests. No camera or microphone access. 
 Break the spell. Your spine will thank you.
 
 ## Keywords
-eye strain, posture, rest, timer, pomodoro, RSI, wellness, reminder, focus, health, stretch
+eye strain, posture, rest, timer, pomodoro, wellness, reminder, focus, health, stretch, 20-20-20
 
 ## Categories
 Primary: Health & Fitness
@@ -51,6 +51,12 @@ Free
 
 ## In-App Purchases
 None
+
+## What's New (Version 1.0.1)
+• First launch now opens Preferences so you can cast your first break right away
+• Native menu bar icon that follows your light/dark menu bar
+• Break intervals now include the classic 20-20-20 and pomodoro settings
+• Preferences layout polish
 
 ## What's New (Version 1.0)
 • Initial release

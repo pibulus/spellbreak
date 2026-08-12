@@ -41,7 +41,7 @@ Optional permissions you may grant:
 
 Spellbreak uses no third-party services. No data is sent anywhere, ever.
 
-## Open Source
+## Learn More
 
 Find out more about Spellbreak at [spellbreak.app](https://spellbreak.app)
 
