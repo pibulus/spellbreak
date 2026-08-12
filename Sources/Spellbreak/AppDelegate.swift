@@ -19,9 +19,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         soundManager = SoundManager()
         appState = AppState()
+        appState.soundManager = soundManager
 
         // Create and configure status bar controller immediately
         statusBarController = StatusBarController()
         statusBarController.configure(with: appState)
+
+        // First launch: we're a faceless menu bar app, so show Preferences
+        // once so new users see *something* (and can hit Start / Test Break)
+        let defaults = UserDefaults.standard
+        if !defaults.bool(forKey: "hasLaunchedBefore") {
+            defaults.set(true, forKey: "hasLaunchedBefore")
+            appState.showPreferences()
+        }
     }
 }

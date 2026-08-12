@@ -115,6 +115,7 @@ class AppState: ObservableObject {
     @Published var todaySkippedBreaks: Int = 0     // Breaks skipped today
     
     // MARK: - Private Properties
+    weak var soundManager: SoundManager?         // Injected by AppDelegate at launch (NSApp.delegate is SwiftUI's wrapper during launch, so we can't reach it that way)
     private var timer: Timer?                    // Main timer for break intervals
     private var statusTimer: Timer?              // Timer for updating UI countdown
     private var lastBreakTime: Date = Date()     // When the last break was triggered
@@ -370,9 +371,9 @@ class AppState: ObservableObject {
             )
             window.title = "Spellbreak Preferences"
             window.center()
-            guard let appDelegate = NSApp.delegate as? AppDelegate else { return }
+            guard let soundManager else { return }
             window.contentView = NSHostingView(rootView: PreferencesView()
-                .environmentObject(appDelegate.soundManager)
+                .environmentObject(soundManager)
             )
             window.isMovableByWindowBackground = false  // Fixed: Don't allow dragging by background
             window.titlebarAppearsTransparent = true
