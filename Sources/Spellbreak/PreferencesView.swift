@@ -261,7 +261,7 @@ struct PreferencesView: View {
                     
                     GradientSlider(
                         value: $breakIntervalMin,
-                        options: [15, 30, 60, 90, 120, 180],
+                        options: [15, 20, 25, 30, 45, 60, 90, 120, 180],
                         accessibilityLabel: "Break interval",
                         accessibilityValueFormatter: { "\(Int($0)) minutes" },
                         soundManager: soundManager
@@ -294,7 +294,7 @@ struct PreferencesView: View {
                     
                     GradientSlider(
                         value: $breakDurationSec,
-                        options: [15, 30, 60, 90, 120, 180],
+                        options: [10, 15, 20, 30, 60, 90, 120, 180],
                         accessibilityLabel: "Break duration",
                         accessibilityValueFormatter: { "\(Int($0)) seconds" },
                         soundManager: soundManager
