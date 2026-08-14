@@ -163,6 +163,15 @@ class AppState: ObservableObject {
         setupCombineObservers()
         checkDailyReset()
         restoreTimerState()
+
+        // Debug hook: SPELLBREAK_FIRE_NOW=1 fires a test break 3s after launch,
+        // bypassing prefs/timer state — the only reliable repro lever for
+        // headless overlay testing (prefs tricks fight cfprefsd + the sandbox)
+        if ProcessInfo.processInfo.environment["SPELLBREAK_FIRE_NOW"] != nil {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
+                self?.triggerBreak(countsTowardStats: false, resetsTimerAnchor: false)
+            }
+        }
         
         // Listen for test break requests from preferences
         testBreakObserver = NotificationCenter.default.addObserver(
@@ -399,12 +408,14 @@ class AppState: ObservableObject {
     private func showOverlayWindow() {
         overlayWindowController = OverlayWindowController()
         guard let window = overlayWindowController?.window else { return }
-        
+
         // Use the good SwiftUI overlay with animated effects
-        guard let appDelegate = NSApp.delegate as? AppDelegate else { return }
-            let overlayView = OverlayWindow()
+        // (soundManager comes via the injected reference — NSApp.delegate is
+        // SwiftUI's own wrapper object, not our AppDelegate, so casting it fails)
+        guard let soundManager else { return }
+        let overlayView = OverlayWindow()
             .environmentObject(self)
-            .environmentObject(appDelegate.soundManager)
+            .environmentObject(soundManager)
         
         window.contentView = TransparentHostingView(rootView: overlayView)
         window.isOpaque = false
@@ -559,7 +570,7 @@ class AppState: ObservableObject {
     /// Restore timer state after app restart
     private func restoreTimerState() {
         guard timerWasRunning && lastBreakTimestamp > 0 else { return }
-        
+
         let lastBreak = Date(timeIntervalSince1970: lastBreakTimestamp)
         let elapsed = max(0, Date().timeIntervalSince(lastBreak))
         
