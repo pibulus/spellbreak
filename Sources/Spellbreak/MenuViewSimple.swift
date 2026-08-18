@@ -59,18 +59,14 @@ struct MenuViewSimple: View {
                 }
                 .onHover { hoveredItem = $0 ? "break" : nil }
                 
-                // Pause/Resume
+                // Pause/Resume — one control, and "Resume" really does resume.
                 SimpleMenuItem(
                     icon: appState.timerRunning ? "pause.fill" : "play.fill",
-                    title: appState.timerRunning ? "Pause" : "Start",
+                    title: appState.timerRunning ? "Pause" : (appState.timerPaused ? "Resume" : "Start"),
                     isHovered: hoveredItem == "timer"
                 ) {
                     onRequestClose()
-                    if appState.timerRunning {
-                        appState.stopTimer()
-                    } else {
-                        appState.startTimer()
-                    }
+                    appState.toggleTimer()
                 }
                 .onHover { hoveredItem = $0 ? "timer" : nil }
                 
@@ -130,7 +126,7 @@ struct MenuViewSimple: View {
                     }
                 )
                 PlainMenuItem(
-                    title: appState.timerRunning ? "Pause Timer" : "Start Timer",
+                    title: appState.timerRunning ? "Pause Timer" : (appState.timerPaused ? "Resume Timer" : "Start Timer"),
                     action: {
                         onRequestClose()
                         if appState.timerRunning {
@@ -166,11 +162,14 @@ struct MenuViewSimple: View {
 
     private var timerStatusCard: some View {
         VStack(spacing: 4) {
-            Text(appState.timerRunning ? appState.timeRemaining.mmss : "Paused")
+            // Paused keeps showing the time it stopped at — that number IS the promise
+            // that resuming picks up where you left off.
+            Text(appState.timerRunning || appState.timerPaused ? appState.timeRemaining.mmss : "Off")
                 .font(.system(size: appState.timerRunning ? 22 : 19, weight: .semibold, design: .rounded))
                 .foregroundColor(.primary)
+                .opacity(appState.timerPaused ? 0.55 : 1)
 
-            Text(appState.timerRunning ? "until break" : "no break scheduled")
+            Text(appState.timerRunning ? "until break" : (appState.timerPaused ? "paused" : "no break scheduled"))
                 .font(.system(size: 10, weight: .medium))
                 .foregroundColor(.secondary)
         }

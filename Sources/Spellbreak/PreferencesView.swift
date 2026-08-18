@@ -52,7 +52,7 @@ struct PreferencesView: View {
     @AppStorage("launchAtLogin") private var launchAtLogin: Bool = false
     @AppStorage("fancyMenu") private var fancyMenu: Bool = true
     @AppStorage("visualTheme") private var visualTheme: String = "aurora"
-    @AppStorage("musicEnabled") private var musicEnabled: Bool = false
+    @AppStorage("musicEnabled") private var musicEnabled: Bool = true
     @AppStorage("soundEffectsEnabled") private var soundEffectsEnabled: Bool = true
     @AppStorage("soundVolume") private var soundVolume: Double = 0.5
     
@@ -314,7 +314,7 @@ struct PreferencesView: View {
             HStack(spacing: 16) {
                 ToggleCard(
                     title: "Unskippable",
-                    subtitle: lockMode ? "No skips!" : "Hold to skip",
+                    subtitle: "Breaks you cannot click away",
                     isOn: lockMode,
                     isHovered: hoveredElement == "skip-toggle",
                     onChange: { lockMode = $0 },
@@ -326,7 +326,7 @@ struct PreferencesView: View {
 
                 ToggleCard(
                     title: "Heads-Up",
-                    subtitle: breakWarningEnabled ? "Countdown before the spell lands" : "Straight into the spell",
+                    subtitle: "A countdown before the spell lands",
                     isOn: breakWarningEnabled,
                     isHovered: hoveredElement == "warning-toggle",
                     onChange: { breakWarningEnabled = $0 },
@@ -437,7 +437,7 @@ struct PreferencesView: View {
             HStack(spacing: 16) {
                 ToggleCard(
                     title: "Ambient",
-                    subtitle: musicEnabled ? "Break bed switched on" : "Silence during breaks",
+                    subtitle: "A sound bed while the break plays",
                     isOn: musicEnabled,
                     isHovered: hoveredElement == "music-toggle",
                     onChange: { musicEnabled = $0 },
@@ -449,7 +449,7 @@ struct PreferencesView: View {
 
                 ToggleCard(
                     title: "SFX",
-                    subtitle: soundEffectsEnabled ? "Clicks and chimes" : "Quiet controls",
+                    subtitle: "Clicks and chimes on the controls",
                     isOn: soundEffectsEnabled,
                     isHovered: hoveredElement == "sfx-toggle",
                     onChange: { soundEffectsEnabled = $0 },

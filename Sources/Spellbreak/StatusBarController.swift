@@ -138,7 +138,12 @@ class StatusBarController: NSObject {
         contextMenu.addItem(NSMenuItem.separator())
         
         // Timer toggle
-        let timerTitle = appState?.timerRunning == true ? "Pause Timer" : "Start Timer"
+        let timerTitle: String
+        if appState?.timerRunning == true {
+            timerTitle = "Pause Timer"
+        } else {
+            timerTitle = appState?.timerPaused == true ? "Resume Timer" : "Start Timer"
+        }
         let timerItem = NSMenuItem(title: timerTitle, action: #selector(toggleTimer), keyEquivalent: "")
         timerItem.target = self
         contextMenu.addItem(timerItem)
@@ -199,11 +204,7 @@ class StatusBarController: NSObject {
     }
     
     @objc private func toggleTimer() {
-        if appState?.timerRunning == true {
-            appState?.stopTimer()
-        } else {
-            appState?.startTimer()
-        }
+        appState?.toggleTimer()
         updateIcon()
     }
     
@@ -242,8 +243,10 @@ class StatusBarController: NSObject {
 
         if appState.timerRunning {
             return "Spellbreak: \(appState.timeRemaining.mmss) until break"
+        } else if appState.timerPaused {
+            return "Spellbreak: paused at \(appState.timeRemaining.mmss)"
         } else {
-            return "Spellbreak: timer paused"
+            return "Spellbreak: timer off"
         }
     }
 

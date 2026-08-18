@@ -111,6 +111,7 @@ class AppState: ObservableObject {
     @Published var showingOverlay = false        // Whether the break overlay is visible
     @Published var showingPreferences = false    // Whether preferences window is open
     @Published var timeRemaining: TimeInterval = 0  // Seconds until next break
+    @Published var timerPaused = false            // Stopped, but holding its place
     @Published var todayCompletedBreaks: Int = 0   // Breaks completed today
     @Published var todaySkippedBreaks: Int = 0     // Breaks skipped today
     
@@ -152,6 +153,8 @@ class AppState: ObservableObject {
     @AppStorage("timerWasRunning") var timerWasRunning: Bool = false
     @AppStorage("lastBreakTimestamp") private var lastBreakTimestamp: Double = 0
     @AppStorage("breakWarningEnabled") private var breakWarningEnabled: Bool = true
+    /// Seconds banked by pauseTimer(), spent by resumeTimer().
+    private var pausedRemaining: TimeInterval = 0
     
     // MARK: - Computed Properties
     private var breakInterval: TimeInterval {
@@ -239,6 +242,8 @@ class AppState: ObservableObject {
     }
     
     func stopTimer() {
+        timerPaused = false
+        pausedRemaining = 0
         timer?.invalidate()
         timer = nil
         statusTimer?.invalidate()
@@ -252,6 +257,43 @@ class AppState: ObservableObject {
         timerWasRunning = false
     }
     
+    /// Freeze the countdown where it stands. Everything downstream derives the
+    /// remaining time from `lastBreakTime`, so pausing is really just remembering
+    /// how much was left — and resuming is putting the anchor back that far in the
+    /// past, so the count picks up mid-stride instead of starting the interval over.
+    func pauseTimer() {
+        guard timerRunning else { return }
+
+        let remaining = max(0, breakInterval - Date().timeIntervalSince(lastBreakTime))
+        stopTimer()
+        pausedRemaining = remaining
+        timerPaused = true
+        timeRemaining = remaining  // keep the frozen number on screen
+    }
+
+    func resumeTimer() {
+        // A pause with nothing banked (or a resume out of nowhere) starts a fresh interval.
+        let remaining = pausedRemaining > 0 ? pausedRemaining : breakInterval
+
+        timerPaused = false
+        pausedRemaining = 0
+        startTimer()
+
+        lastBreakTime = Date().addingTimeInterval(remaining - breakInterval)
+        lastBreakTimestamp = lastBreakTime.timeIntervalSince1970
+        updateTimeRemainingAndWarning()
+    }
+
+    /// One control, not two. "Pause" that silently means "reset to twenty minutes"
+    /// is the kind of small lie that makes an app feel untrustworthy.
+    func toggleTimer() {
+        if timerRunning {
+            pauseTimer()
+        } else {
+            resumeTimer()
+        }
+    }
+
     /// Restart the timer with the current break interval
     private func restartTimer() {
         stopTimer()

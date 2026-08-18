@@ -35,7 +35,7 @@ struct OverlayWindow: View {
     @State private var escapeObserver: NSObjectProtocol?
     @AppStorage("lockMode") private var lockMode: Bool = false
     @AppStorage("breakDurationSec") private var breakDuration: Double = 20
-    @AppStorage("musicEnabled") private var musicEnabled: Bool = false
+    @AppStorage("musicEnabled") private var musicEnabled: Bool = true
     @AppStorage("visualTheme") private var visualTheme: String = "aurora"
     
     // Calculate required hold duration from break length, clamped 2-15s.
