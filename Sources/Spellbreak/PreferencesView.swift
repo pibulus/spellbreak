@@ -49,6 +49,7 @@ struct PreferencesView: View {
     @AppStorage("breakDurationSec") private var breakDurationSec: Double = 20
     @AppStorage("lockMode") private var lockMode: Bool = false
     @AppStorage("breakWarningEnabled") private var breakWarningEnabled: Bool = true
+    @AppStorage("deferDuringFullscreen") private var deferDuringFullscreen: Bool = true
     @AppStorage("launchAtLogin") private var launchAtLogin: Bool = false
     @AppStorage("fancyMenu") private var fancyMenu: Bool = true
     @AppStorage("visualTheme") private var visualTheme: String = "aurora"
@@ -335,6 +336,19 @@ struct PreferencesView: View {
                 .onHover { hovering in
                     hoveredElement = hovering ? "warning-toggle" : nil
                 }
+            }
+            .padding(.horizontal, UI.sidePadding)
+
+            ToggleCard(
+                title: "Not While Fullscreen",
+                subtitle: "Waits out games, films and presentations",
+                isOn: deferDuringFullscreen,
+                isHovered: hoveredElement == "fullscreen-toggle",
+                onChange: { deferDuringFullscreen = $0 },
+                soundManager: soundManager
+            )
+            .onHover { hovering in
+                hoveredElement = hovering ? "fullscreen-toggle" : nil
             }
             .padding(.horizontal, UI.sidePadding)
 

@@ -34,6 +34,7 @@ struct OverlayWindow: View {
     @State private var breakMessage: String = ""
     @State private var escapeObserver: NSObjectProtocol?
     @AppStorage("lockMode") private var lockMode: Bool = false
+    @State private var isHoveringMute = false
     @AppStorage("breakDurationSec") private var breakDuration: Double = 20
     @AppStorage("musicEnabled") private var musicEnabled: Bool = true
     @AppStorage("visualTheme") private var visualTheme: String = "aurora"
@@ -199,6 +200,41 @@ struct OverlayWindow: View {
                 }
             }
             
+            // Mute, bottom left. The break screen is the ONLY place this control can
+            // live: while the overlay is up, Preferences is unreachable, so "the music
+            // is playing over mine" would otherwise have no answer but to sit through
+            // it. Present even in lock mode — silencing a break is not skipping one.
+            VStack {
+                Spacer()
+                HStack {
+                    Button {
+                        musicEnabled.toggle()
+                        if musicEnabled {
+                            soundManager.playAmbient()
+                        } else {
+                            soundManager.stopAmbient()
+                        }
+                    } label: {
+                        Image(systemName: musicEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundStyle(.white.opacity(isHoveringMute ? 0.75 : 0.35))
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .scaleEffect(isHoveringMute ? 1.1 : 1.0)
+                    .animation(.spring(duration: 0.3, bounce: 0.3), value: isHoveringMute)
+                    .animation(.easeOut(duration: 0.2), value: musicEnabled)
+                    .onHover { isHoveringMute = $0 }
+                    .opacity(messageOpacity * 0.9)
+                    .padding(.leading, 46)
+                    .padding(.bottom, 66)
+                    .accessibilityLabel(musicEnabled ? "Mute break sound" : "Unmute break sound")
+
+                    Spacer()
+                }
+            }
+
             // Timer in bottom right - aligned with skip ring
             VStack {
                 Spacer()

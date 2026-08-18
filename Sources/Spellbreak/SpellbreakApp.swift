@@ -153,6 +153,7 @@ class AppState: ObservableObject {
     @AppStorage("timerWasRunning") var timerWasRunning: Bool = false
     @AppStorage("lastBreakTimestamp") private var lastBreakTimestamp: Double = 0
     @AppStorage("breakWarningEnabled") private var breakWarningEnabled: Bool = true
+    @AppStorage("deferDuringFullscreen") private var deferDuringFullscreen: Bool = true
     /// Seconds banked by pauseTimer(), spent by resumeTimer().
     private var pausedRemaining: TimeInterval = 0
     
@@ -257,6 +258,16 @@ class AppState: ObservableObject {
         timerWasRunning = false
     }
     
+    /// Hold an AUTOMATIC break while the user is plainly mid-something — a fullscreen
+    /// game, a film, a presentation. The anchor is left alone and this is re-asked
+    /// every second, so the break lands the moment they come back out rather than
+    /// being skipped. "Break Now" from the menu ignores this entirely: an explicitly
+    /// requested break is never second-guessed.
+    private func shouldHoldBreak() -> Bool {
+        guard deferDuringFullscreen else { return false }
+        return ScreenBusy.aFullscreenAppIsRunning()
+    }
+
     /// Freeze the countdown where it stands. Everything downstream derives the
     /// remaining time from `lastBreakTime`, so pausing is really just remembering
     /// how much was left — and resuming is putting the anchor back that far in the
@@ -309,6 +320,7 @@ class AppState: ObservableObject {
 
     func checkAndTriggerBreak() {
         guard timerRunning else { return }
+        guard !shouldHoldBreak() else { return }
         triggerBreak(resetTimerSchedule: false)
     }
 
@@ -542,7 +554,7 @@ class AppState: ObservableObject {
             timeRemaining = 0
             hideCountdownPill()
 
-            if !showingOverlay {
+            if !showingOverlay && !shouldHoldBreak() {
                 triggerBreak(resetTimerSchedule: true)
             }
             return
