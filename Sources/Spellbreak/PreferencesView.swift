@@ -139,6 +139,21 @@ struct PreferencesView: View {
                 .onHover { hovering in
                     hoveredElement = hovering ? "vibes-tab" : nil
                 }
+
+                TabButton(
+                    icon: "info.circle",
+                    title: "About",
+                    isSelected: selectedTab == 2,
+                    isHovered: hoveredElement == "about-tab"
+                ) {
+                    if selectedTab != 2 {
+                        soundManager.playToggleOn()
+                    }
+                    selectedTab = 2
+                }
+                .onHover { hovering in
+                    hoveredElement = hovering ? "about-tab" : nil
+                }
             }
             .padding(.horizontal, UI.sidePadding)
             
@@ -148,8 +163,12 @@ struct PreferencesView: View {
                     timerContent
                         .frame(maxWidth: .infinity, alignment: .top)
                         .transition(.opacity)
-                } else {
+                } else if selectedTab == 1 {
                     vibesContent
+                        .frame(maxWidth: .infinity, alignment: .top)
+                        .transition(.opacity)
+                } else {
+                    aboutContent
                         .frame(maxWidth: .infinity, alignment: .top)
                         .transition(.opacity)
                 }
@@ -388,14 +407,14 @@ struct PreferencesView: View {
                     .foregroundColor(.spellCream.opacity(0.9))
                     .padding(.horizontal, 4)
 
-                HStack(spacing: 12) {
+                HStack(spacing: 9) {
                     ThemeChip(
                         title: "Aurora",
                         subtitle: "Time-aware flowing waves",
                         colors: [
-                            Color.spellPink,
-                            Color.spellCoral,
-                            Color(red: 0.7, green: 0.4, blue: 0.9)
+                            Color(red: 0.94, green: 0.58, blue: 0.37),
+                            Color(red: 0.94, green: 0.31, blue: 0.61),
+                            Color(red: 0.66, green: 0.30, blue: 0.98)
                         ],
                         isSelected: visualTheme == "aurora",
                         isHovered: hoveredElement == "theme-aurora"
@@ -411,9 +430,9 @@ struct PreferencesView: View {
                         title: "Cosmic",
                         subtitle: "Deep space nebula",
                         colors: [
-                            Color(red: 0.1, green: 0.1, blue: 0.3),
-                            Color(red: 0.4, green: 0.1, blue: 0.8),
-                            Color(red: 0.2, green: 0.6, blue: 1.0)
+                            Color(red: 0.40, green: 0.10, blue: 0.80),
+                            Color(red: 0.25, green: 0.15, blue: 0.85),
+                            Color(red: 0.55, green: 0.78, blue: 1.00)
                         ],
                         isSelected: visualTheme == "cosmic",
                         isHovered: hoveredElement == "theme-cosmic"
@@ -429,9 +448,9 @@ struct PreferencesView: View {
                         title: "Lava Lamp",
                         subtitle: "Retro morphing blobs",
                         colors: [
-                            Color(red: 1.0, green: 0.3, blue: 0.4),
-                            Color(red: 1.0, green: 0.1, blue: 0.6),
-                            Color(red: 1.0, green: 0.5, blue: 0.2)
+                            Color(red: 0.99, green: 0.36, blue: 0.42),
+                            Color(red: 0.98, green: 0.20, blue: 0.58),
+                            Color(red: 1.00, green: 0.50, blue: 0.20)
                         ],
                         isSelected: visualTheme == "lava",
                         isHovered: hoveredElement == "theme-lava"
@@ -442,26 +461,26 @@ struct PreferencesView: View {
                     .onHover { hovering in
                         hoveredElement = hovering ? "theme-lava" : nil
                     }
-                }
 
-                // On its own row because it is not a fourth look, it is a policy:
-                // let the app pick one of the three, fresh for every break.
-                ThemeChip(
-                    title: "Surprise Me",
-                    subtitle: "A different one every break",
-                    colors: [
-                        Color.spellPink,
-                        Color(red: 0.4, green: 0.1, blue: 0.8),
-                        Color(red: 1.0, green: 0.5, blue: 0.2)
-                    ],
-                    isSelected: visualTheme == "random",
-                    isHovered: hoveredElement == "theme-random"
-                ) {
-                    visualTheme = "random"
-                    soundManager.playToggleOn()
-                }
-                .onHover { hovering in
-                    hoveredElement = hovering ? "theme-random" : nil
+                    // One colour borrowed from each of the three, so the chip reads
+                    // as "all of them" rather than as a fourth look of its own.
+                    ThemeChip(
+                        title: "Surprise",
+                        subtitle: "A different one every break",
+                        colors: [
+                            Color(red: 0.94, green: 0.31, blue: 0.61),
+                            Color(red: 0.25, green: 0.15, blue: 0.85),
+                            Color(red: 1.00, green: 0.50, blue: 0.20)
+                        ],
+                        isSelected: visualTheme == "random",
+                        isHovered: hoveredElement == "theme-random"
+                    ) {
+                        visualTheme = "random"
+                        soundManager.playToggleOn()
+                    }
+                    .onHover { hovering in
+                        hoveredElement = hovering ? "theme-random" : nil
+                    }
                 }
             }
             .padding(UI.cardPadding)
@@ -542,6 +561,100 @@ struct PreferencesView: View {
             .padding(.horizontal, UI.sidePadding)
 
             Spacer()  // Push content to top within fixed height
+        }
+    }
+
+    // MARK: - About Tab Content
+    private var aboutContent: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Color.clear.frame(height: 4)
+
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(spacing: 12) {
+                    Image(systemName: "moon.stars.fill")
+                        .font(.system(size: 30, weight: .medium))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color.spellPink, Color.spellCoral],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Spellbreak")
+                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                            .foregroundColor(.spellCream.opacity(0.95))
+
+                        Text("Version \(appVersion)")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.spellCream.opacity(0.5))
+                    }
+
+                    Spacer()
+                }
+
+                Text("Breaks that arrive like a spell, not an alarm. Spellbreak nudges you away from the screen on your own schedule, waits out anything you have gone fullscreen for, and gets out of the way again.")
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundColor(.spellCream.opacity(0.72))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineSpacing(3)
+
+                Text("Nothing you do here leaves your Mac. No accounts, no analytics, no network calls of any kind.")
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundColor(.spellCream.opacity(0.72))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineSpacing(3)
+            }
+            .padding(UI.cardPadding)
+            .frostedCard()
+            .padding(.horizontal, UI.sidePadding)
+
+            VStack(alignment: .leading, spacing: 12) {
+                aboutLink(title: "spellbreak.app", icon: "globe", url: "https://spellbreak.app")
+                aboutLink(title: "Source on GitHub", icon: "chevron.left.forwardslash.chevron.right", url: "https://github.com/pibulus/spellbreak")
+            }
+            .padding(UI.cardPadding)
+            .frostedCard()
+            .padding(.horizontal, UI.sidePadding)
+
+            Text("Made by Pablo, in Melbourne.")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.spellCream.opacity(0.42))
+                .padding(.horizontal, UI.sidePadding + 4)
+
+            Spacer()
+        }
+    }
+
+    private var appVersion: String {
+        let short = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+        return short
+    }
+
+    @ViewBuilder
+    private func aboutLink(title: String, icon: String, url: String) -> some View {
+        if let destination = URL(string: url) {
+            Link(destination: destination) {
+                HStack(spacing: 10) {
+                    Image(systemName: icon)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.spellCoral.opacity(0.9))
+                        .frame(width: 18)
+
+                    Text(title)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.spellCream.opacity(0.85))
+
+                    Spacer()
+
+                    Image(systemName: "arrow.up.right")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(.spellCream.opacity(0.35))
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
         }
     }
 
@@ -867,6 +980,9 @@ struct GradientSlider: View {
 /// Compact 3-across theme picker card: color dots + name, gradient ring when selected.
 struct ThemeChip: View {
     let title: String
+    /// Not rendered as visible text — it is the hover tooltip and the VoiceOver
+    /// hint, which is the only description a screen-reader user ever gets for a
+    /// chip whose whole meaning is otherwise three coloured circles.
     let subtitle: String
     let colors: [Color]
     let isSelected: Bool
