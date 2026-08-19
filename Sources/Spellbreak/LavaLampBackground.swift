@@ -43,7 +43,7 @@ struct LavaLampBackground: View {
         let blob1Radius = 120 + sin(time * 0.4) * 40
         
         let blob1Gradient = Gradient(stops: [
-            .init(color: Color(red: 1.0, green: 0.3, blue: 0.4).opacity(0.8), location: 0),
+            .init(color: Color(red: 0.99, green: 0.36, blue: 0.42).opacity(0.8), location: 0),
             .init(color: Color(red: 1.0, green: 0.5, blue: 0.2).opacity(0.6), location: 0.5),
             .init(color: Color(red: 0.9, green: 0.2, blue: 0.5).opacity(0.4), location: 1)
         ])
@@ -108,7 +108,7 @@ struct LavaLampBackground: View {
         let blob3Radius = 60 + sin(time * 0.6) * 20
         
         let blob3Gradient = Gradient(stops: [
-            .init(color: Color(red: 1.0, green: 0.1, blue: 0.6).opacity(0.8), location: 0),
+            .init(color: Color(red: 0.98, green: 0.20, blue: 0.58).opacity(0.8), location: 0),
             .init(color: Color(red: 1.0, green: 0.3, blue: 0.5).opacity(0.5), location: 0.7),
             .init(color: Color(red: 0.8, green: 0.1, blue: 0.4).opacity(0.2), location: 1)
         ])
@@ -173,7 +173,7 @@ struct LavaLampBackground: View {
 
             let gradient = Gradient(stops: [
                 .init(color: Color.clear, location: 0),
-                .init(color: Color.white.opacity(0.035), location: 0.38),
+                .init(color: Color.spellCream.opacity(0.035), location: 0.38),
                 .init(color: Color(red: 1.0, green: 0.58, blue: 0.72).opacity(0.08), location: 0.52),
                 .init(color: Color.clear, location: 1)
             ])

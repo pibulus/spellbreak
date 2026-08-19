@@ -80,10 +80,13 @@ struct OverlayWindow: View {
     
     var body: some View {
         ZStack {
-            // Near-black grounding so the themed colors read as jewel tones —
-            // without it everything composites on the material's grey haze
+            // Warm near-black grounding so the themed colors read as jewel tones —
+            // without it everything composites on the material's grey haze.
+            // Warm, not neutral: this single value sits under all three themes, and
+            // at 0.04/0.04/0.05 it was faintly BLUE, which is what made every palette
+            // go muddy toward the edges and read colder than its own colours.
             Rectangle()
-                .fill(Color(red: 0.04, green: 0.04, blue: 0.05))
+                .fill(Color(red: 0.078, green: 0.062, blue: 0.058))
                 .ignoresSafeArea()
 
             // Desktop blur kept for the frosted-glass depth, dialed back so it

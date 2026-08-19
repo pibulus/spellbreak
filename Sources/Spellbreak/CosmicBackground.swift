@@ -15,8 +15,8 @@ struct CosmicBackground: View {
                 
                 // Deep space background
                 let spaceGradient = Gradient(colors: [
-                    Color(red: 0.02, green: 0.02, blue: 0.08),  // Almost black with hint of blue
-                    Color(red: 0.05, green: 0.0, blue: 0.15),   // Deep space purple
+                    Color(red: 0.055, green: 0.045, blue: 0.075), // Warm deep space, never near-#000
+                    Color(red: 0.075, green: 0.035, blue: 0.155), // Deep space purple
                     Color(red: 0.1, green: 0.05, blue: 0.2)     // Nebula edge
                 ])
                 context.fill(
@@ -155,7 +155,7 @@ struct CosmicBackground: View {
             
             // Star glow
             let glowGradient = Gradient(stops: [
-                .init(color: Color.white.opacity(0.9 * twinkle), location: 0),
+                .init(color: Color.spellCream.opacity(0.9 * twinkle), location: 0),
                 .init(color: Color(red: 0.8, green: 0.8, blue: 1.0).opacity(0.3 * twinkle), location: 0.3),
                 .init(color: Color.clear, location: 1)
             ])
@@ -196,7 +196,7 @@ struct CosmicBackground: View {
             
             context.fill(
                 Circle().path(in: CGRect(x: x, y: y, width: 1, height: 1)),
-                with: .color(Color.white.opacity(brightness))
+                with: .color(Color.spellCream.opacity(brightness))
             )
         }
     }
@@ -228,7 +228,7 @@ struct CosmicBackground: View {
         let gradient = Gradient(stops: [
             .init(color: Color.clear, location: 0),
             .init(color: Color(red: 0.55, green: 0.78, blue: 1.0).opacity(0.28), location: 0.35),
-            .init(color: Color.white.opacity(0.9), location: 1)
+            .init(color: Color.spellCream.opacity(0.9), location: 1)
         ])
 
         context.stroke(
