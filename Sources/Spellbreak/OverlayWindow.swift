@@ -38,6 +38,15 @@ struct OverlayWindow: View {
     @AppStorage("breakDurationSec") private var breakDuration: Double = 20
     @AppStorage("musicEnabled") private var musicEnabled: Bool = true
     @AppStorage("visualTheme") private var visualTheme: String = "aurora"
+    /// The theme THIS break is wearing. Rolled once, at init, and never read straight
+    /// from the preference in the body — a random value computed there would re-roll
+    /// on every redraw and strobe between three backgrounds. Rolling at init rather
+    /// than in onAppear matters too: onAppear fires AFTER the first frame, so a
+    /// Cosmic or Lava user would see one frame of the wrong background.
+    /// A fresh OverlayWindow is built per break, so this is one roll per break.
+    @State private var resolvedTheme: String = OverlayWindow.rollTheme(
+        UserDefaults.standard.string(forKey: "visualTheme") ?? "aurora"
+    )
     
     // Calculate required hold duration from break length, clamped 2-15s.
     private var requiredHoldDuration: Double {
@@ -50,8 +59,16 @@ struct OverlayWindow: View {
         return max(1, breakDuration)
     }
 
+    /// Every theme name a break can actually wear. "random" is a preference, not a look.
+    static let concreteThemes = ["aurora", "cosmic", "lava"]
+
+    static func rollTheme(_ stored: String) -> String {
+        guard stored == "random" else { return stored }
+        return concreteThemes.randomElement() ?? "aurora"
+    }
+
     private var themeGlowColor: Color {
-        switch visualTheme {
+        switch resolvedTheme {
         case "lava":
             return Color(red: 1.0, green: 0.36, blue: 0.34)
         case "cosmic":
@@ -78,7 +95,7 @@ struct OverlayWindow: View {
             
             // Theme-based animated background
             Group {
-                switch visualTheme {
+                switch resolvedTheme {
                 case "lava":
                     LavaLampBackground()
                         .blur(radius: 16)
@@ -112,17 +129,19 @@ struct OverlayWindow: View {
                     .font(.system(size: 56, weight: .semibold, design: .rounded))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [.white, .white.opacity(0.95)],
+                            colors: [.spellCream, .spellCream.opacity(0.92)],
                             startPoint: .top,
                             endPoint: .bottom
                         )
                     )
-                    // Soft white glow
-                    .shadow(color: .white.opacity(0.5), radius: 20)
-                    .shadow(color: .white.opacity(0.3), radius: 40)
-                    .shadow(color: themeGlowColor.opacity(0.45), radius: 34)
+                    // Soft cream glow. Dialled back from the old pure-white bloom,
+                    // which lit the message up harder than a thing you are meant to
+                    // rest your eyes on should be.
+                    .shadow(color: .spellCream.opacity(0.32), radius: 20)
+                    .shadow(color: .spellCream.opacity(0.18), radius: 40)
+                    .shadow(color: themeGlowColor.opacity(0.38), radius: 34)
                     .shadow(color: .black.opacity(0.3), radius: 6, x: 0, y: 3)
-                    .opacity(messageOpacity)
+                    .opacity(messageOpacity * 0.92)
                     .scaleEffect(textScale)
                     .padding(.horizontal, 60)
                     .multilineTextAlignment(.center)
@@ -137,14 +156,14 @@ struct OverlayWindow: View {
                     ZStack {
                         // Background ring
                         Circle()
-                            .stroke(Color.white.opacity(isHoveringRing ? 0.25 : 0.15), lineWidth: 3)
+                            .stroke(Color.spellCream.opacity(isHoveringRing ? 0.25 : 0.15), lineWidth: 3)
                             .frame(width: 64, height: 64)
                         
                         // Progress ring
                         Circle()
                             .trim(from: 0, to: holdProgress)
                             .stroke(
-                                Color.white.opacity(0.8),
+                                Color.spellCream.opacity(0.8),
                                 style: StrokeStyle(lineWidth: 4, lineCap: .round)
                             )
                             .frame(width: 64, height: 64)
@@ -156,12 +175,12 @@ struct OverlayWindow: View {
                             // Show progress when holding
                             Text("\(Int(holdProgress * 100))")
                                 .font(.system(size: 16, weight: .medium, design: .rounded))
-                                .foregroundColor(.white.opacity(0.9))
+                                .foregroundColor(.spellCream.opacity(0.9))
                         } else {
                             // Show "skip" text when idle
                             Text("skip")
                                 .font(.system(size: 14, weight: .regular, design: .rounded))
-                                .foregroundColor(.white.opacity(isHoveringRing ? 0.7 : 0.4))
+                                .foregroundColor(.spellCream.opacity(isHoveringRing ? 0.7 : 0.4))
                                 .animation(.easeInOut(duration: 0.2), value: isHoveringRing)
                         }
                     }
@@ -217,7 +236,7 @@ struct OverlayWindow: View {
                     } label: {
                         Image(systemName: musicEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
                             .font(.system(size: 17, weight: .medium))
-                            .foregroundStyle(.white.opacity(isHoveringMute ? 0.75 : 0.35))
+                            .foregroundStyle(Color.spellCream.opacity(isHoveringMute ? 0.75 : 0.35))
                             .frame(width: 44, height: 44)
                             .contentShape(Rectangle())
                     }
@@ -243,7 +262,7 @@ struct OverlayWindow: View {
                     if timeRemaining > 0 {
                         Text(formatTimeShort(timeRemaining))
                             .font(.system(size: 26, weight: .medium, design: .rounded))
-                            .foregroundStyle(.white.opacity(0.5))
+                            .foregroundStyle(Color.spellCream.opacity(0.45))
                             .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
                             .opacity(messageOpacity * 0.8)
                             .padding(.trailing, 50)

@@ -95,7 +95,7 @@ struct PreferencesView: View {
                 
                 Text("Spellbreak")
                     .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.spellCream)
                     .offset(y: titleOffset)
                     .onAppear {
                         guard !reduceMotion else { return }
@@ -241,7 +241,7 @@ struct PreferencesView: View {
                     HStack {
                         Text("Every")
                             .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.9))
+                            .foregroundColor(.spellCream.opacity(0.9))
                         Spacer()
                         Text("\(Int(breakIntervalMin))")
                             .font(.system(size: 28, weight: .bold, design: .rounded))
@@ -257,7 +257,7 @@ struct PreferencesView: View {
                             )
                         Text("minutes")
                             .font(.system(size: 20, weight: .medium))
-                            .foregroundColor(.white.opacity(0.7))
+                            .foregroundColor(.spellCream.opacity(0.7))
                     }
                     
                     GradientSlider(
@@ -274,7 +274,7 @@ struct PreferencesView: View {
                     HStack {
                         Text("For")
                             .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.9))
+                            .foregroundColor(.spellCream.opacity(0.9))
                         Spacer()
                         Text("\(Int(breakDurationSec))")
                             .font(.system(size: 28, weight: .bold, design: .rounded))
@@ -290,7 +290,7 @@ struct PreferencesView: View {
                             )
                         Text("seconds")
                             .font(.system(size: 20, weight: .medium))
-                            .foregroundColor(.white.opacity(0.7))
+                            .foregroundColor(.spellCream.opacity(0.7))
                     }
                     
                     GradientSlider(
@@ -385,7 +385,7 @@ struct PreferencesView: View {
             VStack(alignment: .leading, spacing: 14) {
                 Text("Visual Theme")
                     .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.9))
+                    .foregroundColor(.spellCream.opacity(0.9))
                     .padding(.horizontal, 4)
 
                 HStack(spacing: 12) {
@@ -443,6 +443,26 @@ struct PreferencesView: View {
                         hoveredElement = hovering ? "theme-lava" : nil
                     }
                 }
+
+                // On its own row because it is not a fourth look, it is a policy:
+                // let the app pick one of the three, fresh for every break.
+                ThemeChip(
+                    title: "Surprise Me",
+                    subtitle: "A different one every break",
+                    colors: [
+                        Color.spellPink,
+                        Color(red: 0.4, green: 0.1, blue: 0.8),
+                        Color(red: 1.0, green: 0.5, blue: 0.2)
+                    ],
+                    isSelected: visualTheme == "random",
+                    isHovered: hoveredElement == "theme-random"
+                ) {
+                    visualTheme = "random"
+                    soundManager.playToggleOn()
+                }
+                .onHover { hovering in
+                    hoveredElement = hovering ? "theme-random" : nil
+                }
             }
             .padding(UI.cardPadding)
             .frostedCard()
@@ -479,7 +499,7 @@ struct PreferencesView: View {
                 HStack {
                     Text("Sound Volume")
                         .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.white.opacity(0.9))
+                        .foregroundColor(.spellCream.opacity(0.9))
                     Spacer()
                     Text("\(Int(soundVolume * 100))%")
                         .font(.system(size: 20, weight: .bold, design: .rounded))
@@ -579,7 +599,7 @@ struct TabButton: View {
                 Text(title)
                     .font(.system(size: 18, weight: .semibold))
             }
-            .foregroundColor(isSelected ? .black : .white.opacity(0.7))
+            .foregroundColor(isSelected ? .spellInk : .spellCream.opacity(0.7))
             .frame(maxWidth: .infinity)
             .frame(height: 48)
             .background(
@@ -632,7 +652,7 @@ struct ToggleCard: View {
     private var titleColors: [Color] {
         isOn
             ? [Color.spellCoral, Color.spellPink]
-            : [.white, .white]
+            : [Color.spellCream, Color.spellCream]
     }
 
     private var trackColors: [Color] {
@@ -678,7 +698,7 @@ struct ToggleCard: View {
                 )
             Text(subtitle)
                 .font(.system(size: 14))
-                .foregroundColor(.white.opacity(0.5))
+                .foregroundColor(.spellCream.opacity(0.5))
         }
     }
 
@@ -695,7 +715,7 @@ struct ToggleCard: View {
                 .frame(width: 64, height: 36)
 
             Circle()
-                .fill(.white)
+                .fill(Color.spellCream)
                 .frame(width: 28, height: 28)
                 .offset(x: isOn ? 15 : -15)
                 .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isOn)
@@ -740,7 +760,7 @@ struct GradientSlider: View {
                 
                 // Thumb
                 Circle()
-                    .fill(.white)
+                    .fill(Color.spellCream)
                     .frame(width: 24, height: 24)
                     .scaleEffect(isDragging ? 1.35 : (isHovering ? 1.25 : 1.0))
                     .shadow(color: .black.opacity(isDragging ? 0.4 : 0.2), 
@@ -871,7 +891,7 @@ struct ThemeChip: View {
 
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.white.opacity(isSelected ? 0.95 : 0.75))
+                    .foregroundColor(.spellCream.opacity(isSelected ? 0.95 : 0.75))
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity)

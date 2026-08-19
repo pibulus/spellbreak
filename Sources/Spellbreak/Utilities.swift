@@ -15,6 +15,15 @@ extension Color {
     static let spellPink = Color(red: 0.95, green: 0.4, blue: 0.8)
     static let spellCoral = Color(red: 1.0, green: 0.6, blue: 0.5)
     static let spellPeach = Color(red: 1.0, green: 0.7, blue: 0.5)
+
+    /// Warm near-white for break text and overlay chrome. Absolute white is never
+    /// used anywhere in the fleet — on a dark aurora it reads as a hole punched in
+    /// the screen, where cream reads as light.
+    static let spellCream = Color(red: 0.984, green: 0.953, blue: 0.906)
+
+    /// Warm near-black for ink on light chips. Absolute black is as banned as
+    /// absolute white, and on a cream chip it reads as a hole rather than as type.
+    static let spellInk = Color(red: 0.118, green: 0.090, blue: 0.078)
 }
 
 extension Timer {
