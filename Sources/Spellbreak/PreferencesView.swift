@@ -594,15 +594,21 @@ struct PreferencesView: View {
                     Spacer()
                 }
 
-                Text("Breaks that arrive like a spell, not an alarm. Spellbreak nudges you away from the screen on your own schedule, waits out anything you have gone fullscreen for, and gets out of the way again.")
-                    .font(.system(size: 13, weight: .regular))
-                    .foregroundColor(.spellCream.opacity(0.72))
+                Text("Every break writes its own line. Never the same one twice.")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.spellCream.opacity(0.82))
                     .fixedSize(horizontal: false, vertical: true)
                     .lineSpacing(3)
 
-                Text("Nothing you do here leaves your Mac. No accounts, no analytics, no network calls of any kind.")
+                Text("It reads the hour and the moon phase, so dawn talks different to 2am, and a full moon gets dramatic about it. Skip a few in a row and it starts to notice. That one's on you.")
                     .font(.system(size: 13, weight: .regular))
-                    .foregroundColor(.spellCream.opacity(0.72))
+                    .foregroundColor(.spellCream.opacity(0.66))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineSpacing(3)
+
+                Text("Twenty on, twenty off, out of the box. Or make it a tea timer. A stretch bell. An excuse to look at something further away than a monitor.")
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundColor(.spellCream.opacity(0.66))
                     .fixedSize(horizontal: false, vertical: true)
                     .lineSpacing(3)
             }
@@ -612,13 +618,14 @@ struct PreferencesView: View {
 
             VStack(alignment: .leading, spacing: 12) {
                 aboutLink(title: "spellbreak.app", icon: "globe", url: "https://spellbreak.app")
+                aboutLink(title: "madebypablo.app", icon: "square.grid.2x2", url: "https://madebypablo.app")
                 aboutLink(title: "Source on GitHub", icon: "chevron.left.forwardslash.chevron.right", url: "https://github.com/pibulus/spellbreak")
             }
             .padding(UI.cardPadding)
             .frostedCard()
             .padding(.horizontal, UI.sidePadding)
 
-            Text("Made by Pablo, in Melbourne.")
+            Text("Made by Pablo in Melbourne. With love and coffee.")
                 .font(.system(size: 12, weight: .medium))
                 .foregroundColor(.spellCream.opacity(0.42))
                 .padding(.horizontal, UI.sidePadding + 4)
