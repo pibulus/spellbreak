@@ -600,13 +600,13 @@ struct PreferencesView: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .lineSpacing(3)
 
-                Text("It reads the hour and the moon phase, so dawn talks different to 2am, and a full moon gets dramatic about it. Skip a few in a row and it starts to notice. That one's on you.")
+                Text("It knows the hour, and it knows the moon. Dawn comes in soft, 2am gets knowing, a full moon shows off a little. Skip a few and it notices, gently.")
                     .font(.system(size: 13, weight: .regular))
                     .foregroundColor(.spellCream.opacity(0.66))
                     .fixedSize(horizontal: false, vertical: true)
                     .lineSpacing(3)
 
-                Text("Twenty on, twenty off, out of the box. Or make it a tea timer. A stretch bell. An excuse to look at something further away than a monitor.")
+                Text("Twenty minutes on, twenty seconds off. Or make it a tea timer, a stretch bell, a nudge to go look out the window at something far away.")
                     .font(.system(size: 13, weight: .regular))
                     .foregroundColor(.spellCream.opacity(0.66))
                     .fixedSize(horizontal: false, vertical: true)
