@@ -4,47 +4,49 @@
 Spellbreak
 
 ## Subtitle (30 chars)
-Rest your eyes, spine & mind
+Break the screen trance
 
 ## Promotional Text (170 chars max)
-Your shoulders holding court since Tuesday? Spellbreak gives you beautiful, full-screen break reminders that help you rest your eyes and reset your posture.
+Lost 3 hours to a screen trance? Spellbreak brings gentle, full-screen breaks that help you unclench, rest your eyes, drink tea, and break ADHD hyperfocus. Pay once.
 
 ## Description
 
-Your shoulders holding court since Tuesday?
-Your jaw keeping score?
-Screen's got your number.
+Lost three hours to a screen trance?
+Shoulders up around your ears?
+Forgot to drink water, stretch, or feed the cat?
 
-Spellbreak nudges you away from the screen with break reminders that actually work. Every 20 minutes (or whatever rhythm you choose), watch your screen transform into flowing aurora waves while you rest your eyes, unclench, and take a breath.
+Spellbreak breaks the digital hypnosis. Every 20 minutes (or whatever rhythm you cast), your screen transforms into breathing aurora waves — giving your eyes, body, and mind a real moment to reset.
 
-💬 REAL TALK, NOT WELLNESS LECTURES
-Short, punchy reminders that know your patterns before you do:
+✨ BREAK THE TRANCE, RECLAIM YOUR BODY
+• Break ADHD hyperfocus & doomscroll loops
+• Rest your eyes with the classic 20-20-20 rule
+• Drop your shoulders, unclench your jaw, and stretch your spine
+• A gentle nudge to brew tea, hydrate, and look out the window
+
+🔮 ORGANICALLY GENERATED WORDS
+Every break writes its own line — never the same one twice.
+Tuned to the hour, the moon, and your working pace. Street-smart mystical nudges that know your patterns, not generic corporate wellness lectures:
 • "The trance gets comfortable."
-• "Drop your shoulders from your ears."
-• "Look at something far away."
-• "Your jaw keeping score?"
-Five-word nudges that land in your body, not an essay.
+• "Your shoulders holding court since Tuesday?"
+• "Screen's got your number."
 
-🌊 HARD TO IGNORE, EASY TO LEAVE
-Full-screen flowing waves, soft ambient chimes, and calming colors. In the middle of something urgent? Just hold the skip ring for a couple of seconds to get right back to work. Just enough friction to make you pause and think twice.
+⚙️ MODULAR & BUILT FOR YOUR DAY
+• Flexible breaks: quick 20-second eye rests to 15-minute walks
+• 3 living themes: Aurora, Cosmic Starlight, and Coral Lava (plus Surprise Me)
+• Time-aware palettes: soft dawn rose, golden midday, twilight violet, deep night
+• Floating countdown pill gives a gentle heads-up before a break lands
+• Respectful hold-to-skip: just enough friction to make you pause and think twice
+• Smart pauses: automatically waits out full-screen movies, calls, and games
 
-🎨 THREE LIVING THEMES & TIME-AWARE COLORS
-• Aurora, Cosmic Starlight, and Coral Lava (plus Surprise Me)
-• Colors that shift automatically from dawn rose to deep night
-• Floating countdown pill gives a gentle heads-up before a break arrives
-• Calming ambient sounds or silent mode
-• Lightweight menu bar app with zero clutter
+🔒 100% PRIVATE • ZERO SUBSCRIPTIONS
+• No accounts. No tracking. No ads. Zero network requests.
+• Works completely offline. Everything stays on your Mac.
+• $19.99 once. Yours forever. No recurring fees.
 
-🔒 100% PRIVATE & NO SUBSCRIPTIONS
-• Zero accounts. Zero analytics. Zero ads.
-• No camera or microphone access. Everything stays privately on your Mac.
-• Works completely offline forever.
-• $19.99 once. Yours forever. No monthly subscriptions.
-
-Break the trance. Your spine will thank you.
+Break the spell. Your spine and eyes will thank you.
 
 ## Keywords
-eye strain, posture, rest, timer, pomodoro, wellness, reminder, focus, health, stretch, 20-20-20, rsi, screen break, desk timer, break app
+eye strain, posture, rest, timer, pomodoro, wellness, reminder, focus, health, stretch, 20-20-20, rsi, screen break, adhd, break app, hyperfocus
 
 ## Categories
 Primary: Productivity
@@ -79,10 +81,10 @@ None (Pay once, owned forever)
 • Hold-to-skip mechanism
 
 ## Screenshots (Story Cards in screenshots/appstore/)
-1. **01-break-the-spell-2880x1800.png** — "Your shoulders holding court since Tuesday? Rest your eyes & reset your posture."
-2. **02-street-smart-wisdom-2880x1800.png** — "Messages that know your patterns. Real talk, not wellness lectures."
+1. **01-break-the-spell-2880x1800.png** — "Lost 3 hours to the screen? Break ADHD hyperfocus & rest your eyes."
+2. **02-street-smart-wisdom-2880x1800.png** — "Never the same line twice. Organically generated words tuned to the hour & moon."
 3. **03-hold-to-skip-2880x1800.png** — "Hard to ignore. Easy to leave. Gentle hold-to-skip friction."
-4. **04-living-shaders-2880x1800.png** — "Colors that shift with the day. Three calming visual themes."
+4. **04-living-shaders-2880x1800.png** — "Modular breaks from 20s to 15m. Three living visual themes."
 5. **05-no-subscriptions-2880x1800.png** — "Pay once. Yours forever. 100% Private, no subscriptions."
 
 ## Support URL

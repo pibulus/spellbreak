@@ -26,16 +26,16 @@ enum CardType {
 let cards: [CardSpec] = [
     CardSpec(
         filename: "01-break-the-spell",
-        badge: "✨ REST YOUR EYES & RESET YOUR POSTURE",
-        headline: "Your shoulders holding court since Tuesday?",
-        subheadline: "Gentle full-screen aurora waves that remind you to take a breath and unclench.",
+        badge: "✨ BREAK THE SCREEN TRANCE",
+        headline: "Lost 3 hours to the screen?",
+        subheadline: "Gentle full-screen waves that help you break hyperfocus, rest your eyes, and stretch.",
         type: .heroOverlay(imageName: "screenshots/aurora-2880x1800.png")
     ),
     CardSpec(
         filename: "02-street-smart-wisdom",
-        badge: "💬 REAL TALK, NOT WELLNESS LECTURES",
-        headline: "Messages that know your patterns.",
-        subheadline: "Short, punchy reminders that actually help you stretch, rest, and reset.",
+        badge: "🔮 ORGANICALLY GENERATED WORDS",
+        headline: "Never the same line twice.",
+        subheadline: "Nudges tuned to the hour, the moon, and your working pace. Real talk, not wellness essays.",
         type: .tarotMessages
     ),
     CardSpec(
@@ -47,16 +47,16 @@ let cards: [CardSpec] = [
     ),
     CardSpec(
         filename: "04-living-shaders",
-        badge: "🎨 THREE CALMING VISUAL THEMES",
-        headline: "Colors that shift with the day.",
-        subheadline: "Dawn rose, golden midday, cosmic starlight, and coral lava. Plus Surprise Me.",
+        badge: "⚙️ MODULAR BREAKS & LIVING THEMES",
+        headline: "For eyes, posture, and tea breaks.",
+        subheadline: "20-second eye rests to 15-minute walks. Automatically pauses during full-screen calls.",
         type: .shaderTriptych
     ),
     CardSpec(
         filename: "05-no-subscriptions",
-        badge: "🔒 100% PRIVATE • NO SUBSCRIPTIONS",
+        badge: "🔒 100% PRIVATE • ZERO SUBSCRIPTIONS",
         headline: "Pay once. Yours forever.",
-        subheadline: "$19.99 one-time. No accounts, no monthly fees, and zero tracking.",
+        subheadline: "$19.99 one-time. No accounts, no monthly fees, and zero tracking on your Mac.",
         type: .cartridgeManifesto
     )
 ]
