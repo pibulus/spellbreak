@@ -40,17 +40,23 @@ Break the spell. Your spine will thank you.
 eye strain, posture, rest, timer, pomodoro, wellness, reminder, focus, health, stretch, 20-20-20
 
 ## Categories
-Primary: Health & Fitness
-Secondary: Productivity
+Primary: Productivity
+Secondary: Health & Fitness
 
 ## Age Rating
 4+
 
 ## Price
-Free
+$19.99 USD (Tier 19 / $29.99 AUD) — One-time purchase
 
 ## In-App Purchases
-None
+None (Cartridge model: pay once, owned forever)
+
+## What's New (Version 1.0.4)
+• Softer light, warmer backgrounds, and the app introduces itself
+• Surprise Me theme option rolls one of the three themes fresh for every break
+• Full App Store compliance and refined Preferences layout
+• Native macOS 13+ support with zero data tracking
 
 ## What's New (Version 1.0.1)
 • First launch now opens Preferences so you can cast your first break right away
