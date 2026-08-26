@@ -6,38 +6,45 @@ Spellbreak
 ## Subtitle (30 chars)
 Break the screen spell
 
+## Promotional Text (170 chars max)
+Your shoulders holding court since Tuesday? Spellbreak breaks the digital hypnosis with living aurora waves and street-smart body awareness. No subscriptions.
+
 ## Description
 
-**Your shoulders holding court since Tuesday?**
+Your shoulders holding court since Tuesday?
+Your jaw keeping score?
+Screen's got your number.
 
-Spellbreak breaks the digital hypnosis with mystical break reminders that actually work. Every 20 minutes (or whatever you choose), watch your screen transform into flowing aurora waves while your body remembers how to exist.
+Spellbreak breaks the digital trance with mystical break rituals that actually work. Every 20 minutes (or whatever rhythm you cast), your screen transforms into breathing aurora waves while your nervous system remembers how to exist.
 
-**Street-smart break wisdom**
-Messages that know your patterns. "The trance gets comfortable." "Your jaw keeping score?" "Screen's got your number." NY tarot reader energy, not corporate wellness speak.
+🔮 STREET-SMART BREAK WISDOM
+Not corporate mindfulness speak. Messages that know your patterns before you do.
+• "The trance gets comfortable."
+• "Drop your shoulders from your ears."
+• "Look at something far away."
+• "Your jaw keeping score?"
+Five-word punches that land in the body, not a wellness lecture.
 
-**Beautiful, hard to ignore, easy to leave**
-Full-screen mystical overlays with flowing waves and particles. Need to get back? Hold the skip ring for a moment that scales with break length. Just enough friction to make you think twice — you're always in control.
+🌊 HARD TO IGNORE, RESPECTFUL TO LEAVE
+Full-screen flowing shaders and ambient chimes. Need to stay in your flow? Hold down the skip ring for a moment that scales with your break length. Just enough friction to make you pause — you're always in control.
 
-**Features that matter:**
-• Customizable break intervals (15-180 minutes)
-• Aurora, cosmic, or lava visual themes
-• Time-aware color palettes (dawn/day/evening/night)
-• Optional ambient sounds
-• 10-second break heads-up
-• Break tracking
-• Zero data collection
+✨ CRAFTED FOR RETINA & THE SENSES
+• 3 Living Shaders: Aurora, Cosmic Starlight, and Coral Lava (plus "Surprise Me")
+• Time-Aware Palettes: Soft dawn rose, golden midday, dusk violet, deep night
+• Floating Countdown Pill: Gentle heads-up before the spell lands
+• Procedural Ambient Audio: Calibrated low-frequency rest sounds
+• Lightweight Native Menu Bar Presence: Minimal footprint, maximum serenity
 
-**Privacy first:**
-No accounts. No analytics. No network requests. No camera or microphone access. Your break patterns stay on your Mac where they belong.
+🛡️ THE CARTRIDGE PHILOSOPHY
+• Zero accounts. Zero analytics. Zero network calls.
+• No camera or microphone access. Everything stays on your Mac.
+• Works completely offline forever.
+• $19.99 once. Yours forever. No subscriptions.
 
-**The details:**
-• Native macOS app (Ventura 13.0+)
-• Lightweight menu bar presence
-• Works offline forever
 Break the spell. Your spine will thank you.
 
 ## Keywords
-eye strain, posture, rest, timer, pomodoro, wellness, reminder, focus, health, stretch, 20-20-20
+eye strain, posture, rest, timer, pomodoro, wellness, reminder, focus, health, stretch, 20-20-20, rsi, screen break, mindful, ritual
 
 ## Categories
 Primary: Productivity
@@ -71,13 +78,12 @@ None (Cartridge model: pay once, owned forever)
 • Time-based color palettes
 • Hold-to-skip mechanism
 
-## Screenshots Needed
-1. Break overlay with aurora waves
-2. Menu bar with timer countdown
-3. Preferences window
-4. Different visual themes
-5. Hold-to-skip interface
-6. Heads-up notification or warning state
+## Screenshots (Story Cards in screenshots/appstore/)
+1. **01-break-the-spell-2880x1800.png** — "Your shoulders holding court since Tuesday? Break the screen hypnosis."
+2. **02-street-smart-wisdom-2880x1800.png** — "Messages that know your patterns. Five-word punches with NY tarot reader energy."
+3. **03-hold-to-skip-2880x1800.png** — "Hard to ignore. Easy to leave. Hold down the skip ring to break the trance."
+4. **04-living-shaders-2880x1800.png** — "Palettes that shift with the hour. Aurora dawn, golden day, cosmic night, coral lava."
+5. **05-cartridge-philosophy-2880x1800.png** — "Zero tracking. Works offline forever. $19.99 once. Yours forever."
 
 ## Support URL
 https://spellbreak.app
