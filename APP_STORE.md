@@ -4,10 +4,10 @@
 Spellbreak
 
 ## Subtitle (30 chars)
-Break the screen spell
+Rest your eyes, spine & mind
 
 ## Promotional Text (170 chars max)
-Your shoulders holding court since Tuesday? Spellbreak breaks the digital hypnosis with living aurora waves and street-smart body awareness. No subscriptions.
+Your shoulders holding court since Tuesday? Spellbreak gives you beautiful, full-screen break reminders that help you rest your eyes and reset your posture.
 
 ## Description
 
@@ -15,36 +15,36 @@ Your shoulders holding court since Tuesday?
 Your jaw keeping score?
 Screen's got your number.
 
-Spellbreak breaks the digital trance with mystical break rituals that actually work. Every 20 minutes (or whatever rhythm you cast), your screen transforms into breathing aurora waves while your nervous system remembers how to exist.
+Spellbreak nudges you away from the screen with break reminders that actually work. Every 20 minutes (or whatever rhythm you choose), watch your screen transform into flowing aurora waves while you rest your eyes, unclench, and take a breath.
 
-🔮 STREET-SMART BREAK WISDOM
-Not corporate mindfulness speak. Messages that know your patterns before you do.
+💬 REAL TALK, NOT WELLNESS LECTURES
+Short, punchy reminders that know your patterns before you do:
 • "The trance gets comfortable."
 • "Drop your shoulders from your ears."
 • "Look at something far away."
 • "Your jaw keeping score?"
-Five-word punches that land in the body, not a wellness lecture.
+Five-word nudges that land in your body, not an essay.
 
-🌊 HARD TO IGNORE, RESPECTFUL TO LEAVE
-Full-screen flowing shaders and ambient chimes. Need to stay in your flow? Hold down the skip ring for a moment that scales with your break length. Just enough friction to make you pause — you're always in control.
+🌊 HARD TO IGNORE, EASY TO LEAVE
+Full-screen flowing waves, soft ambient chimes, and calming colors. In the middle of something urgent? Just hold the skip ring for a couple of seconds to get right back to work. Just enough friction to make you pause and think twice.
 
-✨ CRAFTED FOR RETINA & THE SENSES
-• 3 Living Shaders: Aurora, Cosmic Starlight, and Coral Lava (plus "Surprise Me")
-• Time-Aware Palettes: Soft dawn rose, golden midday, dusk violet, deep night
-• Floating Countdown Pill: Gentle heads-up before the spell lands
-• Procedural Ambient Audio: Calibrated low-frequency rest sounds
-• Lightweight Native Menu Bar Presence: Minimal footprint, maximum serenity
+🎨 THREE LIVING THEMES & TIME-AWARE COLORS
+• Aurora, Cosmic Starlight, and Coral Lava (plus Surprise Me)
+• Colors that shift automatically from dawn rose to deep night
+• Floating countdown pill gives a gentle heads-up before a break arrives
+• Calming ambient sounds or silent mode
+• Lightweight menu bar app with zero clutter
 
-🛡️ THE CARTRIDGE PHILOSOPHY
-• Zero accounts. Zero analytics. Zero network calls.
-• No camera or microphone access. Everything stays on your Mac.
+🔒 100% PRIVATE & NO SUBSCRIPTIONS
+• Zero accounts. Zero analytics. Zero ads.
+• No camera or microphone access. Everything stays privately on your Mac.
 • Works completely offline forever.
-• $19.99 once. Yours forever. No subscriptions.
+• $19.99 once. Yours forever. No monthly subscriptions.
 
-Break the spell. Your spine will thank you.
+Break the trance. Your spine will thank you.
 
 ## Keywords
-eye strain, posture, rest, timer, pomodoro, wellness, reminder, focus, health, stretch, 20-20-20, rsi, screen break, mindful, ritual
+eye strain, posture, rest, timer, pomodoro, wellness, reminder, focus, health, stretch, 20-20-20, rsi, screen break, desk timer, break app
 
 ## Categories
 Primary: Productivity
@@ -57,7 +57,7 @@ Secondary: Health & Fitness
 $19.99 USD (Tier 19 / $29.99 AUD) — One-time purchase
 
 ## In-App Purchases
-None (Cartridge model: pay once, owned forever)
+None (Pay once, owned forever)
 
 ## What's New (Version 1.0.4)
 • Softer light, warmer backgrounds, and the app introduces itself
@@ -79,11 +79,11 @@ None (Cartridge model: pay once, owned forever)
 • Hold-to-skip mechanism
 
 ## Screenshots (Story Cards in screenshots/appstore/)
-1. **01-break-the-spell-2880x1800.png** — "Your shoulders holding court since Tuesday? Break the screen hypnosis."
-2. **02-street-smart-wisdom-2880x1800.png** — "Messages that know your patterns. Five-word punches with NY tarot reader energy."
-3. **03-hold-to-skip-2880x1800.png** — "Hard to ignore. Easy to leave. Hold down the skip ring to break the trance."
-4. **04-living-shaders-2880x1800.png** — "Palettes that shift with the hour. Aurora dawn, golden day, cosmic night, coral lava."
-5. **05-cartridge-philosophy-2880x1800.png** — "Zero tracking. Works offline forever. $19.99 once. Yours forever."
+1. **01-break-the-spell-2880x1800.png** — "Your shoulders holding court since Tuesday? Rest your eyes & reset your posture."
+2. **02-street-smart-wisdom-2880x1800.png** — "Messages that know your patterns. Real talk, not wellness lectures."
+3. **03-hold-to-skip-2880x1800.png** — "Hard to ignore. Easy to leave. Gentle hold-to-skip friction."
+4. **04-living-shaders-2880x1800.png** — "Colors that shift with the day. Three calming visual themes."
+5. **05-no-subscriptions-2880x1800.png** — "Pay once. Yours forever. 100% Private, no subscriptions."
 
 ## Support URL
 https://spellbreak.app

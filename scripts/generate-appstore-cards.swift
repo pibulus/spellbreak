@@ -26,37 +26,37 @@ enum CardType {
 let cards: [CardSpec] = [
     CardSpec(
         filename: "01-break-the-spell",
-        badge: "✨ BREAK THE DIGITAL HYPNOSIS",
+        badge: "✨ REST YOUR EYES & RESET YOUR POSTURE",
         headline: "Your shoulders holding court since Tuesday?",
-        subheadline: "Spellbreak transforms your screen into living aurora waves that remind your body to exist.",
+        subheadline: "Gentle full-screen aurora waves that remind you to take a breath and unclench.",
         type: .heroOverlay(imageName: "screenshots/aurora-2880x1800.png")
     ),
     CardSpec(
         filename: "02-street-smart-wisdom",
-        badge: "🔮 STREET-SMART BREAK WISDOM",
+        badge: "💬 REAL TALK, NOT WELLNESS LECTURES",
         headline: "Messages that know your patterns.",
-        subheadline: "Five-word punches with NY tarot reader energy. No corporate wellness lectures.",
+        subheadline: "Short, punchy reminders that actually help you stretch, rest, and reset.",
         type: .tarotMessages
     ),
     CardSpec(
         filename: "03-hold-to-skip",
-        badge: "⏳ RESPECTFUL FRICTION",
+        badge: "⏳ GENTLE FRICTION",
         headline: "Hard to ignore. Easy to leave.",
-        subheadline: "Hold down the skip ring to break the trance. Just enough friction to make you think twice.",
+        subheadline: "Hold down the ring for a couple of seconds to skip. Just enough time to think twice.",
         type: .holdToSkip
     ),
     CardSpec(
         filename: "04-living-shaders",
-        badge: "🌊 THREE LIVING SHADERS",
-        headline: "Palettes that shift with the hour.",
-        subheadline: "Aurora dawn rose, golden midday, cosmic starlight, and coral lava. Plus Surprise Me.",
+        badge: "🎨 THREE CALMING VISUAL THEMES",
+        headline: "Colors that shift with the day.",
+        subheadline: "Dawn rose, golden midday, cosmic starlight, and coral lava. Plus Surprise Me.",
         type: .shaderTriptych
     ),
     CardSpec(
-        filename: "05-cartridge-philosophy",
-        badge: "🛡️ THE CARTRIDGE PHILOSOPHY",
-        headline: "Zero tracking. Works offline forever.",
-        subheadline: "$19.99 once. Yours forever. No accounts, no subscriptions, no telemetry.",
+        filename: "05-no-subscriptions",
+        badge: "🔒 100% PRIVATE • NO SUBSCRIPTIONS",
+        headline: "Pay once. Yours forever.",
+        subheadline: "$19.99 one-time. No accounts, no monthly fees, and zero tracking.",
         type: .cartridgeManifesto
     )
 ]
@@ -196,9 +196,9 @@ func drawHeroOverlay(imageName: String, in rect: CGRect, scale: CGFloat, ctx: CG
 
 func drawTarotCards(in rect: CGRect, scale: CGFloat, ctx: CGContext) {
     let quotes = [
-        ("THE TRANCE GETS COMFORTABLE", "01 / EYE RESET", "Look away from the screen to something twenty feet in the distance."),
-        ("YOUR SHOULDERS HOLDING COURT SINCE TUESDAY?", "02 / POSTURE", "Drop your shoulders from your ears. Release your jaw score."),
-        ("SCREEN'S GOT YOUR NUMBER", "03 / MINDFULNESS", "Step away, take a slow breath, and break the digital spell.")
+        ("THE TRANCE GETS COMFORTABLE", "01 / 20-20-20 RULE", "Look away from the screen at something 20 feet away to rest your eyes."),
+        ("YOUR SHOULDERS HOLDING COURT SINCE TUESDAY?", "02 / POSTURE RESET", "Drop your shoulders away from your ears. Unclench your jaw."),
+        ("SCREEN'S GOT YOUR NUMBER", "03 / TAKE FIVE", "Step away, grab some water, and let your body catch up.")
     ]
 
     let cardWidth = (rect.width - (40 * scale * 2)) / 3
@@ -375,10 +375,10 @@ func drawShaderTriptych(in rect: CGRect, scale: CGFloat, ctx: CGContext) {
 
 func drawCartridgeManifesto(in rect: CGRect, scale: CGFloat, ctx: CGContext) {
     let pillars = [
-        ("🔒 100% PRIVATE", "No accounts, no telemetry, no tracking. Everything stays on your Mac forever."),
-        ("🌊 THREE LIVING SHADERS", "Aurora, Cosmic, and Lava themes with time-aware palettes that shift from dawn to deep night."),
-        ("⏳ RESPECTFUL FRICTION", "Hold to skip gives just enough friction to break the digital spell without trapping you."),
-        ("💎 OWNED FOREVER", "A single $19.99 purchase. No recurring subscriptions. Complete cartridge software.")
+        ("🔒 100% PRIVATE", "No accounts, no tracking, no ads. Everything stays securely on your Mac."),
+        ("🎨 3 CALMING THEMES", "Aurora, Cosmic, and Lava themes with colors that adjust automatically throughout the day."),
+        ("⏳ GENTLE FRICTION", "Hold-to-skip ring gives just enough pause to help you take your break without trapping you."),
+        ("💎 NO SUBSCRIPTIONS", "A single $19.99 purchase. Own it forever without recurring monthly or yearly fees.")
     ]
 
     let boxWidth = (rect.width - (30 * scale)) / 2
