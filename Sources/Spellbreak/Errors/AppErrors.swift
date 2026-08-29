@@ -37,7 +37,7 @@ enum AudioError: LocalizedError {
         case .loadFailed:
             return "The audio file may be corrupted or in an unsupported format"
         case .playbackFailed:
-            return "Check your audio output device settings"
+            return "Check audio output device settings"
         case .volumeUpdateFailed:
             return "Try adjusting the volume in preferences"
         }

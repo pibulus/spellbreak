@@ -131,7 +131,7 @@ class AppState: ObservableObject {
     private var wakeObserver: NSObjectProtocol?
     private var didShowBreakWarning = false
     private var currentBreakCountsTowardStats = true
-    private let breakWarningLeadTime: TimeInterval = 10
+    private let breakWarningLeadTime: TimeInterval = 15
     
     // MARK: - Break Statistics (for message generation)
     private var sessionBreakCount: Int = 0       // Breaks taken this session
@@ -265,7 +265,7 @@ class AppState: ObservableObject {
     /// requested break is never second-guessed.
     private func shouldHoldBreak() -> Bool {
         guard deferDuringFullscreen else { return false }
-        return ScreenBusy.aFullscreenAppIsRunning()
+        return ScreenBusy.isBusy()
     }
 
     /// Freeze the countdown where it stands. Everything downstream derives the

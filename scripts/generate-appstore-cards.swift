@@ -33,9 +33,9 @@ let cards: [CardSpec] = [
     ),
     CardSpec(
         filename: "02-street-smart-wisdom",
-        badge: "🔮 ORGANICALLY GENERATED WORDS",
+        badge: "🔮 ABSTRACT MYSTICAL SPELLS",
         headline: "Never the same line twice.",
-        subheadline: "Nudges tuned to the hour, the moon, and your working pace. Real talk, not wellness essays.",
+        subheadline: "Combinatorial entropy tuned to the hour, the moon, and space. Spells to rest on, not orders.",
         type: .tarotMessages
     ),
     CardSpec(
@@ -196,9 +196,9 @@ func drawHeroOverlay(imageName: String, in rect: CGRect, scale: CGFloat, ctx: CG
 
 func drawTarotCards(in rect: CGRect, scale: CGFloat, ctx: CGContext) {
     let quotes = [
-        ("THE TRANCE GETS COMFORTABLE", "01 / 20-20-20 RULE", "Look away from the screen at something 20 feet away to rest your eyes."),
-        ("YOUR SHOULDERS HOLDING COURT SINCE TUESDAY?", "02 / POSTURE RESET", "Drop your shoulders away from your ears. Unclench your jaw."),
-        ("SCREEN'S GOT YOUR NUMBER", "03 / TAKE FIVE", "Step away, grab some water, and let your body catch up.")
+        ("SOFT GEOMETRY", "01 / EYE EASE", "A soft gaze past the monitor. Depth returns naturally."),
+        ("SHOULDERS ADRIFT", "02 / PHYSICAL EASE", "Spacious posture and gentle stillness without force."),
+        ("ZERO LATENCY", "03 / CLEAR HEADSPACE", "A quiet moment of slack while the room renders.")
     ]
 
     let cardWidth = (rect.width - (40 * scale * 2)) / 3

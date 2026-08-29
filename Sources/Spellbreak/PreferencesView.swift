@@ -334,7 +334,7 @@ struct PreferencesView: View {
             HStack(spacing: 16) {
                 ToggleCard(
                     title: "Unskippable",
-                    subtitle: "Breaks you cannot click away",
+                    subtitle: "Unskippable fullscreen",
                     isOn: lockMode,
                     isHovered: hoveredElement == "skip-toggle",
                     onChange: { lockMode = $0 },
@@ -668,7 +668,7 @@ struct PreferencesView: View {
     private var launchAtLoginSubtitle: String {
         switch launchAtLoginStatus {
         case .enabled:
-            return "Starts when your Mac does"
+            return "Starts at login"
         case .requiresApproval:
             return "Approve in Login Items"
         case .notFound:

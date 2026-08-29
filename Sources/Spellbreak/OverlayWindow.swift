@@ -124,38 +124,35 @@ struct OverlayWindow: View {
             AmbientParticles()
                 .opacity(0.7)
             
-            // Centered message - properly centered vertically
-            VStack(spacing: 0) {
-                Spacer()
-                
-                Text(breakMessage)
-                    .font(.system(size: 56, weight: .semibold, design: .rounded))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [.spellCream, .spellCream.opacity(0.92)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
+            // Centered message - strictly centered on screen
+            Text(breakMessage)
+                .font(.system(size: 56, weight: .semibold, design: .rounded))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [.spellCream, .spellCream.opacity(0.92)],
+                        startPoint: .top,
+                        endPoint: .bottom
                     )
-                    // Soft cream glow. Dialled back from the old pure-white bloom,
-                    // which lit the message up harder than a thing you are meant to
-                    // rest your eyes on should be.
-                    .shadow(color: .spellCream.opacity(0.32), radius: 20)
-                    .shadow(color: .spellCream.opacity(0.18), radius: 40)
-                    .shadow(color: themeGlowColor.opacity(0.38), radius: 34)
-                    .shadow(color: .black.opacity(0.3), radius: 6, x: 0, y: 3)
-                    .opacity(messageOpacity * 0.92)
-                    .scaleEffect(textScale)
-                    .padding(.horizontal, 60)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
-                    .offset(y: lockMode ? 0 : -30)
-                    .accessibilityLabel(breakMessage)
-                
-                Spacer()
-                
-                // Hold-to-skip ring at bottom
-                if !lockMode {
+                )
+                // Soft cream glow. Dialled back from the old pure-white bloom,
+                // which lit the message up harder than a thing you are meant to
+                // rest your eyes on should be.
+                .shadow(color: .spellCream.opacity(0.32), radius: 20)
+                .shadow(color: .spellCream.opacity(0.18), radius: 40)
+                .shadow(color: themeGlowColor.opacity(0.38), radius: 34)
+                .shadow(color: .black.opacity(0.3), radius: 6, x: 0, y: 3)
+                .opacity(messageOpacity * 0.92)
+                .scaleEffect(textScale)
+                .padding(.horizontal, 60)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                .accessibilityLabel(breakMessage)
+
+            // Hold-to-skip ring pinned to bottom (isolated layer so it never displaces center text)
+            if !lockMode {
+                VStack {
+                    Spacer()
+
                     ZStack {
                         // Background ring
                         Circle()
@@ -220,6 +217,7 @@ struct OverlayWindow: View {
                     .accessibilityAddTraits(.allowsDirectInteraction)
                     .padding(.bottom, 60)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             
             // Mute, bottom left. The break screen is the ONLY place this control can

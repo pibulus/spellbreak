@@ -8,6 +8,8 @@
 import Foundation
 import SwiftUI
 import AppKit
+import CoreAudio
+import AudioToolbox
 
 // MARK: - Palette
 extension Color {
@@ -49,15 +51,13 @@ extension TimeInterval {
 }
 
 // MARK: - Is the user in the middle of something?
-/// A break that lands on top of a fullscreen game is not a break, it's a death. Same
-/// for a film, a presentation, or a call — anything the user deliberately made
-/// fullscreen is a statement that they do not want to be interrupted right now.
-///
-/// Detection is deliberately dumb and public-API only: ask the window server for the
-/// on-screen windows at the normal layer, and see if any of them exactly covers a
-/// whole screen. A fullscreen app owns its whole display; a merely-maximised window
-/// still leaves the menu bar, so its frame is shorter than the screen's.
+/// A break that lands on top of a fullscreen game or a live video call is not a break,
+/// it's an interruption. Same for a film, a presentation, or a meeting.
 enum ScreenBusy {
+    static func isBusy() -> Bool {
+        return aFullscreenAppIsRunning() || isMicrophoneInUse()
+    }
+
     static func aFullscreenAppIsRunning() -> Bool {
         let options: CGWindowListOption = [.optionOnScreenOnly, .excludeDesktopElements]
         guard let windows = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: Any]] else {
@@ -88,5 +88,47 @@ enum ScreenBusy {
         }
 
         return false
+    }
+
+    /// Checks if the default audio input device (mic) is actively capturing audio for any app
+    /// (e.g. Zoom, Google Meet in browser, Microsoft Teams, FaceTime, Slack huddle, Discord).
+    static func isMicrophoneInUse() -> Bool {
+        var defaultInputDeviceID = AudioObjectID(kAudioObjectUnknown)
+        var propertyAddress = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyDefaultInputDevice,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        var propertySize = UInt32(MemoryLayout<AudioObjectID>.size)
+
+        let status = AudioObjectGetPropertyData(
+            AudioObjectID(kAudioObjectSystemObject),
+            &propertyAddress,
+            0,
+            nil,
+            &propertySize,
+            &defaultInputDeviceID
+        )
+        guard status == noErr, defaultInputDeviceID != kAudioObjectUnknown else {
+            return false
+        }
+
+        var isRunning: UInt32 = 0
+        propertyAddress = AudioObjectPropertyAddress(
+            mSelector: kAudioDevicePropertyDeviceIsRunningSomewhere,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        propertySize = UInt32(MemoryLayout<UInt32>.size)
+
+        let isRunningStatus = AudioObjectGetPropertyData(
+            defaultInputDeviceID,
+            &propertyAddress,
+            0,
+            nil,
+            &propertySize,
+            &isRunning
+        )
+        return isRunningStatus == noErr && isRunning != 0
     }
 }
