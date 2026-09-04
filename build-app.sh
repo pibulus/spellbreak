@@ -128,7 +128,13 @@ if [[ -n "$SIGN_IDENTITY" ]]; then
         "$APP_BUNDLE"
     codesign --verify --verbose "$APP_BUNDLE"
 else
-    echo "⚠ Unsigned build ready"
+    # Apple Silicon refuses to spawn unsigned arm64 code (errno 163). lipo strips
+    # the linker's ad-hoc signature, so a universal build MUST be re-signed even
+    # when no Developer ID is supplied.
+    echo "🔏 Ad-hoc signing (no Developer ID supplied)"
+    codesign --force --deep --sign - "$APP_BUNDLE"
+    codesign --verify "$APP_BUNDLE"
+    echo "⚠ Unsigned build ready (ad-hoc only — not distributable)"
 fi
 
 echo "✨ App build complete"
