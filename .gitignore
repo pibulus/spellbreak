@@ -45,3 +45,6 @@ dist/
 *~
 *.swp
 *.zip
+
+# Playwright MCP scratch screenshots
+.playwright-mcp/
