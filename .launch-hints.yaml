@@ -14,16 +14,17 @@ cta: Reply if you want the link.
 differentiators:
   - Native menu bar timer with quick pause, break-now, and settings controls
   - >-
-    Full-screen animated overlays with aurora, cosmic, and lava themes
+    Full-screen animated overlays — aurora in four moods (time-aware, ember,
+    violet, surprise)
   - >-
-    Unskippable mode by default, with optional hold-to-skip friction
+    Hold-to-skip by default, optional unskippable mode
   - >-
     Zero accounts, analytics, network requests, camera access, or microphone
     access
 proof_points:
   - >-
     Break experience: frosted desktop blur, animated backgrounds, ambient
-    particles, and short NY tarot-reader messages
+    particles, and short observational messages
   - Customizable intervals and durations from focused work blocks to longer resets
   - >-
     Hold-to-skip duration scales with break length, clamped to avoid punishment

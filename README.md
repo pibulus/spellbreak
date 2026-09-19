@@ -1,88 +1,67 @@
 # 🔮 Spellbreak
 
-Break the digital spell! A mystical break reminder app for macOS that helps you maintain healthy screen time habits with beautiful, immersive break experiences.
+Break the digital spell. A mystical break-reminder for macOS that interrupts
+screen trance with lush, full-screen rituals — just enough friction to make
+skipping conscious, never punitive.
 
 ## Features
 
-- **Mystical Break Experience**: Full-screen overlay with flowing aurora waves and ambient particles
-- **Smart Scheduling**: Customizable break intervals (default: every 20 minutes)
-- **Hold-to-Skip**: Press and hold the skip ring if needed (duration scales with break length)
-- **Time-Based Themes**: Color palettes shift with time of day (dawn, day, evening, night)
-- **Ambient Soundscape**: Optional relaxing sounds during breaks
-- **Menu Bar Control**: Unobtrusive icon with quick access to settings
-- **Break Statistics**: Track your break completion rate
+- **Aurora in four moods** — time-aware (shifts dawn → day → dusk → night),
+  always-warm Ember, always-cool Violet, or Surprise Me (rolls one each break)
+- **Observational messages** — never the same line twice, tuned to the hour and
+  moon. They hint instead of ordering, and can be switched off entirely
+- **Hold-to-skip** — a ring you hold for a beat; duration scales with break length
+- **Heads-up countdown pill** — a gentle warning before the spell lands
+- **Smart pauses** — waits out full-screen games, films, and presentations
+- **Private by design** — no accounts, no tracking, no network requests, no camera
+  or microphone access
 
 ## Requirements
 
 - macOS 13.0 (Ventura) or later
-- Apple Silicon or Intel Mac
+- Apple Silicon or Intel
 
-## Installation
+## Install
 
-### Quick Start
+Download from [spellbreak.app](https://spellbreak.app), move it to
+Applications, and launch.
 
-1. Download the latest release from [spellbreak.app](https://spellbreak.app)
-2. Move Spellbreak.app to your Applications folder
-3. Launch it and allow notifications if you want the heads-up alerts
-
-### Build from Source
+## Build
 
 ```bash
-git clone https://github.com/pibulus/spellbreak.git
-cd spellbreak
-./build-app.sh
+./build-app.sh        # production build → build/Spellbreak.app
 open build/Spellbreak.app
 ```
 
-## Usage
+For a signed / notarized release, see [`SIGNING_GUIDE.md`](SIGNING_GUIDE.md).
 
-- **Menu Bar**: Click the Spellbreak icon to access controls
-- **Preferences**: Customize break intervals, duration, heads-up timing, sounds, and visuals
-- **Skip Break**: Hold the skip ring for a short duration that scales with break length
-- **Pause/Resume**: Temporarily pause break reminders when needed
-
-## Privacy & Security
-
-Spellbreak respects your privacy:
-- ✅ No data collection or analytics
-- ✅ All settings stored locally
-- ✅ No network connections
-- ✅ Fully sandboxed
-- ✅ No camera or microphone access
-
-## Development
-
-Built with:
-- Swift 5.9+
-- SwiftUI
-- Swift Package Manager
-
-### Project Structure
+## Project layout
 
 ```
 Sources/Spellbreak/
-├── SpellbreakApp.swift     # Main app entry point
-├── OverlayWindow.swift     # Break overlay interface
-├── AuroraBackground.swift  # Animated wave effects
-├── PreferencesView.swift   # Settings interface
-├── MenuViewSimple.swift    # Menu bar UI
-└── SoundManager.swift      # Audio handling
+├── SpellbreakApp.swift      # entry point, AppState, window controllers
+├── OverlayWindow.swift      # full-screen break overlay
+├── AuroraBackground.swift   # animated waves + AuroraPalette
+├── AmbientParticles.swift   # floating orbs
+├── SpellTextGenerator.swift # observational message engine
+├── PreferencesView.swift    # Time / Vibes settings
+├── MenuViewSimple.swift     # menu bar popover
+├── StatusBarController.swift
+├── SoundManager.swift
+└── Utilities.swift          # palette, ScreenBusy heuristic
 ```
 
-### Code Signing
+## Other docs
 
-For website / direct distribution:
-
-```bash
-./build-dmg.sh --sign "Developer ID Application: Your Name (TEAMID)"
-```
-
-For Mac App Store submission, archive the app in Xcode and upload that archive to App Store Connect with the proper App Store distribution workflow.
+- [`APP_STORE.md`](APP_STORE.md) — store listing copy
+- [`SIGNING_GUIDE.md`](SIGNING_GUIDE.md) — signing, notarization, distribution
+- [`PRIVACY.md`](PRIVACY.md) — privacy policy
+- [`GLOSSARY.md`](GLOSSARY.md) — code glossary
 
 ## License
 
-Copyright © 2025-2026 Pablo Alvarado. All rights reserved.
+Copyright © 2025–2026 Pablo Alvarado. All rights reserved.
 
 ## Support
 
-For issues or feature requests, visit [github.com/pibulus/spellbreak](https://github.com/pibulus/spellbreak)
+[github.com/pibulus/spellbreak](https://github.com/pibulus/spellbreak)

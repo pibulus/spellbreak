@@ -15,17 +15,14 @@ Quick reference for Spellbreak's break reminder architecture.
 
 ## Background Components
 
-**AuroraBackground** - Flowing gradient waves (default theme)
-`Sources/Spellbreak/AuroraBackground.swift` - Canvas + TimelineView animation
+**AuroraBackground** - Flowing gradient waves
+`Sources/Spellbreak/AuroraBackground.swift` - Canvas + TimelineView animation, palette-driven
 
-**CosmicBackground** - Starfield space theme
-`Sources/Spellbreak/CosmicBackground.swift` - Particle-based cosmic effect
-
-**LavaLampBackground** - Organic blob movements
-`Sources/Spellbreak/LavaLampBackground.swift` - Blob animation theme
+**AuroraPalette** - The colour a break wears
+`Sources/Spellbreak/AuroraBackground.swift` - `.time` (hour-aware), `.ember` (warm), `.violet` (cool)
 
 **AmbientParticles** - Floating orbs overlay
-`Sources/Spellbreak/AmbientParticles.swift` - Subtle particle system
+`Sources/Spellbreak/AmbientParticles.swift` - Subtle particle system, palette-matched
 
 ## App Structure
 
@@ -57,16 +54,17 @@ Quick reference for Spellbreak's break reminder architecture.
 
 ## UI Elements
 
-**HeartEyesIcon** - Custom emoji icon
-`Sources/Spellbreak/HeartEyesIcon.swift` - 😍 glyph component
+**ToggleRow** - Full-width toggle row inside a shared card
+`Sources/Spellbreak/PreferencesView.swift` - Stacks into one calm behaviour list
 
 ## Core Concepts
 
-**Message System** - NY tarot reader voice
+**Message System** - Observational, never instructional
 - Grammar: Body parts as witnesses, patterns as entities
 - Format: 5-6 word maximum per message
-- Distribution: 60% NY voice, 40% mystical/temporal variety
-- Examples: "Your shoulders holding court since Tuesday"
+- Distribution: 30% body, 30% ambient, 20% mystical spark, 20% full observation
+- Example: "The trance gets comfortable"
+- Optional: `showBreakMessage` toggle hides the line entirely
 
 **Hold-to-Skip Mechanism**
 - Duration scales with break length
@@ -81,9 +79,10 @@ Quick reference for Spellbreak's break reminder architecture.
 - Night (9pm-5am): Electric purple, deep violet
 
 **Visual Themes**
-- Aurora (default): Flowing gradients, wave effects
-- Cosmic: Starfield with particles
-- Lava: Organic blob movements
+- Aurora: hour-aware, shifts with the clock
+- Ember: always-warm dusk colours
+- Violet: always-cool night colours
+- Surprise: rolls one of the three each break
 
 **Break Statistics** - Tracked per session + lifetime
 - Completed breaks (today + total)

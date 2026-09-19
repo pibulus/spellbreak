@@ -272,7 +272,7 @@ func drawTarotCards(in rect: CGRect, scale: CGFloat, ctx: CGContext) {
 }
 
 func drawHoldToSkipCard(in rect: CGRect, scale: CGFloat, ctx: CGContext) {
-    if let bgImg = NSImage(contentsOfFile: "screenshots/cosmic-2880x1800.png") {
+    if let bgImg = NSImage(contentsOfFile: "screenshots/violet-2880x1800.png") {
         drawFramedImage(bgImg, in: rect, cornerRadius: 28 * scale, ctx: ctx)
     }
 
@@ -323,8 +323,8 @@ func drawHoldToSkipCard(in rect: CGRect, scale: CGFloat, ctx: CGContext) {
 func drawShaderTriptych(in rect: CGRect, scale: CGFloat, ctx: CGContext) {
     let images = [
         ("screenshots/aurora-2880x1800.png", "AURORA", "Dawn & Day Flow"),
-        ("screenshots/cosmic-2880x1800.png", "COSMIC", "Deep Night Starlight"),
-        ("screenshots/lava-2880x1800.png", "LAVA", "Warm Coral Hearth")
+        ("screenshots/ember-2880x1800.png", "EMBER", "Warm Dusk All Day"),
+        ("screenshots/violet-2880x1800.png", "VIOLET", "Electric Night")
     ]
 
     let itemWidth = (rect.width - (30 * scale * 2)) / 3
@@ -376,7 +376,7 @@ func drawShaderTriptych(in rect: CGRect, scale: CGFloat, ctx: CGContext) {
 func drawCartridgeManifesto(in rect: CGRect, scale: CGFloat, ctx: CGContext) {
     let pillars = [
         ("🔒 100% PRIVATE", "No accounts, no tracking, no ads. Everything stays securely on your Mac."),
-        ("🎨 3 CALMING THEMES", "Aurora, Cosmic, and Lava themes with colors that adjust automatically throughout the day."),
+        ("🎨 AURORA IN FOUR MOODS", "Time-aware, warm Ember, cool Violet, or a Surprise that rolls a fresh palette each break."),
         ("⏳ GENTLE FRICTION", "Hold-to-skip ring gives just enough pause to help you take your break without trapping you."),
         ("💎 NO SUBSCRIPTIONS", "A single $19.99 purchase. Own it forever without recurring monthly or yearly fees.")
     ]

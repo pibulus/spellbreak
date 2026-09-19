@@ -32,7 +32,7 @@ Tuned to the hour, the moon, and your working pace. Street-smart mystical nudges
 
 ⚙️ MODULAR & BUILT FOR YOUR DAY
 • Flexible breaks: quick 20-second eye rests to 15-minute walks
-• 3 living themes: Aurora, Cosmic Starlight, and Coral Lava (plus Surprise Me)
+• Aurora in four moods: time-aware, always-warm Ember, always-cool Violet, plus Surprise
 • Time-aware palettes: soft dawn rose, golden midday, twilight violet, deep night
 • Floating countdown pill gives a gentle heads-up before a break lands
 • Respectful hold-to-skip: just enough friction to make you pause and think twice
@@ -61,6 +61,12 @@ $19.99 USD (Tier 19 / $29.99 AUD) — One-time purchase
 ## In-App Purchases
 None (Pay once, owned forever)
 
+## What's New (Version 1.1.0)
+• Aurora-only vibes: time-aware, always-warm Ember, always-cool Violet, plus Surprise
+• Break messages are optional — turn the words off for a colour-and-light break
+• Softer, more observational messages that hint instead of ordering
+• Preferences rebalanced into a single tidy behaviour card, no more clipped text
+
 ## What's New (Version 1.0.4)
 • Softer light, warmer backgrounds, and the app introduces itself
 • Surprise Me theme option rolls one of the three themes fresh for every break
@@ -84,7 +90,7 @@ None (Pay once, owned forever)
 1. **01-break-the-spell-2880x1800.png** — "Lost 3 hours to the screen? Break ADHD hyperfocus & rest your eyes."
 2. **02-street-smart-wisdom-2880x1800.png** — "Never the same line twice. Organically generated words tuned to the hour & moon."
 3. **03-hold-to-skip-2880x1800.png** — "Hard to ignore. Easy to leave. Gentle hold-to-skip friction."
-4. **04-living-shaders-2880x1800.png** — "Modular breaks from 20s to 15m. Three living visual themes."
+4. **04-living-shaders-2880x1800.png** — "Modular breaks from 20s to 15m. Four living aurora moods."
 5. **05-no-subscriptions-2880x1800.png** — "Pay once. Yours forever. 100% Private, no subscriptions."
 
 ## Support URL
