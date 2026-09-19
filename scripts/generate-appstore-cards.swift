@@ -49,7 +49,7 @@ let cards: [CardSpec] = [
         filename: "04-living-shaders",
         badge: "⚙️ MODULAR BREAKS & LIVING THEMES",
         headline: "For eyes, posture, and tea breaks.",
-        subheadline: "20-second eye rests to 15-minute walks. Automatically pauses during full-screen calls.",
+        subheadline: "10-second glances to 3-minute stretches. Automatically pauses during calls.",
         type: .shaderTriptych
     ),
     CardSpec(

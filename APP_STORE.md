@@ -31,7 +31,7 @@ Tuned to the hour, the moon, and your working pace. Street-smart mystical nudges
 • "Screen's got your number."
 
 ⚙️ MODULAR & BUILT FOR YOUR DAY
-• Flexible breaks: quick 20-second eye rests to 15-minute walks
+• Flexible breaks: 10-second glances to 3-minute stretches, every 15 minutes to 3 hours
 • Aurora in four moods: time-aware, always-warm Ember, always-cool Violet, plus Surprise
 • Time-aware palettes: soft dawn rose, golden midday, twilight violet, deep night
 • Floating countdown pill gives a gentle heads-up before a break lands
