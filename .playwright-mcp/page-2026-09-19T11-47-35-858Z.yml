@@ -1,0 +1,20 @@
+- generic [ref=f1e3]:
+  - generic [ref=f1e4]: 🔮
+  - heading "The spell is broken!" [level=1] [ref=f1e5]
+  - paragraph [ref=f1e6]: Paid once. Owned forever.The download waits right here.
+  - link "Download Spellbreak.dmg" [ref=f1e7] [cursor=pointer]:
+    - /url: https://github.com/pibulus/spellbreak/releases/latest/download/Spellbreak.dmg
+  - paragraph [ref=f1e8]: macOS 13+ · Universal · Notarized by Apple
+  - generic [ref=f1e9]:
+    - paragraph [ref=f1e10]: Three steps to the portal
+    - generic [ref=f1e11]:
+      - paragraph [ref=f1e12]: • Open the DMG, drag Spellbreak to Applications
+      - paragraph [ref=f1e13]: • Launch it — a moon appears in the menu bar
+      - paragraph [ref=f1e14]: • Pick an interval, and let the screen dim ✨
+  - paragraph [ref=f1e15]: Square emails the receipt. Bookmark this page to grab the file again, or re-download any time from the release archive.
+  - generic [ref=f1e16]:
+    - link "Back to Spellbreak" [ref=f1e17] [cursor=pointer]:
+      - /url: /
+    - link "Something wrong?" [ref=f1e18] [cursor=pointer]:
+      - /url: /support
+  - paragraph [ref=f1e19]: Built with love in Melbourne by Pablo Andres

@@ -1,0 +1,63 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - heading "Spellbreak" [level=1] [ref=e6]:
+        - text: Spellbreak
+        - generic [ref=e8]: .app
+      - paragraph [ref=e9]: Break the spell. Unskippable breaks that set you free.
+      - paragraph [ref=e10]: Soft light. Slow breath. The screen dims and a portal opens.
+      - generic [ref=e11]: Dawn horizon
+      - generic [ref=e17]:
+        - button "Break the Spell — $29 AUD" [ref=e18] [cursor=pointer]
+        - generic [ref=e19]:
+          - paragraph [ref=e20]: $29 AUD (~$19.99 USD) • One-Time • No Subscriptions
+          - paragraph [ref=e21]: Notarized by Apple. Universal binary for Apple silicon & Intel.
+          - paragraph [ref=e22]: Coming to the Mac App Store at $19.99 USD.
+        - generic [ref=e24]:
+          - button "Experience the break overlay right here in the browser" [ref=e25] [cursor=pointer]: 🔮 Feel the spell
+          - paragraph [ref=e26]: No video. The page itself takes the break.
+    - generic [ref=e28]:
+      - heading "The spell, landing" [level=2] [ref=e29]
+      - img "Spellbreak break overlay — aurora waves with a quiet observational message on a frosted screen" [ref=e32]
+      - generic [ref=e33]:
+        - generic [ref=e34]:
+          - img "Ember theme — always-warm dusk colours in rose gold and sunset orange" [ref=e36]
+          - paragraph [ref=e38]: Ember — warm dusk colours, all day
+        - generic [ref=e39]:
+          - img "Violet theme — electric neon night in violet and magenta" [ref=e41]
+          - paragraph [ref=e43]: Violet — cool night colours, all day
+        - generic [ref=e44]:
+          - img "Spellbreak preferences — break interval and duration sliders" [ref=e46]
+          - paragraph [ref=e48]: Every 20 minutes, or however you roll
+    - generic [ref=e50]:
+      - heading "How the ritual works" [level=2] [ref=e51]
+      - generic [ref=e52]:
+        - generic [ref=e53]:
+          - paragraph [ref=e54]: A little pill counts down ten seconds.
+          - paragraph [ref=e55]: A heads-up, not an ambush. Finish your thought.
+        - generic [ref=e56]:
+          - paragraph [ref=e57]: Then the screen dims, and the spell lands.
+          - paragraph [ref=e58]: Aurora, ember, violet, or a Surprise Me that rolls a new one each break — colors that follow the sun from dawn to 3am.
+        - generic [ref=e59]:
+          - paragraph [ref=e60]: Need out? Hold the ring.
+          - paragraph [ref=e61]: You felt it up there. Just enough friction to make you think twice.
+        - generic [ref=e62]:
+          - paragraph [ref=e63]: And nobody's watching.
+          - paragraph [ref=e64]: No accounts, no tracking, no network requests, ever. The spell only works on your Mac — your data stays there too.
+    - generic [ref=e66]:
+      - heading "Truth about screen addiction" [level=2] [ref=e67]: You've been staring too long.
+      - paragraph [ref=e68]: Eyes glazed. Brain sizzling.Cursor mocking you.
+      - paragraph [ref=e69]: You're not a machine.The moon is real.Look away.
+    - contentinfo [ref=e70]:
+      - generic [ref=e71]:
+        - generic [ref=e72]:
+          - button "About 🔮" [ref=e73] [cursor=pointer]
+          - button "☕ Support" [ref=e74] [cursor=pointer]
+        - generic [ref=e76]:
+          - link "Privacy" [ref=e77] [cursor=pointer]:
+            - /url: /privacy
+          - generic [ref=e78]: •
+          - link "Support" [ref=e79] [cursor=pointer]:
+            - /url: /support
+        - paragraph [ref=e80]: Pablo • Melbourne • Currently under my own spell
+  - generic: ✨ Secret discovered!

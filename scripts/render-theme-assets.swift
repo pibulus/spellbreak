@@ -11,6 +11,21 @@ let violetColors: [Color] = [
     Color(red: 0.11, green: 0.07, blue: 0.42)   // Indigo
 ]
 
+// Aurora "evening" — the time-aware palette at its richest (AuroraBackground.swift 17..<21).
+// Day's gold→purple span is too wide: four blurred layers average it into dusty mauve.
+// Sunset orange → magenta → twilight purple is a tight enough sweep to stay saturated.
+let auroraColors: [Color] = [
+    Color(red: 1.00, green: 0.42, blue: 0.22),  // Sunset orange
+    Color(red: 0.94, green: 0.31, blue: 0.61),  // Hot magenta-pink
+    Color(red: 0.68, green: 0.18, blue: 0.66),  // Deep magenta
+    Color(red: 0.28, green: 0.09, blue: 0.48)   // Twilight purple
+]
+
+let auroraParticleColors: [Color] = [
+    Color(red: 1.0, green: 0.68, blue: 0.45),
+    Color(red: 0.96, green: 0.36, blue: 0.62)
+]
+
 let emberColors: [Color] = [
     Color(red: 1.00, green: 0.75, blue: 0.25),  // Amber
     Color(red: 1.00, green: 0.45, blue: 0.10),  // Orange
@@ -312,6 +327,20 @@ let emberView2880 = OverlayRenderer(
 )
 renderToFile(view: emberView2880, width: 2880, height: 1800, path: "screenshots/ember-2880x1800.png")
 
+// 2b. Aurora at 2880x1800
+let auroraView2880 = OverlayRenderer(
+    colors: auroraColors,
+    particleColors: auroraParticleColors,
+    message: "Air cooling",
+    themeGlowColor: Color(red: 1.0, green: 0.42, blue: 0.45),
+    time: 9.3,
+    seed: 21,
+    countdown: "14",
+    width: 2880,
+    height: 1800
+)
+renderToFile(view: auroraView2880, width: 2880, height: 1800, path: "screenshots/aurora-2880x1800.png")
+
 // 3. Downscale for App Store sizes (2560x1600, 1440x900, 1280x800)
 let sizes: [(CGFloat, CGFloat)] = [(2560, 1600), (1440, 900), (1280, 800)]
 for (w, h) in sizes {
@@ -343,6 +372,19 @@ for (w, h) in sizes {
         height: h
     )
     renderToFile(view: eView, width: w, height: h, path: "screenshots/ember-\(sw)x\(sh).png")
+
+    let aView = OverlayRenderer(
+        colors: auroraColors,
+        particleColors: auroraParticleColors,
+        message: "Air cooling",
+        themeGlowColor: Color(red: 1.0, green: 0.42, blue: 0.45),
+        time: 9.3,
+        seed: 21,
+        countdown: "14",
+        width: w,
+        height: h
+    )
+    renderToFile(view: aView, width: w, height: h, path: "screenshots/aurora-\(sw)x\(sh).png")
 }
 
 // 4. Native 3420x2214 for Desktop / Stash
