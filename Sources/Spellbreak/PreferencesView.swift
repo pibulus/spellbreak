@@ -53,6 +53,7 @@ struct PreferencesView: View {
     @AppStorage("launchAtLogin") private var launchAtLogin: Bool = false
     @AppStorage("fancyMenu") private var fancyMenu: Bool = true
     @AppStorage("visualTheme") private var visualTheme: String = "aurora"
+    @AppStorage("showBreakMessage") private var showBreakMessage: Bool = true
     @AppStorage("musicEnabled") private var musicEnabled: Bool = true
     @AppStorage("soundEffectsEnabled") private var soundEffectsEnabled: Bool = true
     @AppStorage("soundVolume") private var soundVolume: Double = 0.5
@@ -173,7 +174,7 @@ struct PreferencesView: View {
                         .transition(.opacity)
                 }
             }
-            .frame(height: 480, alignment: .top)  // Top-aligned: overflow can only grow down, never over the tabs
+            .frame(height: 560, alignment: .top)  // Top-aligned: overflow can only grow down, never over the tabs
             .animation(.easeInOut(duration: 0.2), value: selectedTab)
             }
             
@@ -330,58 +331,46 @@ struct PreferencesView: View {
             }
             .padding(.horizontal, UI.sidePadding)
             
-            // Toggle cards
-            HStack(spacing: 16) {
-                ToggleCard(
+            // One behaviour card instead of four scattered toggles — a single
+            // list reads calmer, and full-width rows give the subtitles room.
+            VStack(spacing: 0) {
+                ToggleRow(
                     title: "Unskippable",
-                    subtitle: "Unskippable fullscreen",
+                    subtitle: "The break holds until it's done",
                     isOn: lockMode,
-                    isHovered: hoveredElement == "skip-toggle",
-                    onChange: { lockMode = $0 },
                     soundManager: soundManager
-                )
-                .onHover { hovering in
-                    hoveredElement = hovering ? "skip-toggle" : nil
-                }
+                ) { lockMode = $0 }
 
-                ToggleCard(
+                rowDivider
+
+                ToggleRow(
                     title: "Heads-Up",
                     subtitle: "A countdown before the spell lands",
                     isOn: breakWarningEnabled,
-                    isHovered: hoveredElement == "warning-toggle",
-                    onChange: { breakWarningEnabled = $0 },
                     soundManager: soundManager
-                )
-                .onHover { hovering in
-                    hoveredElement = hovering ? "warning-toggle" : nil
-                }
-            }
-            .padding(.horizontal, UI.sidePadding)
+                ) { breakWarningEnabled = $0 }
 
-            ToggleCard(
-                title: "Not While Fullscreen",
-                subtitle: "Waits out games, films and presentations",
-                isOn: deferDuringFullscreen,
-                isHovered: hoveredElement == "fullscreen-toggle",
-                onChange: { deferDuringFullscreen = $0 },
-                soundManager: soundManager
-            )
-            .onHover { hovering in
-                hoveredElement = hovering ? "fullscreen-toggle" : nil
-            }
-            .padding(.horizontal, UI.sidePadding)
+                rowDivider
 
-            ToggleCard(
-                title: "Autostart",
-                subtitle: launchAtLoginSubtitle,
-                isOn: launchAtLogin,
-                isHovered: hoveredElement == "auto-toggle",
-                onChange: handleLaunchAtLoginToggle,
-                soundManager: soundManager
-            )
-            .onHover { hovering in
-                hoveredElement = hovering ? "auto-toggle" : nil
+                ToggleRow(
+                    title: "Not While Fullscreen",
+                    subtitle: "Waits out games, films and presentations",
+                    isOn: deferDuringFullscreen,
+                    soundManager: soundManager
+                ) { deferDuringFullscreen = $0 }
+
+                rowDivider
+
+                ToggleRow(
+                    title: "Autostart",
+                    subtitle: launchAtLoginSubtitle,
+                    isOn: launchAtLogin,
+                    soundManager: soundManager
+                ) { handleLaunchAtLoginToggle($0) }
             }
+            .padding(.vertical, 6)
+            .padding(.horizontal, UI.cardPadding)
+            .frostedCard(cornerRadius: 20)
             .padding(.horizontal, UI.sidePadding)
 
             if let launchAtLoginError {
@@ -394,10 +383,15 @@ struct PreferencesView: View {
             Spacer()  // Push content to top within fixed height
         }
     }
+
+    private var rowDivider: some View {
+        Divider()
+            .overlay(Color.white.opacity(0.06))
+    }
     
     // MARK: - Vibes Tab Content
     private var vibesContent: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 14) {
             Color.clear.frame(height: 4)  // Breathing room below tabs
 
             // Visual theme selector — the main event, so it leads
@@ -410,7 +404,7 @@ struct PreferencesView: View {
                 HStack(spacing: 9) {
                     ThemeChip(
                         title: "Aurora",
-                        subtitle: "Time-aware flowing waves",
+                        subtitle: "Shifts with the hour",
                         colors: [
                             Color(red: 0.94, green: 0.58, blue: 0.37),
                             Color(red: 0.94, green: 0.31, blue: 0.61),
@@ -427,50 +421,50 @@ struct PreferencesView: View {
                     }
 
                     ThemeChip(
-                        title: "Cosmic",
-                        subtitle: "Deep space nebula",
+                        title: "Ember",
+                        subtitle: "Warm dusk colours all day",
                         colors: [
-                            Color(red: 0.40, green: 0.10, blue: 0.80),
-                            Color(red: 0.25, green: 0.15, blue: 0.85),
-                            Color(red: 0.55, green: 0.78, blue: 1.00)
+                            Color(red: 1.00, green: 0.75, blue: 0.25),
+                            Color(red: 1.00, green: 0.45, blue: 0.10),
+                            Color(red: 0.92, green: 0.25, blue: 0.18)
                         ],
-                        isSelected: visualTheme == "cosmic",
-                        isHovered: hoveredElement == "theme-cosmic"
+                        isSelected: visualTheme == "ember",
+                        isHovered: hoveredElement == "theme-ember"
                     ) {
-                        visualTheme = "cosmic"
+                        visualTheme = "ember"
                         soundManager.playToggleOn()
                     }
                     .onHover { hovering in
-                        hoveredElement = hovering ? "theme-cosmic" : nil
+                        hoveredElement = hovering ? "theme-ember" : nil
                     }
 
                     ThemeChip(
-                        title: "Lava Lamp",
-                        subtitle: "Retro morphing blobs",
+                        title: "Violet",
+                        subtitle: "Cool night colours all day",
                         colors: [
-                            Color(red: 0.99, green: 0.36, blue: 0.42),
-                            Color(red: 0.98, green: 0.20, blue: 0.58),
-                            Color(red: 1.00, green: 0.50, blue: 0.20)
+                            Color(red: 0.42, green: 0.36, blue: 1.00),
+                            Color(red: 0.58, green: 0.18, blue: 0.98),
+                            Color(red: 0.11, green: 0.07, blue: 0.42)
                         ],
-                        isSelected: visualTheme == "lava",
-                        isHovered: hoveredElement == "theme-lava"
+                        isSelected: visualTheme == "violet",
+                        isHovered: hoveredElement == "theme-violet"
                     ) {
-                        visualTheme = "lava"
+                        visualTheme = "violet"
                         soundManager.playToggleOn()
                     }
                     .onHover { hovering in
-                        hoveredElement = hovering ? "theme-lava" : nil
+                        hoveredElement = hovering ? "theme-violet" : nil
                     }
 
                     // One colour borrowed from each of the three, so the chip reads
                     // as "all of them" rather than as a fourth look of its own.
                     ThemeChip(
                         title: "Surprise",
-                        subtitle: "A different one every break",
+                        subtitle: "A different palette each break",
                         colors: [
                             Color(red: 0.94, green: 0.31, blue: 0.61),
-                            Color(red: 0.25, green: 0.15, blue: 0.85),
-                            Color(red: 1.00, green: 0.50, blue: 0.20)
+                            Color(red: 1.00, green: 0.45, blue: 0.10),
+                            Color(red: 0.42, green: 0.36, blue: 1.00)
                         ],
                         isSelected: visualTheme == "random",
                         isHovered: hoveredElement == "theme-random"
@@ -485,6 +479,19 @@ struct PreferencesView: View {
             }
             .padding(UI.cardPadding)
             .frostedCard()
+            .padding(.horizontal, UI.sidePadding)
+
+            ToggleCard(
+                title: "Messages",
+                subtitle: "A line of words with each break",
+                isOn: showBreakMessage,
+                isHovered: hoveredElement == "message-toggle",
+                onChange: { showBreakMessage = $0 },
+                soundManager: soundManager
+            )
+            .onHover { hovering in
+                hoveredElement = hovering ? "message-toggle" : nil
+            }
             .padding(.horizontal, UI.sidePadding)
 
             HStack(spacing: 16) {
@@ -842,6 +849,84 @@ struct ToggleCard: View {
         }
         .scaleEffect(isHovered ? 1.08 : 1.0)
         .animation(.easeOut(duration: 0.15), value: isHovered)
+    }
+}
+
+// MARK: - Toggle Row
+/// A single full-width row inside a shared card. No card chrome of its own —
+/// that's the parent's job — so several of these can stack into one calm list
+/// with dividers between them.
+struct ToggleRow: View {
+    let title: String
+    let subtitle: String
+    let isOn: Bool
+    let soundManager: SoundManager
+    let onChange: (Bool) -> Void
+
+    @State private var isHovered = false
+
+    private var toggleAction: () -> Void {
+        {
+            let newValue = !isOn
+            onChange(newValue)
+            if newValue {
+                soundManager.playToggleOn()
+            } else {
+                soundManager.playToggleOff()
+            }
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.spellCream.opacity(isOn ? 0.95 : 0.75))
+                Text(subtitle)
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundColor(.spellCream.opacity(0.5))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 12)
+
+            ZStack {
+                Capsule()
+                    .fill(
+                        LinearGradient(
+                            colors: isOn
+                                ? [Color.spellPink, Color.spellCoral]
+                                : [Color.white.opacity(0.15), Color.white.opacity(0.1)],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .frame(width: 60, height: 32)
+
+                Circle()
+                    .fill(Color.spellCream)
+                    .frame(width: 24, height: 24)
+                    .offset(x: isOn ? 14 : -14)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isOn)
+            }
+            .scaleEffect(isHovered ? 1.08 : 1.0)
+            .animation(.easeOut(duration: 0.15), value: isHovered)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .contentShape(Rectangle())
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(isHovered ? Color.white.opacity(0.06) : Color.clear)
+        )
+        .onTapGesture(perform: toggleAction)
+        .onHover { isHovered = $0 }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(title)
+        .accessibilityValue(isOn ? "On, \(subtitle)" : "Off, \(subtitle)")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction(named: Text(isOn ? "Turn Off" : "Turn On"), toggleAction)
     }
 }
 

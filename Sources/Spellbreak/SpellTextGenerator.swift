@@ -3,44 +3,49 @@
 //  Spellbreak
 //
 //  Abstract, mystical break generator powered by combinatorial entropy.
+//  Every line is an observation, not an instruction — nothing here ever tells
+//  you to look, stretch, breathe, or do. It names what is already happening
+//  and lets the body hear it.
 //
 
 import Foundation
 
 struct SpellTextGenerator {
-    
+
     // ===================================================================
-    // ENTROPY INGREDIENTS - Short, abstract, reflective fragments
+    // ENTROPY INGREDIENTS - short, abstract, observational fragments
     // ===================================================================
-    
+
     private static let bodyParts = [
-        "Shoulders", "Jaw", "Spine", "Retinas", "Breath",
+        "Shoulders", "Jaw", "Spine", "Eyes", "Breath",
         "Palms", "Temples", "Collarbones", "Ribs", "Wrists",
         "Brow", "Throat", "Neck", "Pulse", "Edges",
         "Hands", "Chest", "Gaze", "Fingertips", "Posture"
     ]
-    
+
+    // States, not orders. "Softening" instead of "soft" — a process already
+    // underway, not a job being handed out.
     private static let bodyStates = [
-        "adrift", "unwinding", "soft", "floating", "cool",
-        "loose", "quiet", "settling", "dissolved", "wide",
-        "resting", "spacious", "in orbit", "unspooling", "weightless",
-        "open", "still", "grounded", "breathing", "slack"
+        "adrift", "unwinding", "floating", "settling", "loosening",
+        "quiet", "dissolved", "wide", "resting", "spacious",
+        "in orbit", "unspooling", "weightless", "open", "still",
+        "grounded", "slack", "unhooked", "softening", "lightening"
     ]
-    
+
     private static let ambientElements = [
         "Static", "Glass", "Geometry", "Horizon", "Room",
         "Periphery", "Frame", "Shadows", "Glow", "Light",
         "Signal", "Air", "Distance", "Depth", "Frequency",
         "Loop", "Gravity", "Angles", "Space", "Focus"
     ]
-    
+
     private static let ambientStates = [
-        "dissolving", "softening", "cooling down", "fading", "drifting",
-        "clearing", "rendered", "opening up", "wide open", "slowing down",
-        "holding steady", "unlocked", "zero latency", "low frequency", "weightless",
-        "in suspension", "unbound", "untangled", "silent"
+        "dissolving", "softening", "cooling", "fading", "drifting",
+        "clearing", "opening", "slowing", "holding steady", "unlocked",
+        "weightless", "in suspension", "unbound", "untangled", "silent",
+        "humming", "easing", "settling", "going quiet"
     ]
-    
+
     private static let mysticalSparks = [
         "Soft geometry",
         "Pale static",
@@ -70,18 +75,41 @@ struct SpellTextGenerator {
         "Easy drift",
         "Gentle slip"
     ]
-    
+
+    // Full sentences in the tarot-reader voice — things noticed, never things
+    // ordered. These are the lines that already know what's going on.
+    private static let observations = [
+        "The trance gets comfortable",
+        "The screen isn't watching back",
+        "Something settles behind the eyes",
+        "The shoulders let go a little",
+        "A slow tide under the ribs",
+        "The room was always this quiet",
+        "Light pools at the edges",
+        "The jaw unhooks itself",
+        "Gravity eases off a notch",
+        "The spine finds its old drift",
+        "Time goes soft at the edges",
+        "The day loosens its grip",
+        "A low hum between the temples",
+        "The frame forgets to hold",
+        "The breath remembers its own pace",
+        "Nothing here is asking",
+        "The pulse drops a floor or two",
+        "The edges of the room blur"
+    ]
+
     // ===================================================================
     // MOON PHASE CALCULATION (approximate)
     // ===================================================================
-    
+
     private static func getMoonPhase() -> String {
         let referenceNewMoon = Date(timeIntervalSince1970: 947182440)
         let lunarCycleSeconds: TimeInterval = 29.53058867 * 86400
         let moonAgeSeconds = Date().timeIntervalSince(referenceNewMoon)
             .truncatingRemainder(dividingBy: lunarCycleSeconds)
         let moonAge = moonAgeSeconds / 86400
-        
+
         switch moonAge {
         case 0..<2: return "new"
         case 2..<9: return "waxing"
@@ -92,11 +120,11 @@ struct SpellTextGenerator {
         default: return "waningCrescent"
         }
     }
-    
+
     // ===================================================================
     // SPECIAL MOON SPARKS
     // ===================================================================
-    
+
     private static let moonSparks = [
         "full": [
             "Full moon pull",
@@ -109,33 +137,34 @@ struct SpellTextGenerator {
             "Clear void"
         ]
     ]
-    
+
     // ===================================================================
     // PUBLIC GENERATOR
     // ===================================================================
-    
+
     static func generateMessage(
         breakCount: Int = 0,
         skippedCount: Int = 0,
         lastBreakInterval: TimeInterval? = nil
     ) -> String {
-        // Mode 1 (35%): Body + State ("Shoulders adrift", "Jaw soft", "Spine in orbit")
-        // Mode 2 (35%): Ambient + State ("Static cooling", "Frame dissolving", "Horizon wide open")
-        // Mode 3 (30%): Abstract Mystical Spark ("Soft geometry", "Quiet frequency", "Pale static")
-        
+        // Mode 1 (30%): Body + State ("Shoulders adrift", "Jaw softening", "Spine in orbit")
+        // Mode 2 (30%): Ambient + State ("Static cooling", "Frame dissolving", "Horizon wide open")
+        // Mode 3 (20%): Abstract Mystical Spark ("Soft geometry", "Quiet frequency", "Pale static")
+        // Mode 4 (20%): Full observation ("The trance gets comfortable")
+
         let roll = Int.random(in: 1...100)
-        
-        if roll <= 35 {
+
+        if roll <= 30 {
             let body = bodyParts.randomElement() ?? "Shoulders"
-            let state = bodyStates.randomElement() ?? "soft"
+            let state = bodyStates.randomElement() ?? "adrift"
             return "\(body) \(state)"
-        } else if roll <= 70 {
+        } else if roll <= 60 {
             let element = ambientElements.randomElement() ?? "Frame"
             let state = ambientStates.randomElement() ?? "dissolving"
             return "\(element) \(state)"
-        } else {
+        } else if roll <= 80 {
             var pool = mysticalSparks
-            
+
             // Contextual sparks
             let hour = Calendar.current.component(.hour, from: Date())
             switch hour {
@@ -152,12 +181,20 @@ struct SpellTextGenerator {
             default:
                 break
             }
-            
+
             if let lunar = moonSparks[getMoonPhase()] {
                 pool += lunar
             }
-            
+
             return pool.randomElement() ?? "Soft focus"
+        } else {
+            var pool = observations
+
+            if let lunar = moonSparks[getMoonPhase()] {
+                pool += lunar
+            }
+
+            return pool.randomElement() ?? "The trance gets comfortable"
         }
     }
 }

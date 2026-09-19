@@ -8,15 +8,36 @@
 
 import SwiftUI
 
+// MARK: - Aurora Palette
+/// The colour a break wears. Aurora's signature move is time-awareness — it
+/// dawns rose-gold, runs golden through the day, burns at sunset, and goes
+/// violet at night. Ember and Violet pin that spectrum to one end so a break
+/// can feel warm (or cool) at any hour.
+enum AuroraPalette: String, CaseIterable {
+    case time
+    case ember
+    case violet
+
+    /// Maps a stored `visualTheme` preference to a concrete palette.
+    static func from(theme: String) -> AuroraPalette {
+        switch theme {
+        case "ember": return .ember
+        case "violet": return .violet
+        default: return .time
+        }
+    }
+}
+
 // MARK: - Aurora Background
 /// Animated gradient background with flowing wave effect
 /// Uses Canvas + TimelineView for smooth 60fps animation
-/// Colors shift based on time of day for mystical vibes
 struct AuroraBackground: View {
+    var palette: AuroraPalette = .time
+
     // Get time-based palette
     private var timeColors: [Color] {
         let hour = Calendar.current.component(.hour, from: Date())
-        
+
         switch hour {
         case 5..<10: // Dawn - rich rose gold
             return [
@@ -48,15 +69,41 @@ struct AuroraBackground: View {
             ]
         }
     }
-    
+
+    private var emberColors: [Color] {
+        [
+            Color(red: 1.00, green: 0.75, blue: 0.25),  // Amber
+            Color(red: 1.00, green: 0.45, blue: 0.10),  // Orange
+            Color(red: 0.92, green: 0.25, blue: 0.18),  // Coral red
+            Color(red: 0.50, green: 0.10, blue: 0.14)   // Deep wine
+        ]
+    }
+
+    private var violetColors: [Color] {
+        [
+            Color(red: 0.42, green: 0.36, blue: 1.00),  // Blue-violet
+            Color(red: 0.58, green: 0.18, blue: 0.98),  // Violet
+            Color(red: 0.30, green: 0.14, blue: 0.88),  // Deep purple
+            Color(red: 0.11, green: 0.07, blue: 0.42)   // Indigo
+        ]
+    }
+
+    private var paletteColors: [Color] {
+        switch palette {
+        case .ember: return emberColors
+        case .violet: return violetColors
+        case .time: return timeColors
+        }
+    }
+
     var body: some View {
         TimelineView(.animation(minimumInterval: 1/30)) { timeline in
             Canvas { context, size in
                 // Use time for smooth continuous animation
                 let time = timeline.date.timeIntervalSinceReferenceDate * 0.3 // Slower, more hypnotic
-                
+
                 // Get current palette
-                let colors = timeColors
+                let colors = paletteColors
                 
                 // Draw multiple wave layers with varying dynamics
                 for layer in 0..<4 {

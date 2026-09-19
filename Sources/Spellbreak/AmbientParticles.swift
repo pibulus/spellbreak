@@ -23,29 +23,29 @@ struct Particle: Identifiable {
 // MARK: - Ambient Particles
 /// Minimal floating orb system for dreamy vibes
 struct AmbientParticles: View {
+    var palette: AuroraPalette = .time
     @State private var particles: [Particle] = []
-    @AppStorage("visualTheme") private var visualTheme: String = "aurora"
 
     private var particleColors: [Color] {
-        switch visualTheme {
-        case "lava":
+        switch palette {
+        case .ember:
             return [
-                Color(red: 1.0, green: 0.65, blue: 0.35),
-                Color(red: 1.0, green: 0.35, blue: 0.45)
+                Color(red: 1.0, green: 0.75, blue: 0.45),
+                Color(red: 1.0, green: 0.45, blue: 0.20)
             ]
-        case "cosmic":
+        case .violet:
             return [
-                Color(red: 0.75, green: 0.55, blue: 1.0),
-                Color(red: 0.66, green: 0.30, blue: 0.98)
+                Color(red: 0.60, green: 0.50, blue: 1.0),
+                Color(red: 0.42, green: 0.36, blue: 1.0)
             ]
-        default:
+        case .time:
             return [
                 Color.white,
                 Color(red: 1.0, green: 0.6, blue: 0.4)
             ]
         }
     }
-    
+
     var body: some View {
         TimelineView(.animation(minimumInterval: 1/30)) { timeline in
             Canvas { context, size in
@@ -55,16 +55,15 @@ struct AmbientParticles: View {
                     let x = wrapped(particle.x + time * particle.vx) * size.width
                     let y = wrapped(particle.y + time * particle.vy) * size.height
                     let pulse = sin((time * particle.pulseSpeed + particle.phase) * .pi * 2) * 0.5 + 0.5
-                    let themeMultiplier = visualTheme == "cosmic" ? 1.25 : 1.0
-                    let opacity = min((particle.opacity + pulse * 0.16) * themeMultiplier, 0.7)
-                    
+                    let opacity = min(particle.opacity + pulse * 0.16, 0.7)
+
                     // Simple glow effect
                     let gradient = Gradient(stops: [
                         .init(color: particleColors[0].opacity(opacity), location: 0),
                         .init(color: particleColors[1].opacity(opacity * 0.55), location: 0.5),
                         .init(color: Color.clear, location: 1)
                     ])
-                    
+
                     context.fill(
                         Circle().path(in: CGRect(
                             x: x - particle.size/2,
@@ -85,22 +84,11 @@ struct AmbientParticles: View {
             .onAppear {
                 setupParticles()
             }
-            .onChange(of: visualTheme) { _ in
-                setupParticles()
-            }
         }
     }
-    
+
     private func setupParticles() {
-        let count: Int
-        switch visualTheme {
-        case "cosmic":
-            count = 24
-        case "lava":
-            count = 18
-        default:
-            count = 15
-        }
+        let count: Int = palette == .violet ? 18 : 15
 
         particles = (0..<count).map { _ in
             Particle(

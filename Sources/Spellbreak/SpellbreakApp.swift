@@ -427,7 +427,7 @@ class AppState: ObservableObject {
         
         if preferencesWindowController == nil {
             let window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 560, height: 760),
+                contentRect: NSRect(x: 0, y: 0, width: 560, height: 840),
                 styleMask: [.titled, .closable],
                 backing: .buffered,
                 defer: false

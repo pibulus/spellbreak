@@ -38,11 +38,12 @@ struct OverlayWindow: View {
     @AppStorage("breakDurationSec") private var breakDuration: Double = 20
     @AppStorage("musicEnabled") private var musicEnabled: Bool = true
     @AppStorage("visualTheme") private var visualTheme: String = "aurora"
-    /// The theme THIS break is wearing. Rolled once, at init, and never read straight
-    /// from the preference in the body — a random value computed there would re-roll
-    /// on every redraw and strobe between three backgrounds. Rolling at init rather
-    /// than in onAppear matters too: onAppear fires AFTER the first frame, so a
-    /// Cosmic or Lava user would see one frame of the wrong background.
+    @AppStorage("showBreakMessage") private var showBreakMessage: Bool = true
+    /// The palette THIS break is wearing. Rolled once, at init, and never read
+    /// straight from the preference in the body — a random value computed there
+    /// would re-roll on every redraw and strobe between palettes. Rolling at init
+    /// rather than in onAppear matters too: onAppear fires AFTER the first frame,
+    /// so a Surprise user would see one frame of the wrong palette.
     /// A fresh OverlayWindow is built per break, so this is one roll per break.
     @State private var resolvedTheme: String = OverlayWindow.rollTheme(
         UserDefaults.standard.string(forKey: "visualTheme") ?? "aurora"
@@ -59,8 +60,8 @@ struct OverlayWindow: View {
         return max(1, breakDuration)
     }
 
-    /// Every theme name a break can actually wear. "random" is a preference, not a look.
-    static let concreteThemes = ["aurora", "cosmic", "lava"]
+    /// Every palette a break can actually wear. "random" is a preference, not a look.
+    static let concreteThemes = ["aurora", "ember", "violet"]
 
     static func rollTheme(_ stored: String) -> String {
         guard stored == "random" else { return stored }
@@ -69,10 +70,10 @@ struct OverlayWindow: View {
 
     private var themeGlowColor: Color {
         switch resolvedTheme {
-        case "lava":
-            return Color(red: 1.0, green: 0.36, blue: 0.34)
-        case "cosmic":
-            return Color(red: 0.42, green: 0.68, blue: 1.0)
+        case "ember":
+            return Color(red: 1.0, green: 0.62, blue: 0.4)
+        case "violet":
+            return Color(red: 0.48, green: 0.30, blue: 1.0)
         default:
             return Color(red: 0.98, green: 0.46, blue: 0.78)
         }
@@ -96,57 +97,49 @@ struct OverlayWindow: View {
                 .opacity(0.35)
                 .ignoresSafeArea()
             
-            // Theme-based animated background
-            Group {
-                switch resolvedTheme {
-                case "lava":
-                    LavaLampBackground()
-                        .blur(radius: 16)
-                        .opacity(0.85)
-                case "cosmic":
-                    CosmicBackground()
-                        .blur(radius: 4)
-                        .opacity(0.9)
-                default: // "aurora"
-                    AuroraBackground()
-                        .blur(radius: 24)
-                        .opacity(0.8)
-                }
-            }
-            
+            // Theme-based animated background. Lighter blur + near-full opacity so
+            // the palette reads as colour, not a grey wash — this is what made the
+            // three moods collapse into one soft pink before.
+            AuroraBackground(palette: AuroraPalette.from(theme: resolvedTheme))
+                .blur(radius: 12)
+                .opacity(0.95)
+
             // Dark tint for contrast + escape pulse effect
             Rectangle()
-                .fill(.black.opacity(0.2 + escapePulse * 0.1))
+                .fill(.black.opacity(0.12 + escapePulse * 0.1))
                 .ignoresSafeArea()
                 .animation(.easeOut(duration: 0.8), value: escapePulse)
             
             // Ambient floating particles on top
-            AmbientParticles()
+            AmbientParticles(palette: AuroraPalette.from(theme: resolvedTheme))
                 .opacity(0.7)
             
-            // Centered message - strictly centered on screen
-            Text(breakMessage)
-                .font(.system(size: 56, weight: .semibold, design: .rounded))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [.spellCream, .spellCream.opacity(0.92)],
-                        startPoint: .top,
-                        endPoint: .bottom
+            // Centered message - strictly centered on screen. Optional: a quiet break
+            // can be just colour and light, no line of words at all.
+            if showBreakMessage {
+                Text(breakMessage)
+                    .font(.system(size: 56, weight: .semibold, design: .rounded))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.spellCream, .spellCream.opacity(0.92)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
                     )
-                )
-                // Soft cream glow. Dialled back from the old pure-white bloom,
-                // which lit the message up harder than a thing you are meant to
-                // rest your eyes on should be.
-                .shadow(color: .spellCream.opacity(0.32), radius: 20)
-                .shadow(color: .spellCream.opacity(0.18), radius: 40)
-                .shadow(color: themeGlowColor.opacity(0.38), radius: 34)
-                .shadow(color: .black.opacity(0.3), radius: 6, x: 0, y: 3)
-                .opacity(messageOpacity * 0.92)
-                .scaleEffect(textScale)
-                .padding(.horizontal, 60)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                .accessibilityLabel(breakMessage)
+                    // Soft cream glow. Dialled back from the old pure-white bloom,
+                    // which lit the message up harder than a thing you are meant to
+                    // rest your eyes on should be.
+                    .shadow(color: .spellCream.opacity(0.32), radius: 20)
+                    .shadow(color: .spellCream.opacity(0.18), radius: 40)
+                    .shadow(color: themeGlowColor.opacity(0.38), radius: 34)
+                    .shadow(color: .black.opacity(0.3), radius: 6, x: 0, y: 3)
+                    .opacity(messageOpacity * 0.92)
+                    .scaleEffect(textScale)
+                    .padding(.horizontal, 60)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                    .accessibilityLabel(breakMessage)
+            }
 
             // Hold-to-skip ring pinned to bottom (isolated layer so it never displaces center text)
             if !lockMode {
