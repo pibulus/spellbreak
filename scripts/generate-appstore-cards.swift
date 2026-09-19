@@ -430,6 +430,41 @@ func drawCartridgeManifesto(in rect: CGRect, scale: CGFloat, ctx: CGContext) {
     }
 }
 
+// PNG writer: lockFocus / cacheDisplay render at the screen's backing scale (2x) in
+// 16-bit, so raw output came out 5760x3600 and huge. The App Store only accepts exact
+// 1280x800 / 1440x900 / 2560x1600 / 2880x1800, so resample into an 8-bit rep of the
+// requested pixel size (the 2x render becomes free supersampling).
+func writePNG(_ draw: (NSRect) -> Void, width: CGFloat, height: CGFloat, path: String) {
+    guard let rep = NSBitmapImageRep(
+        bitmapDataPlanes: nil, pixelsWide: Int(width), pixelsHigh: Int(height),
+        bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+        colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0
+    ) else {
+        print("❌ Failed to create bitmap rep for \(path)")
+        return
+    }
+    rep.size = NSSize(width: width, height: height)
+
+    NSGraphicsContext.saveGraphicsState()
+    NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+    NSGraphicsContext.current?.imageInterpolation = .high
+    draw(NSRect(x: 0, y: 0, width: width, height: height))
+    NSGraphicsContext.restoreGraphicsState()
+
+    guard let png = rep.representation(using: .png, properties: [:]) else {
+        print("❌ Failed to get PNG data for \(path)")
+        return
+    }
+    let url = URL(fileURLWithPath: path)
+    try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+    do {
+        try png.write(to: url)
+        print("✅ Saved \(path) — \(Int(width))x\(Int(height)), \(png.count / 1024) KB")
+    } catch {
+        print("❌ Error writing \(path): \(error)")
+    }
+}
+
 // MARK: - Execution
 
 let fileManager = FileManager.default
@@ -440,25 +475,11 @@ print("🎨 Rendering App Store Story Cards...")
 
 for card in cards {
     print("📸 Rendering: \(card.filename)...")
-    
-    // 1. 2880x1800 (16:10 Retina)
-    let img2880 = drawCard(spec: card, width: 2880, height: 1800)
-    if let tiff = img2880.tiffRepresentation,
-       let bitmap = NSBitmapImageRep(data: tiff),
-       let png = bitmap.representation(using: .png, properties: [:]) {
-        let path = "\(outputDir)/\(card.filename)-2880x1800.png"
-        try? png.write(to: URL(fileURLWithPath: path))
-        print("   ✅ Created: \(path)")
-    }
 
-    // 2. 1440x900 (16:10 Standard)
-    let img1440 = drawCard(spec: card, width: 1440, height: 900)
-    if let tiff = img1440.tiffRepresentation,
-       let bitmap = NSBitmapImageRep(data: tiff),
-       let png = bitmap.representation(using: .png, properties: [:]) {
-        let path = "\(outputDir)/\(card.filename)-1440x900.png"
-        try? png.write(to: URL(fileURLWithPath: path))
-        print("   ✅ Created: \(path)")
+    for (w, h) in [(CGFloat(2880), CGFloat(1800)), (CGFloat(1440), CGFloat(900))] {
+        let img = drawCard(spec: card, width: w, height: h)
+        writePNG({ img.draw(in: $0) }, width: w, height: h,
+                 path: "\(outputDir)/\(card.filename)-\(Int(w))x\(Int(h)).png")
     }
 }
 
