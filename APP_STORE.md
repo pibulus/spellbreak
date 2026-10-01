@@ -1,103 +1,59 @@
-# Spellbreak - App Store Listing
+# Spellbreak — App Store Listing
 
 ## App Name
+
 Spellbreak
 
-## Subtitle (30 chars)
+## Subtitle
+
 Break the screen trance
 
-## Promotional Text (170 chars max)
-Lost 3 hours to a screen trance? Spellbreak brings gentle, full-screen breaks that help you unclench, rest your eyes, drink tea, and break ADHD hyperfocus. Pay once.
+## Promotional Text
+
+A menu bar break timer for macOS. Set a rhythm, choose a short pause, and let animated color fill the screen for a moment.
 
 ## Description
 
-Lost three hours to a screen trance?
-Shoulders up around your ears?
-Forgot to drink water, stretch, or feed the cat?
+Spellbreak is a break timer for your Mac's menu bar. Choose how often breaks arrive and how long they last. When one begins, a full screen color field fills your displays for a short pause.
 
-Spellbreak breaks the digital hypnosis. Every 20 minutes (or whatever rhythm you cast), your screen transforms into breathing aurora waves — giving your eyes, body, and mind a real moment to reset.
+Choose a look: Aurora shifts with the time of day, Ember stays warm, Violet stays cool, and Surprise picks one of the three for each break. Turn the optional message on or off, and adjust the sound to suit the room.
 
-✨ BREAK THE TRANCE, RECLAIM YOUR BODY
-• Break ADHD hyperfocus & doomscroll loops
-• Rest your eyes with the classic 20-20-20 rule
-• Drop your shoulders, unclench your jaw, and stretch your spine
-• A gentle nudge to brew tea, hydrate, and look out the window
+Set a heads up notification, start Spellbreak at login, or let it defer breaks while a full screen app is open or microphone input is active. Lock mode hides the hold to skip control.
 
-🔮 ORGANICALLY GENERATED WORDS
-Every break writes its own line — never the same one twice.
-Tuned to the hour, the moon, and your working pace. Street-smart mystical nudges that know your patterns, not generic corporate wellness lectures:
-• "The trance gets comfortable."
-• "Your shoulders holding court since Tuesday?"
-• "Screen's got your number."
+Breaks last 10 seconds to 3 minutes, at intervals from 15 minutes to 3 hours. Spellbreak runs on macOS 13 or later.
 
-⚙️ MODULAR & BUILT FOR YOUR DAY
-• Flexible breaks: 10-second glances to 3-minute stretches, every 15 minutes to 3 hours
-• Aurora in four moods: time-aware, always-warm Ember, always-cool Violet, plus Surprise
-• Time-aware palettes: soft dawn rose, golden midday, twilight violet, deep night
-• Floating countdown pill gives a gentle heads-up before a break lands
-• Respectful hold-to-skip: just enough friction to make you pause and think twice
-• Smart pauses: automatically waits out full-screen movies, calls, and games
-
-🔒 100% PRIVATE • ZERO SUBSCRIPTIONS
-• No accounts. No tracking. No ads. Zero network requests.
-• Works completely offline. Everything stays on your Mac.
-• $19.99 once. Yours forever. No recurring fees.
-
-Break the spell. Your spine and eyes will thank you.
+Your settings and break counts stay on your Mac. Spellbreak has no accounts, ads, analytics, or network requests. It is a one time purchase with no subscription or in app purchases.
 
 ## Keywords
-eye strain, posture, rest, timer, pomodoro, wellness, reminder, focus, health, stretch, 20-20-20, rsi, screen break, adhd, break app, hyperfocus
 
-## Categories
+break timer,screen break,rest,posture,stretch,pomodoro,reminder,focus,aurora,wellness
+
+## Category
+
 Primary: Productivity
-Secondary: Health & Fitness
-
-## Age Rating
-4+
-
-## Price
-$19.99 USD (Tier 19 / $29.99 AUD) — One-time purchase
-
-## In-App Purchases
-None (Pay once, owned forever)
 
 ## What's New (Version 1.1.0)
-• Aurora-only vibes: time-aware, always-warm Ember, always-cool Violet, plus Surprise
-• Break messages are optional — turn the words off for a colour-and-light break
-• Softer, more observational messages that hint instead of ordering
-• Preferences rebalanced into a single tidy behaviour card, no more clipped text
 
-## What's New (Version 1.0.4)
-• Softer light, warmer backgrounds, and the app introduces itself
-• Surprise Me theme option rolls one of the three themes fresh for every break
-• Full App Store compliance and refined Preferences layout
-• Native macOS 13+ support with zero data tracking
+• Choose Aurora, Ember, Violet, or Surprise.
+• Hide the message for a word free break.
+• Adjust break timing, sound, and reminders in Preferences.
 
-## What's New (Version 1.0.1)
-• First launch now opens Preferences so you can cast your first break right away
-• Native menu bar icon that follows your light/dark menu bar
-• Break intervals now include the classic 20-20-20 and pomodoro settings
-• Preferences layout polish
+## Screenshots
 
-## What's New (Version 1.0)
-• Initial release
-• NY tarot reader message system
-• Three visual themes
-• Time-based color palettes
-• Hold-to-skip mechanism
-
-## Screenshots (Story Cards in screenshots/appstore/)
-1. **01-break-the-spell-2880x1800.png** — "Lost 3 hours to the screen? Break ADHD hyperfocus & rest your eyes."
-2. **02-street-smart-wisdom-2880x1800.png** — "Never the same line twice. Organically generated words tuned to the hour & moon."
-3. **03-hold-to-skip-2880x1800.png** — "Hard to ignore. Easy to leave. Gentle hold-to-skip friction."
-4. **04-living-shaders-2880x1800.png** — "Modular breaks from 20s to 15m. Four living aurora moods."
-5. **05-no-subscriptions-2880x1800.png** — "Pay once. Yours forever. 100% Private, no subscriptions."
+1. **01-break-the-spell** — A pause from the screen, with animated aurora color.
+2. **02-street-smart-wisdom** — Short generated phrases; messages are optional.
+3. **03-hold-to-skip** — Hold briefly to skip, or enable Lock mode to hide skip controls.
+4. **04-living-shaders** — Breaks from 10 seconds to 3 minutes, every 15 minutes to 3 hours.
+5. **05-no-subscriptions** — Local preferences and counts; no account, tracking, ads, or subscription.
 
 ## Support URL
+
 https://spellbreak.app
 
 ## Marketing URL
+
 https://spellbreak.app
 
 ## Privacy Policy URL
+
 https://spellbreak.app/privacy

@@ -335,8 +335,8 @@ struct PreferencesView: View {
             // list reads calmer, and full-width rows give the subtitles room.
             VStack(spacing: 0) {
                 ToggleRow(
-                    title: "Unskippable",
-                    subtitle: "The break holds until it's done",
+                    title: "Lock mode",
+                    subtitle: "Hide the hold-to-skip control",
                     isOn: lockMode,
                     soundManager: soundManager
                 ) { lockMode = $0 }
@@ -344,8 +344,8 @@ struct PreferencesView: View {
                 rowDivider
 
                 ToggleRow(
-                    title: "Heads-Up",
-                    subtitle: "A countdown before the spell lands",
+                    title: "Heads-up",
+                    subtitle: "A notification before each break",
                     isOn: breakWarningEnabled,
                     soundManager: soundManager
                 ) { breakWarningEnabled = $0 }
@@ -353,8 +353,8 @@ struct PreferencesView: View {
                 rowDivider
 
                 ToggleRow(
-                    title: "Not While Fullscreen",
-                    subtitle: "Waits out games, films and presentations",
+                    title: "Pause while busy",
+                    subtitle: "Waits for full-screen apps and active mic use",
                     isOn: deferDuringFullscreen,
                     soundManager: soundManager
                 ) { deferDuringFullscreen = $0 }
@@ -601,19 +601,19 @@ struct PreferencesView: View {
                     Spacer()
                 }
 
-                Text("Every break writes its own line. Never the same one twice.")
+                Text("A short break timer that lives in your menu bar.")
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(.spellCream.opacity(0.82))
                     .fixedSize(horizontal: false, vertical: true)
                     .lineSpacing(3)
 
-                Text("It knows the hour, and it knows the moon. Dawn comes in soft, 2am gets knowing, a full moon shows off a little. Skip a few and it notices, gently.")
+                Text("Choose a break rhythm, set its length, and pick the colors and sound. Break messages are optional.")
                     .font(.system(size: 13, weight: .regular))
                     .foregroundColor(.spellCream.opacity(0.66))
                     .fixedSize(horizontal: false, vertical: true)
                     .lineSpacing(3)
 
-                Text("Twenty minutes on, twenty seconds off. Or make it a tea timer, a stretch bell, a nudge to go look out the window at something far away.")
+                Text("Breaks last 10 seconds to 3 minutes, at intervals from 15 minutes to 3 hours.")
                     .font(.system(size: 13, weight: .regular))
                     .foregroundColor(.spellCream.opacity(0.66))
                     .fixedSize(horizontal: false, vertical: true)
@@ -632,7 +632,7 @@ struct PreferencesView: View {
             .frostedCard()
             .padding(.horizontal, UI.sidePadding)
 
-            Text("Made by Pablo in Melbourne. With love and coffee.")
+            Text("Made by Pablo.")
                 .font(.system(size: 12, weight: .medium))
                 .foregroundColor(.spellCream.opacity(0.42))
                 .padding(.horizontal, UI.sidePadding + 4)

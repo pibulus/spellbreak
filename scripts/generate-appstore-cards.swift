@@ -26,37 +26,37 @@ enum CardType {
 let cards: [CardSpec] = [
     CardSpec(
         filename: "01-break-the-spell",
-        badge: "✨ BREAK THE SCREEN TRANCE",
-        headline: "Lost 3 hours to the screen?",
-        subheadline: "Gentle full-screen waves that help you break hyperfocus, rest your eyes, and stretch.",
+        badge: "A PAUSE FROM THE SCREEN",
+        headline: "Let the screen go quiet.",
+        subheadline: "Set a rhythm. Let animated aurora color fill a short break.",
         type: .heroOverlay(imageName: "screenshots/aurora-2880x1800.png")
     ),
     CardSpec(
         filename: "02-street-smart-wisdom",
-        badge: "🔮 ABSTRACT MYSTICAL SPELLS",
-        headline: "Never the same line twice.",
-        subheadline: "Combinatorial entropy tuned to the hour, the moon, and space. Spells to rest on, not orders.",
+        badge: "OPTIONAL BREAK MESSAGES",
+        headline: "A line for the moment.",
+        subheadline: "Short phrases shift with the hour, with lunar notes at new and full moon.",
         type: .tarotMessages
     ),
     CardSpec(
         filename: "03-hold-to-skip",
-        badge: "⏳ GENTLE FRICTION",
-        headline: "Hard to ignore. Easy to leave.",
-        subheadline: "Hold down the ring for a couple of seconds to skip. Just enough time to think twice.",
+        badge: "HOLD TO SKIP",
+        headline: "A little room to leave.",
+        subheadline: "Hold briefly to skip. Lock mode hides the skip control.",
         type: .holdToSkip
     ),
     CardSpec(
         filename: "04-living-shaders",
-        badge: "⚙️ MODULAR BREAKS & LIVING THEMES",
-        headline: "For eyes, posture, and tea breaks.",
-        subheadline: "10-second glances to 3-minute stretches. Automatically pauses during calls.",
+        badge: "SET YOUR OWN RHYTHM",
+        headline: "Short breaks, your way.",
+        subheadline: "10 seconds to 3 minutes, every 15 minutes to 3 hours.",
         type: .shaderTriptych
     ),
     CardSpec(
         filename: "05-no-subscriptions",
-        badge: "🔒 100% PRIVATE • ZERO SUBSCRIPTIONS",
-        headline: "Pay once. Yours forever.",
-        subheadline: "$19.99 one-time. No accounts, no monthly fees, and zero tracking on your Mac.",
+        badge: "NO ACCOUNT • NO TRACKING",
+        headline: "Private by design.",
+        subheadline: "One purchase. No ads, analytics, subscriptions, or network requests.",
         type: .cartridgeManifesto
     )
 ]
@@ -196,9 +196,9 @@ func drawHeroOverlay(imageName: String, in rect: CGRect, scale: CGFloat, ctx: CG
 
 func drawTarotCards(in rect: CGRect, scale: CGFloat, ctx: CGContext) {
     let quotes = [
-        ("SOFT GEOMETRY", "01 / EYE EASE", "A soft gaze past the monitor. Depth returns naturally."),
-        ("SHOULDERS ADRIFT", "02 / PHYSICAL EASE", "Spacious posture and gentle stillness without force."),
-        ("ZERO LATENCY", "03 / CLEAR HEADSPACE", "A quiet moment of slack while the room renders.")
+        ("SOFT GEOMETRY", "01 / AMBIENT", "A phrase drawn from the message pool."),
+        ("SHOULDERS ADRIFT", "02 / BODY", "A phrase drawn from the message pool."),
+        ("ZERO LATENCY", "03 / SPARK", "A phrase drawn from the message pool.")
     ]
 
     let cardWidth = (rect.width - (40 * scale * 2)) / 3
@@ -322,9 +322,9 @@ func drawHoldToSkipCard(in rect: CGRect, scale: CGFloat, ctx: CGContext) {
 
 func drawShaderTriptych(in rect: CGRect, scale: CGFloat, ctx: CGContext) {
     let images = [
-        ("screenshots/aurora-2880x1800.png", "AURORA", "Dawn & Day Flow"),
-        ("screenshots/ember-2880x1800.png", "EMBER", "Warm Dusk All Day"),
-        ("screenshots/violet-2880x1800.png", "VIOLET", "Electric Night")
+        ("screenshots/aurora-2880x1800.png", "AURORA", "Shifts with the hour"),
+        ("screenshots/ember-2880x1800.png", "EMBER", "Warm all day"),
+        ("screenshots/violet-2880x1800.png", "VIOLET", "Cool all day")
     ]
 
     let itemWidth = (rect.width - (30 * scale * 2)) / 3
@@ -375,10 +375,10 @@ func drawShaderTriptych(in rect: CGRect, scale: CGFloat, ctx: CGContext) {
 
 func drawCartridgeManifesto(in rect: CGRect, scale: CGFloat, ctx: CGContext) {
     let pillars = [
-        ("🔒 100% PRIVATE", "No accounts, no tracking, no ads. Everything stays securely on your Mac."),
-        ("🎨 AURORA IN FOUR MOODS", "Time-aware, warm Ember, cool Violet, or a Surprise that rolls a fresh palette each break."),
-        ("⏳ GENTLE FRICTION", "Hold-to-skip ring gives just enough pause to help you take your break without trapping you."),
-        ("💎 NO SUBSCRIPTIONS", "A single $19.99 purchase. Own it forever without recurring monthly or yearly fees.")
+        ("PREFERENCES STAY LOCAL", "Settings and counts stay on your Mac."),
+        ("FOUR COLORWAYS", "Surprise picks one of three palettes."),
+        ("BREAK ON YOUR TERMS", "Set the interval, length, and skip control."),
+        ("ONE PURCHASE", "No subscription or in-app purchases.")
     ]
 
     let boxWidth = (rect.width - (30 * scale)) / 2
@@ -417,16 +417,12 @@ func drawCartridgeManifesto(in rect: CGRect, scale: CGFloat, ctx: CGContext) {
         titleStr.draw(at: CGPoint(x: boxX + pad, y: boxY + boxHeight - pad - (20 * scale)))
 
         let descFont = NSFont.systemFont(ofSize: 20 * scale, weight: .regular)
-        let descStyle = NSMutableParagraphStyle()
-        descStyle.lineSpacing = 6 * scale
         let descAttrs: [NSAttributedString.Key: Any] = [
             .font: descFont,
-            .foregroundColor: NSColor(red: 0.92, green: 0.88, blue: 0.98, alpha: 0.85),
-            .paragraphStyle: descStyle
+            .foregroundColor: NSColor(red: 0.92, green: 0.88, blue: 0.98, alpha: 0.85)
         ]
         let descStr = NSAttributedString(string: p.1, attributes: descAttrs)
-        let descRect = CGRect(x: boxX + pad, y: boxY + pad, width: boxWidth - (pad * 2), height: boxHeight - pad - (60 * scale))
-        descStr.draw(in: descRect)
+        descStr.draw(at: CGPoint(x: boxX + pad, y: boxY + pad))
     }
 }
 
