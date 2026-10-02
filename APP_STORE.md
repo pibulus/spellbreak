@@ -29,8 +29,10 @@ Your settings and break counts stay on your Mac. Spellbreak has no accounts, ads
 break timer,screen break,rest,posture,stretch,pomodoro,reminder,focus,aurora,wellness
 
 ## Category
-
 Primary: Productivity
+
+## Price
+$9.99 USD (Tier 10 / $14.99 AUD) — One-time purchase
 
 ## What's New (Version 1.1.0)
 
