@@ -63,6 +63,11 @@ Quick reference for Spellbreak's break reminder architecture.
 - Grammar: Body parts as witnesses, patterns as entities
 - Format: 5-6 word maximum per message
 - Distribution: 30% body, 30% ambient, 20% mystical spark, 20% full observation
+- Context: hour-of-day sparks; full/new moon lines; *noticing* lines when the
+  session warrants it (2+ skips, 2h+ since a completed break, 4+ breaks with no
+  skips) — drawn 35% of the time they apply
+- Memory: last 60 lines kept in UserDefaults (`recentBreakMessages`) and never
+  re-drawn; noticing lines never repeat within 24 breaks
 - Example: "The trance gets comfortable"
 - Optional: `showBreakMessage` toggle hides the line entirely
 
