@@ -48,3 +48,6 @@ dist/
 
 # Playwright MCP scratch screenshots
 .playwright-mcp/
+
+# Signing material — download from developer.apple.com, never commit
+*.provisionprofile
