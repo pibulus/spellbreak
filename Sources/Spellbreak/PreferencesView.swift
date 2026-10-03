@@ -352,9 +352,11 @@ struct PreferencesView: View {
 
                 rowDivider
 
+                // Covers calls too (ScreenBusy.isMicrophoneInUse), so it can't be named
+                // for fullscreen alone — switching it off stops both.
                 ToggleRow(
-                    title: "Not While Fullscreen",
-                    subtitle: "Waits out games, films and presentations",
+                    title: "Smart Pauses",
+                    subtitle: "Waits out calls, games, films and presentations",
                     isOn: deferDuringFullscreen,
                     soundManager: soundManager
                 ) { deferDuringFullscreen = $0 }

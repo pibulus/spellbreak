@@ -156,7 +156,10 @@ class AppState: ObservableObject {
     @AppStorage("deferDuringFullscreen") private var deferDuringFullscreen: Bool = true
     /// Seconds banked by pauseTimer(), spent by resumeTimer().
     private var pausedRemaining: TimeInterval = 0
-    
+    /// Wall clock and awake-time at the last tick. The gap between them is sleep.
+    private var lastTickWallClock = Date()
+    private var lastTickUptime = ProcessInfo.processInfo.systemUptime
+
     // MARK: - Computed Properties
     private var breakInterval: TimeInterval {
         guard breakIntervalMinutes.isFinite else { return 20 * 60 }
@@ -235,6 +238,10 @@ class AppState: ObservableObject {
         timerWasRunning = true
         lastBreakTimestamp = lastBreakTime.timeIntervalSince1970
         requestNotificationAuthorizationIfNeeded()
+
+        // Ticks stop while the timer is off; don't mistake that gap for sleep
+        lastTickWallClock = Date()
+        lastTickUptime = ProcessInfo.processInfo.systemUptime
         
         scheduleRepeatingBreakTimer()
         
@@ -320,8 +327,33 @@ class AppState: ObservableObject {
 
     func checkAndTriggerBreak() {
         guard timerRunning else { return }
+        guard !restartIntervalIfMacSlept() else { return }
         guard !shouldHoldBreak() else { return }
         triggerBreak(resetTimerSchedule: false)
+    }
+
+    /// Time with the lid shut is time away from the screen — a break by any measure.
+    /// Wall-clock time runs on through sleep and system uptime doesn't, so the gap
+    /// between them is how long the Mac slept. Long enough, and the interval starts
+    /// over: before this, every wake past the interval opened straight onto a break
+    /// (the overdue timer and the status tick both fire the moment the Mac wakes).
+    /// Whichever of them runs first after a wake absorbs it. True when it restarted.
+    @discardableResult
+    private func restartIntervalIfMacSlept() -> Bool {
+        let now = Date()
+        let uptime = ProcessInfo.processInfo.systemUptime
+        let slept = now.timeIntervalSince(lastTickWallClock) - (uptime - lastTickUptime)
+        lastTickWallClock = now
+        lastTickUptime = uptime
+
+        let breakSeconds = UserDefaults.standard.object(forKey: "breakDurationSec") as? Double ?? 20
+        guard timerRunning, slept >= max(60, breakSeconds) else { return false }
+
+        lastBreakTime = now
+        lastBreakTimestamp = now.timeIntervalSince1970
+        didShowBreakWarning = false
+        scheduleRepeatingBreakTimer()
+        return true
     }
 
     func triggerBreak(
@@ -426,18 +458,34 @@ class AppState: ObservableObject {
         showingPreferences = true
         
         if preferencesWindowController == nil {
+            guard let soundManager else { return }
+            let preferences = PreferencesView().environmentObject(soundManager)
+
+            // Settings is a fixed ~810pt tall and can't be resized. On a smaller
+            // display — a 13" Air at default scaling with the Dock showing, or any Mac
+            // set to "Larger Text" — that's taller than the screen, and the bottom of
+            // it (Test Break included) lands under the Dock. Fit it, and scroll.
+            let styleMask: NSWindow.StyleMask = [.titled, .closable]
+            let titleBarHeight = NSWindow.frameRect(forContentRect: .zero, styleMask: styleMask).height
+            let fittingHeight = NSHostingView(rootView: preferences).fittingSize.height
+            let availableHeight = (NSScreen.main?.visibleFrame.height ?? .greatestFiniteMagnitude) - titleBarHeight
+            let contentHeight = min(fittingHeight, availableHeight)
+
             let window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 560, height: 840),
-                styleMask: [.titled, .closable],
+                contentRect: NSRect(x: 0, y: 0, width: 560, height: contentHeight),
+                styleMask: styleMask,
                 backing: .buffered,
                 defer: false
             )
-            window.title = "Spellbreak Preferences"
+            window.title = "Spellbreak Settings"
+            if fittingHeight > availableHeight {
+                window.contentView = NSHostingView(rootView: ScrollView { preferences }
+                    .frame(width: 560, height: contentHeight)
+                )
+            } else {
+                window.contentView = NSHostingView(rootView: preferences)
+            }
             window.center()
-            guard let soundManager else { return }
-            window.contentView = NSHostingView(rootView: PreferencesView()
-                .environmentObject(soundManager)
-            )
             window.isMovableByWindowBackground = false  // Fixed: Don't allow dragging by background
             window.titlebarAppearsTransparent = true
             window.styleMask.remove(.resizable)  // Prevent resizing to lock the size
@@ -542,10 +590,13 @@ class AppState: ObservableObject {
         checkDailyReset()
 
         guard timerRunning else {
-            timeRemaining = 0
+            // Paused keeps its frozen number (a wake used to zero it on screen)
+            timeRemaining = timerPaused ? pausedRemaining : 0
             hideCountdownPill()
             return
         }
+
+        restartIntervalIfMacSlept()
 
         let elapsed = max(0, Date().timeIntervalSince(lastBreakTime))
         let remaining = breakInterval - elapsed

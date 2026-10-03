@@ -129,18 +129,14 @@ struct MenuViewSimple: View {
                     title: appState.timerRunning ? "Pause Timer" : (appState.timerPaused ? "Resume Timer" : "Start Timer"),
                     action: {
                         onRequestClose()
-                        if appState.timerRunning {
-                            appState.stopTimer()
-                        } else {
-                            appState.startTimer()
-                        }
+                        appState.toggleTimer()  // "Pause" that reset to a fresh interval was the old lie
                     }
                 )
                 
                 Divider()
                 
                 PlainMenuItem(
-                    title: "Preferences...",
+                    title: "Settings…",
                     action: {
                         onRequestClose()
                         appState.showPreferences()

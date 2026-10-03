@@ -208,6 +208,12 @@ struct OverlayWindow: View {
                     .accessibilityLabel("Hold to skip")
                     .accessibilityValue(isHoldingToSkip ? "\(Int(holdProgress * 100)) percent" : "idle")
                     .accessibilityAddTraits(.allowsDirectInteraction)
+                    // VoiceOver can't press-and-hold a ring; give it the skip as an action
+                    .accessibilityAction(named: "Skip break") {
+                        if showSkipRing && !lockMode {
+                            skipBreak()
+                        }
+                    }
                     .padding(.bottom, 60)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
