@@ -211,7 +211,7 @@ class AppState: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.updateTimeRemainingAndWarning()
+            self?.handleSystemWake()
         }
 
         // Starting the free week (or unlocking) is a decision to have breaks — so start them
@@ -703,6 +703,21 @@ class AppState: ObservableObject {
         statusTimer?.invalidate()
         statusTimer = Timer.scheduledCommonTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             self?.updateTimeRemainingAndWarning()
+        }
+    }
+
+    private func handleSystemWake() {
+        guard timerRunning else { return }
+        let elapsed = max(0, Date().timeIntervalSince(lastBreakTime))
+        let remaining = breakInterval - elapsed
+        let wakeGracePeriod: TimeInterval = 180 // 3 minutes of screen presence after waking
+        
+        if remaining < wakeGracePeriod {
+            // Give user breathing room after opening lid rather than slamming screen immediately
+            lastBreakTime = Date().addingTimeInterval(wakeGracePeriod - breakInterval)
+            restartTimer()
+        } else {
+            updateTimeRemainingAndWarning()
         }
     }
 

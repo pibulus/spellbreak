@@ -15,7 +15,10 @@ final class BreakCountdownWindowController: NSWindowController {
     init(appState: AppState) {
         // Generous bounds so its soft glow never clips
         let size = NSSize(width: 360, height: 104)
-        let screenFrame = NSScreen.main?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1280, height: 800)
+        let mouseLoc = NSEvent.mouseLocation
+        let screenWithMouse = NSScreen.screens.first(where: { NSMouseInRect(mouseLoc, $0.frame, false) })
+        let screen = screenWithMouse ?? NSScreen.main ?? NSScreen.screens.first
+        let screenFrame = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1280, height: 800)
         let origin = NSPoint(
             x: screenFrame.midX - size.width / 2,
             y: screenFrame.maxY - size.height - 24
@@ -31,7 +34,7 @@ final class BreakCountdownWindowController: NSWindowController {
         window.backgroundColor = .clear
         window.hasShadow = false
         window.ignoresMouseEvents = true  // pure indicator — never eats a click
-        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
+        window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
         window.isReleasedWhenClosed = false
         window.contentView = NSHostingView(rootView: BreakCountdownView().environmentObject(appState))
 
