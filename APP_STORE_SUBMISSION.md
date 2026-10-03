@@ -118,8 +118,10 @@ order. Every card shows the app, and none carries a price (guideline 2.3.7).
 
 **Stronger: add real captures.** The overlay images inside the cards come from
 `scripts/render-theme-assets.swift`, a faithful *re-drawing* of the break
-screen rather than a capture of the app. That's acceptable, but real
-captures are better. Two more shots add a lot, and only the app can provide them:
+screen rather than a capture of the app. It's close, but it draws the message at
+about half its real on-screen size, and it omits the skip ring (the generator
+draws that in, at its real spot). That's acceptable, but real captures are
+better. Two more shots add a lot, and only the app can provide them:
 
 | File to save | What to capture |
 | --- | --- |
