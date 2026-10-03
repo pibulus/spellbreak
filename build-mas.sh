@@ -59,8 +59,11 @@ if /usr/libexec/PlistBuddy -c "Print :ProvisionedDevices" "$PROFILE_PLIST" >/dev
     exit 1
 fi
 
+# Captured, not piped into grep -q: under pipefail an early-exiting grep can
+# SIGPIPE the writer and fail the check even on a match.
+INSTALLED_IDENTITIES=$(security find-identity -v)
 for identity in "$APP_SIGN_IDENTITY" "$INSTALLER_SIGN_IDENTITY"; do
-    if ! security find-identity -v | grep -qF "$identity"; then
+    if [[ "$INSTALLED_IDENTITIES" != *"$identity"* ]]; then
         echo "❌ Signing identity not in your keychain: ${identity}"
         echo "   security find-identity -v   lists what's installed"
         exit 1
@@ -117,7 +120,8 @@ codesign --force --timestamp \
     "$APP_BUNDLE"
 codesign --verify --strict --verbose=2 "$APP_BUNDLE"
 
-if ! codesign -d --entitlements - "$APP_BUNDLE" 2>/dev/null | grep -qF "${TEAM_ID}.${BUNDLE_ID}"; then
+SIGNED_ENTITLEMENTS=$(codesign -d --entitlements - "$APP_BUNDLE" 2>/dev/null)
+if [[ "$SIGNED_ENTITLEMENTS" != *"${TEAM_ID}.${BUNDLE_ID}"* ]]; then
     echo "❌ Signed entitlements are missing com.apple.application-identifier"
     exit 1
 fi
