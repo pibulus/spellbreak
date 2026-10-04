@@ -20,17 +20,25 @@ Spellbreak respects your privacy. We built this app to help you take healthy bre
 - ❌ No camera access
 - ❌ No audio recording, ever
 
-## The One Thing Spellbreak Checks
+## What Spellbreak Checks
 
-So a break doesn't land in the middle of a video call, Spellbreak's **Smart
-Pauses** check whether your Mac's microphone is currently in use by another
-app. That's all it can see: a yes or a no. It never listens to, records, or
-receives any audio, which is why macOS never asks you for microphone
-permission. Turn Smart Pauses off in Settings and the check stops.
+So a break doesn't land in the middle of a video call, Spellbreak's **Pause
+while busy** setting checks whether your Mac's microphone is currently in use
+by another app. That's all it can see: a yes or a no. It never listens to,
+records, or receives any audio, which is why macOS never asks you for
+microphone permission.
 
-Smart Pauses also notice when another app is full screen (a game, a film, a
-presentation), using the window sizes macOS reports. It doesn't see what's in
-those windows.
+It also notices when another app is full screen (a game, a film, a
+presentation), using the window sizes macOS reports, and doesn't see what's in
+those windows. And it asks macOS how many seconds it's been since a key was
+pressed, so a break can wait for the end of your sentence. That's a single
+number: never which keys, never what you typed. Turn Pause while busy off in
+Settings and these checks stop.
+
+Separately, Spellbreak asks how long it's been since you last touched the
+keyboard, mouse or trackpad, and whether anything (like a playing video) is
+keeping the display awake, so time away from your Mac counts as a break. Again,
+just a number of seconds and a yes or a no.
 
 ## What Stays on Your Device
 

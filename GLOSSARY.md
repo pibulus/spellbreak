@@ -92,11 +92,26 @@ Quick reference for Spellbreak's break reminder architecture.
 - Violet: always-cool night colours
 - Surprise: rolls one of the three each break
 
+**Smart Pauses** - `shouldHoldBreak()` in `SpellbreakApp.swift`
+- Under "Pause while busy": full-screen windows, mic in use, typing (waits for 2s
+  of quiet keys, 30s max)
+- Always: away (3+ min with no input, and nothing holding the display awake)
+  holds the break and restarts the interval on return; sleep does the same. A
+  video or call keeps the display awake, so still hands in front of YouTube are
+  watching, not away. Keep-awake apps (Amphetamine, `caffeinate -d`) do the same,
+  which simply turns away detection off for those users
+- Never stuck: every hold either ends or caps out, so breaks can't stop forever
+
+**Multi-display** - `showOverlayWindow()` + `OverlayMirror`
+- One overlay window per display; the interactive break goes on the pointer's
+  display, quiet aurora mirrors elsewhere, one palette rolled per break
+
 **Break Statistics** - Tracked per session + lifetime
 - Completed breaks (today + total)
 - Skipped breaks (today + total)
 - Daily reset at midnight
-- Persisted in @AppStorage
+- Persisted in UserDefaults (today's counts too, so a relaunch keeps them)
+- Shown as "3 breaks today · 1 skipped" in the menu bar popover and right-click menu
 
 **Privacy Boundary** - Local-only behavior
 - No network requests, accounts, analytics, or telemetry

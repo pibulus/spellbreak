@@ -168,6 +168,13 @@ struct MenuViewSimple: View {
             Text(appState.timerRunning ? "until break" : (appState.timerPaused ? "paused" : "no break scheduled"))
                 .font(.system(size: 10, weight: .medium))
                 .foregroundColor(.secondary)
+
+            if let summary = appState.todaySummary {
+                Text(summary)
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(.secondary)
+                    .padding(.top, 6)
+            }
         }
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity)

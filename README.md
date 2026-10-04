@@ -13,7 +13,10 @@ skipping conscious, never punitive.
   instead of ordering, and can be switched off entirely
 - **Hold-to-skip** — a ring you hold for a beat; duration scales with break length
 - **Heads-up countdown pill** — a gentle warning before the spell lands
-- **Smart pauses** — waits out calls, full-screen games, films, and presentations
+- **Smart pauses** — waits out calls, full-screen games, films, presentations,
+  and the end of your sentence; time away from the Mac counts as a break
+- **Every display** — the break lands on the screen with your pointer; the others
+  dim to match
 - **Private by design** — no accounts, no tracking, no network requests, no camera,
   never records audio (it only checks whether the mic is busy)
 

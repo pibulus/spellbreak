@@ -195,6 +195,19 @@ tester, install from TestFlight, and run through this:
       Settings → General → Login Items, and survives a restart
 - [ ] **Sleep:** close the lid for longer than your interval, then open it. No
       break on wake; the next one comes a full interval later
+- [ ] **Away:** hands off keyboard and mouse for 4+ minutes, across the time a
+      break is due. Nothing fires while you're away (no heads-up notification
+      either); touch the mouse and no break lands; the next comes a full
+      interval later
+- [ ] **Typing:** keep typing as a break comes due. It waits for two quiet
+      seconds, 30 seconds at most, then lands. With "Pause while busy" off, it
+      doesn't wait
+- [ ] **Several displays:** the break, with its line, ring and sound, lands on the
+      display with the pointer. Every other display shows the same aurora, fades
+      out with it, and swallows clicks. Try "Displays have separate Spaces" on
+      (the default) and off, and Surprise to check every display matches
+- [ ] **Today's tally:** after a break the menu reads "1 break today"; it survives
+      a quit and relaunch, and resets after midnight
 - [ ] Settings on a small display, or System Settings → Displays → "Larger Text":
       the window fits and scrolls, and Test Break is reachable
 - [ ] VoiceOver: on the break screen, the skip ring offers a "Skip break" action
@@ -222,15 +235,6 @@ tester, install from TestFlight, and run through this:
 get a rejection, paste it to me with the guideline number.
 
 ---
-
-## Known limitation (not a blocker)
-
-**Multiple displays:** the break screen is one window sized to span every
-display. With "Displays have separate Spaces" on (macOS's default), a window
-can't span displays, so the break most likely covers only one screen and the
-others stay usable. Worth fixing soon after launch: one overlay window per
-screen, with the message, ring and sound on the main one only. That needs
-testing on real hardware, so it isn't in this pass.
 
 ## After launch
 

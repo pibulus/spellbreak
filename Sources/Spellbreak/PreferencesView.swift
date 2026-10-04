@@ -474,7 +474,7 @@ struct PreferencesView: View {
                 // for fullscreen alone — switching it off stops both.
                 ToggleRow(
                     title: "Pause while busy",
-                    subtitle: "Waits for full-screen apps and active mic use",
+                    subtitle: "Waits for full-screen apps, active mic use, and a pause in typing",
                     isOn: deferDuringFullscreen,
                     soundManager: soundManager
                 ) { deferDuringFullscreen = $0 }

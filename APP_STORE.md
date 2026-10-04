@@ -22,11 +22,11 @@ A menu bar break timer for macOS. Set a rhythm, choose a short pause, and let an
 
 ## Description
 
-Spellbreak is a break timer for your Mac's menu bar. Choose how often breaks arrive and how long they last. When one begins, a full screen color field fills the screen for a short pause.
+Spellbreak is a break timer for your Mac's menu bar. Choose how often breaks arrive and how long they last. When one begins, a full screen color field fills your displays for a short pause.
 
 Choose a look: Aurora shifts with the time of day, Ember stays warm, Violet stays cool, and Surprise picks one of the three for each break. Turn the optional message on or off, and adjust the sound to suit the room.
 
-Set a heads up notification, start Spellbreak at login, or let it defer breaks while a full screen app is open or microphone input is active. Lock mode hides the hold to skip control.
+Set a heads up notification, start Spellbreak at login, or let it defer breaks while a full screen app is open, microphone input is active, or you're mid-sentence. Time away from your Mac counts as a break. Lock mode hides the hold to skip control.
 
 Breaks last 10 seconds to 3 minutes, at intervals from 15 minutes to 3 hours. Spellbreak runs on macOS 13 or later.
 
@@ -120,9 +120,15 @@ Sign-in required: **No**. Contact: your name, phone, email.
 >   on, a break lasts at most 3 minutes.
 >
 > "Pause while busy": automatic breaks wait while another app is full screen or
-> the microphone is in use (e.g. a video call). Spellbreak reads only whether the
-> input device is running, through Core Audio. It never captures audio, so there
-> is no microphone permission prompt. Test Break and Break Now ignore this.
+> the microphone is in use (e.g. a video call), and for a pause in typing (up to
+> 30 seconds). Spellbreak reads only whether the input device is running, through
+> Core Audio, and when a key was last pressed, through Quartz. It never captures
+> audio or keystrokes, so there are no permission prompts. Test Break and Break
+> Now ignore this.
+>
+> After a few minutes away from the keyboard and mouse, a due break waits and the
+> interval starts over on return. With several displays, the break shows on the
+> one with the pointer and the others dim to match.
 >
 > Spellbreak is free to download with a 7-day trial, then a one-time unlock
 > (both are in-app purchases). Until the trial starts, Test Break and Break Now

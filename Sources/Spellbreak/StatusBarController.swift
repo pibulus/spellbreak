@@ -121,12 +121,20 @@ class StatusBarController: NSObject {
         contextMenu = NSMenu()
         contextMenu.autoenablesItems = false
         
-        // Timer display (if running)
+        // Status lines: the countdown (if running) and today's tally (once there is one)
+        var statusLines: [String] = []
         if appState?.timerRunning == true {
-            let timerText = "\((appState?.timeRemaining ?? 0).mmss) until break"
-            let timerItem = NSMenuItem(title: timerText, action: nil, keyEquivalent: "")
-            timerItem.isEnabled = false
-            contextMenu.addItem(timerItem)
+            statusLines.append("\((appState?.timeRemaining ?? 0).mmss) until break")
+        }
+        if let summary = appState?.todaySummary {
+            statusLines.append(summary)
+        }
+        if !statusLines.isEmpty {
+            for line in statusLines {
+                let item = NSMenuItem(title: line, action: nil, keyEquivalent: "")
+                item.isEnabled = false
+                contextMenu.addItem(item)
+            }
             contextMenu.addItem(NSMenuItem.separator())
         }
         
