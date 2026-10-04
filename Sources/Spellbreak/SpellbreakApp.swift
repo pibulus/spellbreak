@@ -117,6 +117,7 @@ class AppState: ObservableObject {
     
     // MARK: - Private Properties
     weak var soundManager: SoundManager?         // Injected by AppDelegate at launch (NSApp.delegate is SwiftUI's wrapper during launch, so we can't reach it that way)
+    weak var store: Store?                       // Injected the same way; the App Store unlock
     private var timer: Timer?                    // Main timer for break intervals
     private var statusTimer: Timer?              // Timer for updating UI countdown
     private var lastBreakTime: Date = Date()     // When the last break was triggered
@@ -129,6 +130,7 @@ class AppState: ObservableObject {
     private var escapeKeyMonitor: Any?          // Event monitor for escape key
     private var testBreakObserver: NSObjectProtocol?
     private var wakeObserver: NSObjectProtocol?
+    private var unlockObserver: NSObjectProtocol?
     private var didShowBreakWarning = false
     private var currentBreakCountsTowardStats = true
     private let breakWarningLeadTime: TimeInterval = 15
@@ -200,6 +202,16 @@ class AppState: ObservableObject {
         ) { [weak self] _ in
             self?.updateTimeRemainingAndWarning()
         }
+
+        // Starting the free week (or unlocking) is a decision to have breaks — so start them
+        unlockObserver = NotificationCenter.default.addObserver(
+            forName: Store.didUnlockScheduledBreaks,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self = self, !self.timerRunning else { return }
+            self.resumeTimer()
+        }
     }
     
     deinit {
@@ -215,6 +227,10 @@ class AppState: ObservableObject {
 
         if let observer = wakeObserver {
             NSWorkspace.shared.notificationCenter.removeObserver(observer)
+        }
+
+        if let observer = unlockObserver {
+            NotificationCenter.default.removeObserver(observer)
         }
 
         // Remove escape key monitor if present
@@ -307,9 +323,24 @@ class AppState: ObservableObject {
     func toggleTimer() {
         if timerRunning {
             pauseTimer()
-        } else {
+        } else if scheduledBreaksAllowed {
             resumeTimer()
+        } else {
+            showPreferences()  // the free week / unlock lives at the bottom of Settings
         }
+    }
+
+    /// Test Break and Break Now always work; scheduled breaks are what the App Store
+    /// unlock pays for. No store means the website build: never locked.
+    private var scheduledBreaksAllowed: Bool {
+        store?.allowsScheduledBreaks ?? true
+    }
+
+    /// The free week ran out: the break that was due becomes the unlock prompt,
+    /// once, instead of a break. The timer stops so it doesn't ask again.
+    private func lockScheduledBreaks() {
+        stopTimer()
+        showPreferences()
     }
 
     /// Restart the timer with the current break interval
@@ -329,6 +360,10 @@ class AppState: ObservableObject {
         guard timerRunning else { return }
         guard !restartIntervalIfMacSlept() else { return }
         guard !shouldHoldBreak() else { return }
+        guard scheduledBreaksAllowed else {
+            lockScheduledBreaks()
+            return
+        }
         triggerBreak(resetTimerSchedule: false)
     }
 
@@ -458,8 +493,10 @@ class AppState: ObservableObject {
         showingPreferences = true
         
         if preferencesWindowController == nil {
-            guard let soundManager else { return }
-            let preferences = PreferencesView().environmentObject(soundManager)
+            guard let soundManager, let store else { return }
+            let preferences = PreferencesView()
+                .environmentObject(soundManager)
+                .environmentObject(store)
 
             // Settings is a fixed ~810pt tall and can't be resized. On a smaller
             // display — a 13" Air at default scaling with the Dock showing, or any Mac
@@ -606,7 +643,11 @@ class AppState: ObservableObject {
             hideCountdownPill()
 
             if !showingOverlay && !shouldHoldBreak() {
-                triggerBreak(resetTimerSchedule: true)
+                if scheduledBreaksAllowed {
+                    triggerBreak(resetTimerSchedule: true)
+                } else {
+                    lockScheduledBreaks()
+                }
             }
             return
         }
@@ -615,6 +656,7 @@ class AppState: ObservableObject {
         updateCountdownPill()
 
         guard breakWarningEnabled,
+              scheduledBreaksAllowed,
               !didShowBreakWarning,
               !showingOverlay,
               timeRemaining > 0,
@@ -631,6 +673,7 @@ class AppState: ObservableObject {
     /// break; hide it the moment it no longer applies
     private func updateCountdownPill() {
         let shouldShow = breakWarningEnabled
+            && scheduledBreaksAllowed
             && timerRunning
             && !showingOverlay
             && timeRemaining > 0

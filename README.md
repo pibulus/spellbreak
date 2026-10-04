@@ -24,8 +24,8 @@ skipping conscious, never punitive.
 
 ## Install
 
-Get it from the Mac App Store, or download from
-[spellbreak.app](https://spellbreak.app), move it to Applications, and launch.
+Get it from the Mac App Store (7-day trial, then a one-time unlock), or download
+from [spellbreak.app](https://spellbreak.app), move it to Applications, and launch.
 
 ## Build
 
@@ -49,6 +49,7 @@ Sources/Spellbreak/
 ├── MenuViewSimple.swift     # menu bar popover
 ├── StatusBarController.swift
 ├── SoundManager.swift
+├── Store.swift              # App Store trial + one-time unlock (App Store builds only)
 └── Utilities.swift          # palette, ScreenBusy heuristic
 ```
 

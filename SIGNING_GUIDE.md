@@ -56,7 +56,9 @@ What it does, in order:
 1. Preflight, before the slow part: full Xcode selected; profile present, for
    this app ID, and a distribution (not development) profile; both identities
    in the keychain.
-2. Builds the universal app via `build-app.sh` and refuses an arm64-only binary.
+2. Builds the universal app via `build-app.sh` with `SPELLBREAK_APP_STORE=1`,
+   which compiles in the 7-day trial and unlock (`-DAPP_STORE`, `Store.swift`).
+   Website builds leave it out. Refuses an arm64-only binary.
 3. Stamps the `DT*` / `BuildMachineOSBuild` keys App Store Connect uses to
    identify the Xcode and SDK. `swift build` doesn't write them.
 4. Embeds the profile and signs with `Spellbreak.mas.entitlements`, which adds

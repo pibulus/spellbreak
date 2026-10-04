@@ -5,36 +5,64 @@ The whole path, in order. Copy for every field lives in
 [`SIGNING_GUIDE.md`](SIGNING_GUIDE.md).
 
 **Status of the repo (Oct 2026):** the MAS build script, entitlements, icon,
-Info.plist, privacy manifest, privacy policy, listing copy and screenshots are
-done. What's left needs you, your Mac, or your Apple account — the ☐ items below.
+Info.plist, privacy manifest, privacy policy, listing copy, screenshots and the
+7-day trial with one-time unlock are done. What's left needs you, your Mac, or your Apple account — the ☐ items below.
 
 ---
 
 ## 0. Decide before you start
 
 ### Pricing
-**Recommendation: US$9.99, one-time** (was $19.99).
+**Model: free download, 7-day trial, one-time unlock: US$9.99 · A$12.99.**
 
-- **No trial, no reviews.** A paid-upfront app can't offer a trial, and on launch
-  day it has zero ratings. The price is the whole conversion decision, made
-  from five screenshots.
-- **The floor is free.** Stretchly, BreakTimer and Time Out's free tier all do
-  "remind me to take a break". Spellbreak's case is taste and feel, which
-  sells well at an impulse price and badly at a considered one.
-- **Polished paid break apps cluster around the $10–15 one-time mark.** At $9.99 you're
-  the beautiful one at the friendly price, not the expensive one.
-- **You can raise it later.** After reviews land, a move to $12.99 or $14.99 is easy
-  to justify. Dropping from $19.99 after a slow launch reads as a markdown.
-- **Small Business Program:** enrol and Apple keeps 15%, not 30%. At $9.99 that's about
-  $8.49 per sale before tax.
+Apple has no trials for paid-upfront apps, but guideline 3.1.1 explicitly allows
+this shape for one-time purchases: a free in-app purchase named "7-Day Trial"
+starts the clock, then a paid unlock. `Store.swift` implements it, in App Store
+builds only; the website build stays unlocked. Test Break and Break Now always
+work. The trial and the unlock gate only *scheduled* breaks.
 
-Set **Australia as the base storefront** if you want your home price to be the
-fixed one (Apple adjusts the rest for currency and tax). US$9.99 lands at roughly
-A$15. A launch-week price (say $6.99, scheduled to step up to $9.99) is a
-cheap way to seed the first reviews.
+**Why a trial: everyone serious in this category lets people try first.**
 
-If you'd rather stay premium at $19.99, the copy still works — it just has to
-carry more, so the real Settings and menu bar screenshots (step 6) matter more.
+| App | Model | Price |
+| --- | --- | --- |
+| LookAway | Free download + IAP, free trial; also direct and Setapp | MAS: $4.99/mo, $14.99/yr, $49.99 lifetime · direct from $19 one-time |
+| Time Out (Dejal) | Free, optional supporter tips | $0 |
+| Restier | 14-day trial, then a licence | €7.99/yr or €19.99 lifetime |
+| Stretchly · BreakTimer · Workrave | Free, open source | $0 |
+| EyeBreak · StandLock | Free | $0 |
+| **Spellbreak** | **Free download, 7-day trial, one-time unlock** | **US$9.99 · A$12.99** |
+
+From search results, Oct 2026. The App Store and these sites were blocked from
+where this was researched, so check a competitor's store page before quoting it.
+
+An unknown paid app with no ratings asks for ten dollars on the strength of five
+screenshots, next to free alternatives. A trial lets the break itself do the
+selling, and the break is the best thing Spellbreak has.
+
+**Why US$9.99.** It's the cheapest paid option in that table, with no subscription,
+and well under LookAway's lifetime price. Raise it to $12.99–14.99 once reviews
+land. Raising after launch is easy; dropping later reads as a markdown.
+
+**A$12.99 is a home-turf discount, not parity.** Australian prices include GST.
+Ex-GST, A$12.99 is about US$8.20 at Oct 2026 rates (~0.695), ~18% under the US
+price. Parity would be about A$15.99. Fine if that's the intent.
+
+**What you keep**, on the Small Business Program (15%):
+
+| Sale | Less tax | Your cut |
+| --- | --- | --- |
+| US$9.99 | US sales tax is added on top | ~US$8.49 |
+| A$12.99 | A$11.81 after GST | ~A$10.04 (~US$6.98) |
+
+**Setting two prices.** The app itself is Free. On the **Unlock** IAP's price
+schedule, set base country United States at US$9.99, then adjust Australia by
+hand to A$12.99. Apple keeps adjusting the other storefronts for currency and
+tax, but not the ones you've set yourself. If A$12.99 isn't on the AUD list,
+take the nearest.
+
+**Seeding reviews (optional).** Schedule a launch-week price on the unlock
+(say US$6.99), stepping back up to $9.99 after. Watch trial starts versus
+unlocks in App Store Connect's Sales and Trends; that ratio is your conversion.
 
 ### Name and trademark ☐
 "Spellbreak" was also the name of Proletariat's battle-royale game (2019–2023,
@@ -94,13 +122,17 @@ From [`APP_STORE.md`](APP_STORE.md):
 - **App Information:** subtitle, categories, content rights, age rating
   questionnaire answers, privacy policy URL.
 - **App Privacy:** Get Started → "No, we do not collect data from this app".
-- **Pricing and Availability:** price and base country (step 0); all territories.
+- **Pricing and Availability:** the app is **Free**, all territories.
+- **In-App Purchases:** create the Trial and Unlock non-consumables from the table
+  in [`APP_STORE.md`](APP_STORE.md#in-app-purchases), with the Unlock prices from
+  step 0. Each needs a review screenshot of the Settings row that sells it. Take
+  them from the TestFlight build in step 8, then attach both to the version.
 
 ## 5. Build and upload — your Mac ☐
 
 ```bash
 sudo xcode-select -s /Applications/Xcode.app   # full Xcode, current release
-./build-mas.sh                                   # → dist/Spellbreak-v1.2.0-mas.pkg
+./build-mas.sh                                   # → dist/Spellbreak-v1.2.0-mas.pkg, unlock included
 ```
 
 Then **Transporter.app** → sign in → drag in the `.pkg` → **Deliver**.
@@ -166,6 +198,20 @@ tester, install from TestFlight, and run through this:
 - [ ] Settings on a small display, or System Settings → Displays → "Larger Text":
       the window fits and scrolls, and Test Break is reachable
 - [ ] VoiceOver: on the break screen, the skip ring offers a "Skip break" action
+- [ ] **Trial, fresh install** (TestFlight purchases are free sandbox ones): the
+      bottom of Settings shows "Try Free for 7 Days", and the caption names the
+      unlock price in your storefront's currency. The menu bar's Start opens
+      Settings instead of starting. Start the trial: a $0 purchase sheet, then the
+      timer starts and the caption shows days left
+- [ ] **Trial ending:** quit, then relaunch from Terminal with
+      `SPELLBREAK_TRIAL_SECONDS=120 /Applications/Spellbreak.app/Contents/MacOS/Spellbreak`
+      (the trial can only be shortened this way, never stretched). After two
+      minutes, the next due break opens Settings with "Your free week is up"
+      instead, and the timer stops. Test Break still works
+- [ ] **Unlock:** the purchase sheet shows the local price; afterwards the row
+      collapses back to just Test Break and the timer resumes
+- [ ] **Restore Purchase** after a reinstall, or on a second Mac, brings the
+      unlock back
 - [ ] About links open in your browser; sounds play
 - [ ] ⌘Q during a break. If it quits, add "⌘Q quits Spellbreak at any time,
       including during a break" to the review notes
@@ -191,7 +237,8 @@ testing on real hardware, so it isn't in this pass.
 - Updates go through App Store Connect the same way. "What's New" copy lives in
   [`APP_STORE.md`](APP_STORE.md#whats-new).
 - The website DMG (`build-dmg.sh`, Developer ID) can keep shipping alongside
-  the App Store version; they're separate builds of the same code.
+  the App Store version. It's the same code built without `-DAPP_STORE`: no
+  trial, no lock. If the website sells it, that sale stays honour-system.
 - **Tahoe icons:** the icon now sits on the standard grid, so macOS 26 shows it
   as-is instead of shrinking it onto a grey tile. For the full Liquid Glass
   treatment, make an Icon Composer `.icon` and compile it with `actool` on a Mac

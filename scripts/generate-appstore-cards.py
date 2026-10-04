@@ -413,7 +413,7 @@ def card_menubar():
 def card_private():
     card = background()
     header(card, "NO ACCOUNT  \u2022  NO TRACKING", "Private by design.",
-           "One purchase. No ads, analytics, subscriptions, or network requests.")
+           "Try it for a week, then one purchase. No ads, analytics, or subscriptions.")
     img, _ = overlay("ember")
     l, t, r, b = CONTENT
     w = 1560
@@ -424,7 +424,7 @@ def card_private():
     pillars = [("Preferences stay local", "Settings and counts stay on your Mac."),
                ("Four colorways", "Surprise picks one of three palettes."),
                ("Break on your terms", "Set the interval, length, and skip control."),
-               ("One purchase", "No subscription or in-app purchases.")]
+               ("One purchase", "Try it for a week, then unlock it once.")]
     draw = ImageDraw.Draw(card)
     col_x = l + w + 110
     col_w = r - col_x

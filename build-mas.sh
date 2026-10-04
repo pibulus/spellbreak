@@ -72,8 +72,8 @@ done
 
 # --- Build ---
 
-echo "📦 Building unsigned app via build-app.sh..."
-./build-app.sh
+echo "📦 Building unsigned app via build-app.sh (with the App Store unlock)..."
+SPELLBREAK_APP_STORE=1 ./build-app.sh
 
 # The Mac App Store lists Spellbreak for Intel and Apple silicon; build-app.sh
 # quietly falls back to arm64-only when the x86_64 build fails, which is fine for

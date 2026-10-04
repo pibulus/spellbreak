@@ -30,7 +30,7 @@ Set a heads up notification, start Spellbreak at login, or let it defer breaks w
 
 Breaks last 10 seconds to 3 minutes, at intervals from 15 minutes to 3 hours. Spellbreak runs on macOS 13 or later.
 
-Your settings and break counts stay on your Mac. Spellbreak has no accounts, ads, analytics, or network requests. It is a one time purchase with no subscription or in app purchases.
+Your settings and break counts stay on your Mac. Spellbreak has no accounts, ads, or analytics, and makes no network requests of its own. Try it for 7 days, then unlock it with a single purchase. No subscription.
 
 ## Keywords
 
@@ -45,7 +45,29 @@ expect.
 Primary: Productivity
 
 ## Price
-$9.99 USD (Tier 10 / $14.99 AUD) — One-time purchase
+The app is **Free**. The price lives on the unlock in-app purchase:
+**US$9.99 · A$12.99**, one time, after a 7-day trial. Setup and reasoning are in
+the [submission guide](APP_STORE_SUBMISSION.md#pricing).
+
+## In-App Purchases
+Two non-consumables: app → Monetization → In-App Purchases. A first IAP has to
+ship *with* an app version, so attach both to 1.2.0 before you submit. Product IDs
+must match `Store.swift` exactly.
+
+| | Trial | Unlock |
+| --- | --- | --- |
+| Reference name | 7-Day Trial | Unlock |
+| Product ID | `com.pabloalvarado.spellbreak.trial` | `com.pabloalvarado.spellbreak.unlock` |
+| Type | Non-Consumable | Non-Consumable |
+| Price | Free ($0) | US$9.99 base, Australia set to A$12.99 |
+| Display name (30) | 7-Day Trial | Unlock Spellbreak |
+| Description (45) | Try scheduled breaks free for 7 days. | Scheduled breaks for good. One purchase. |
+| Family Sharing | Off | On (can't be turned off later) |
+| Review screenshot | Settings, bottom row, before the trial: "Try Free for 7 Days" | Settings during the trial: "Unlock · A$12.99" |
+| Review notes | Free time-based trial per guideline 3.1.1. Its purchase date starts the 7-day clock. | One-time unlock of scheduled breaks once the trial ends. |
+
+The trial *must* be named "7-Day Trial". That's Apple's convention for trials
+on one-time purchases, and App Review checks for it.
 
 ## Age Rating
 Answer the questionnaire like this; App Store Connect computes the rating as you
@@ -63,7 +85,9 @@ go (expect **4+**):
 ## App Privacy ("nutrition label")
 **Data Not Collected.** Nothing leaves the Mac: no analytics, no crash
 reporting, no network calls. Matches `PrivacyInfo.xcprivacy` (no tracking, no
-collected data types; UserDefaults declared with reason CA92.1).
+collected data types; UserDefaults declared with reason CA92.1). The trial and
+unlock go through the App Store; Spellbreak sees only whether they're owned,
+never payment details, so the answer stays the same.
 
 ## Export Compliance
 Handled by `ITSAppUsesNonExemptEncryption = false` in Info.plist — App Store
@@ -100,8 +124,14 @@ Sign-in required: **No**. Contact: your name, phone, email.
 > input device is running, through Core Audio. It never captures audio, so there
 > is no microphone permission prompt. Test Break and Break Now ignore this.
 >
+> Spellbreak is free to download with a 7-day trial, then a one-time unlock
+> (both are in-app purchases). Until the trial starts, Test Break and Break Now
+> work but scheduled breaks don't: start it with "Try Free for 7 Days" at the
+> bottom of Settings. When the trial ends, scheduled breaks stop until unlocked;
+> "Restore Purchase" sits beside the price.
+>
 > The only permission requested is notifications (optional), for a heads-up 15
-> seconds before a break. No account, sign-in, network access, or in-app purchase.
+> seconds before a break. No account or sign-in.
 
 ## Screenshots
 

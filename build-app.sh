@@ -11,8 +11,17 @@ RESOURCES_DIR="${CONTENTS_DIR}/Resources"
 INFO_PLIST="Sources/Spellbreak/Resources/Info.plist"
 SOUNDS_DIR="Sources/Spellbreak/Resources/Sounds"
 ICONSET_SOURCE="Sources/Spellbreak/Resources/Assets.xcassets/AppIcon.appiconset"
-ARM64_SCRATCH=".build-arm64"
-X86_SCRATCH=".build-x86_64"
+# SPELLBREAK_APP_STORE=1 (set by build-mas.sh) compiles in the App Store unlock
+# (Store.swift, -DAPP_STORE). Website builds leave it out and are never locked.
+# Separate scratch dirs so the two never reuse each other's objects.
+SWIFT_FLAGS=""
+SCRATCH_SUFFIX=""
+if [[ "${SPELLBREAK_APP_STORE:-0}" == "1" ]]; then
+    SWIFT_FLAGS="-Xswiftc -DAPP_STORE"
+    SCRATCH_SUFFIX="-appstore"
+fi
+ARM64_SCRATCH=".build-arm64${SCRATCH_SUFFIX}"
+X86_SCRATCH=".build-x86_64${SCRATCH_SUFFIX}"
 UNIVERSAL_BINARY="/tmp/${APP_NAME}-universal-$$"
 
 SIGN_IDENTITY=""
@@ -60,7 +69,10 @@ build_arch() {
     local scratch="$2"
 
     echo "📦 Building ${arch}..."
-    swift build -c release --arch "$arch" --scratch-path "$scratch"
+    # SWIFT_FLAGS is unquoted on purpose: "-Xswiftc -DAPP_STORE" is two arguments,
+    # and an empty string must expand to none (bash 3.2 + set -u rules out an array)
+    # shellcheck disable=SC2086
+    swift build -c release --arch "$arch" --scratch-path "$scratch" $SWIFT_FLAGS
 }
 
 build_binaries=()

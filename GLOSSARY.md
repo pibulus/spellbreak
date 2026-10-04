@@ -43,6 +43,9 @@ Quick reference for Spellbreak's break reminder architecture.
 **SpellTextGenerator** - NY tarot reader message system
 `Sources/Spellbreak/SpellTextGenerator.swift` - Break messages (5-6 word max)
 
+**Store** - App Store trial + one-time unlock
+`Sources/Spellbreak/Store.swift` - StoreKit 2; a free "7-Day Trial" non-consumable starts the clock, "Unlock" ends it. Gates scheduled breaks only. Compiled in for App Store builds (`-DAPP_STORE`); website builds are always unlocked
+
 **SoundManager** - Audio playback (chimes, ambient)
 `Sources/Spellbreak/SoundManager.swift` - AVAudioPlayer management
 

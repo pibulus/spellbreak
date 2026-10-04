@@ -1,6 +1,6 @@
 # Privacy Policy for Spellbreak
 
-*Last updated: October 3, 2026*
+*Last updated: October 4, 2026*
 
 ## Your Privacy Matters
 
@@ -50,6 +50,12 @@ These are stored in macOS's standard UserDefaults and never leave your Mac.
 Optional permissions you may grant:
 - **Notifications**: a heads-up a few seconds before a break (optional)
 - **Launch at Login**: to start automatically (optional, off until you turn it on)
+
+## Purchases
+
+The free trial and the unlock are App Store in-app purchases. Apple handles
+them. Spellbreak only learns whether you own them, never your payment details
+or your Apple Account.
 
 ## Third-Party Services
 
