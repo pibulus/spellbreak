@@ -2,7 +2,8 @@ name: Build
 
 # Compiles Spellbreak on a real Mac for every push and pull request: the website
 # build and the App Store build (-DAPP_STORE, with the trial and unlock), then
-# checks the bundle the way the App Store submission depends on it.
+# checks the bundle the way the App Store submission depends on it. Built with
+# the Xcode App Store submissions need (26) and the older 16 as a sanity check.
 
 on:
   push:
@@ -14,21 +15,29 @@ jobs:
   build:
     runs-on: macos-15
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        xcode: ["26.3", "16.4"]
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Toolchain
         run: |
           xcodebuild -version
           swift --version
+          xcrun --sdk macosx --show-sdk-version
 
       - name: Website build (universal bundle, icon, ad-hoc signature)
         run: ./build-app.sh
 
-      - name: App Store build (compiles the trial and unlock)
-        run: swift build -c release -Xswiftc -DAPP_STORE --scratch-path .build-ci-appstore
+      # Last, so build/Spellbreak.app is the bundle the App Store would get
+      - name: App Store build (trial and unlock compiled in)
+        run: SPELLBREAK_APP_STORE=1 ./build-app.sh
 
-      - name: Check the bundle
+      - name: Check the App Store bundle
         run: |
           APP=build/Spellbreak.app
           plutil -lint "$APP/Contents/Info.plist"
@@ -53,7 +62,7 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Store cards render with the system fonts
         run: |
