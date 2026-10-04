@@ -43,6 +43,9 @@ Quick reference for Spellbreak's break reminder architecture.
 **SpellTextGenerator** - NY tarot reader message system
 `Sources/Spellbreak/SpellTextGenerator.swift` - Break messages (5-6 word max)
 
+**Store** - App Store trial + one-time unlock
+`Sources/Spellbreak/Store.swift` - StoreKit 2; a free "7-Day Trial" non-consumable starts the clock, "Unlock" ends it. Gates scheduled breaks only. Compiled in for App Store builds (`-DAPP_STORE`); website builds are always unlocked
+
 **SoundManager** - Audio playback (chimes, ambient)
 `Sources/Spellbreak/SoundManager.swift` - AVAudioPlayer management
 
@@ -63,6 +66,11 @@ Quick reference for Spellbreak's break reminder architecture.
 - Grammar: Body parts as witnesses, patterns as entities
 - Format: 5-6 word maximum per message
 - Distribution: 30% body, 30% ambient, 20% mystical spark, 20% full observation
+- Context: hour-of-day sparks; full/new moon lines; *noticing* lines when the
+  session warrants it (2+ skips, 2h+ since a completed break, 4+ breaks with no
+  skips) — drawn 35% of the time they apply
+- Memory: last 60 lines kept in UserDefaults (`recentBreakMessages`) and never
+  re-drawn; noticing lines never repeat within 24 breaks
 - Example: "The trance gets comfortable"
 - Optional: `showBreakMessage` toggle hides the line entirely
 
@@ -84,11 +92,26 @@ Quick reference for Spellbreak's break reminder architecture.
 - Violet: always-cool night colours
 - Surprise: rolls one of the three each break
 
+**Smart Pauses** - `shouldHoldBreak()` in `SpellbreakApp.swift`
+- Under "Pause while busy": full-screen windows, mic in use, typing (waits for 2s
+  of quiet keys, 30s max)
+- Always: away (3+ min with no input, and nothing holding the display awake)
+  holds the break and restarts the interval on return; sleep does the same. A
+  video or call keeps the display awake, so still hands in front of YouTube are
+  watching, not away. Keep-awake apps (Amphetamine, `caffeinate -d`) do the same,
+  which simply turns away detection off for those users
+- Never stuck: every hold either ends or caps out, so breaks can't stop forever
+
+**Multi-display** - `showOverlayWindow()` + `OverlayMirror`
+- One overlay window per display; the interactive break goes on the pointer's
+  display, quiet aurora mirrors elsewhere, one palette rolled per break
+
 **Break Statistics** - Tracked per session + lifetime
 - Completed breaks (today + total)
 - Skipped breaks (today + total)
 - Daily reset at midnight
-- Persisted in @AppStorage
+- Persisted in UserDefaults (today's counts too, so a relaunch keeps them)
+- Shown as "3 breaks today · 1 skipped" in the menu bar popover and right-click menu
 
 **Privacy Boundary** - Local-only behavior
 - No network requests, accounts, analytics, or telemetry

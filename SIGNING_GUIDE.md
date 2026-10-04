@@ -12,8 +12,11 @@
 Confirm what's installed locally:
 
 ```bash
-security find-identity -v -p codesigning
+security find-identity -v
 ```
+
+File names below use the version in `Sources/Spellbreak/Resources/Info.plist`
+(currently 1.2.0).
 
 ## Path 1: Website / Direct Download
 
@@ -27,34 +30,52 @@ Build a signed, notarized DMG for `spellbreak.app`.
 ./build-dmg.sh --sign "Developer ID Application: Pablo Alvarado (V433H655PN)"
 
 # 3. Notarize and staple
-xcrun notarytool submit dist/Spellbreak-v1.1.0.dmg \
+xcrun notarytool submit dist/Spellbreak-v1.2.0.dmg \
   --keychain-profile "AC_PASSWORD" --wait
-xcrun stapler staple dist/Spellbreak-v1.1.0.dmg
+xcrun stapler staple dist/Spellbreak-v1.2.0.dmg
 
 # 4. Validate
 ./release-check.sh
-spctl -a -vvv -t open dist/Spellbreak-v1.1.0.dmg
+spctl -a -vvv -t open dist/Spellbreak-v1.2.0.dmg
 ```
 
 That stapled DMG is the file to upload to the website.
 
 ## Path 2: Mac App Store
 
+Needs full Xcode (not just Command Line Tools), both MAS identities above, and
+a Mac App Store provisioning profile for `com.pabloalvarado.spellbreak` saved
+as `Spellbreak_MAS.provisionprofile` in the repo root (gitignored). The
+[submission guide](APP_STORE_SUBMISSION.md) covers creating them.
+
 ```bash
 ./build-mas.sh
 ```
 
-This signs with the Apple Distribution / Installer identities and produces
-`dist/Spellbreak-v1.1.0-mas.pkg`. Upload it via Transporter.app, or:
+What it does, in order:
+1. Preflight, before the slow part: full Xcode selected; profile present, for
+   this app ID, and a distribution (not development) profile; both identities
+   in the keychain.
+2. Builds the universal app via `build-app.sh` with `SPELLBREAK_APP_STORE=1`,
+   which compiles in the 7-day trial and unlock (`-DAPP_STORE`, `Store.swift`).
+   Website builds leave it out. Refuses an arm64-only binary.
+3. Stamps the `DT*` / `BuildMachineOSBuild` keys App Store Connect uses to
+   identify the Xcode and SDK. `swift build` doesn't write them.
+4. Embeds the profile and signs with `Spellbreak.mas.entitlements`, which adds
+   the app ID and team ID that Xcode would normally sign in. Without them the
+   upload is flagged (ITMS-90886).
+5. Verifies the signature, checks the app ID is in it, builds
+   `dist/Spellbreak-v1.2.0-mas.pkg`, and checks the package signature.
 
-```bash
-xcrun altool --upload-app -f dist/Spellbreak-v1.1.0-mas.pkg -t macos \
-  -u pibulus@gmail.com -p @keychain:AC_PASSWORD
-```
+Upload with **Transporter.app**: sign in, drag in the `.pkg`, then Deliver.
+It validates before uploading.
 
-MAS builds are a different path from Developer ID — `release-check.sh` checks
-Developer ID / hardened-runtime, which MAS builds correctly lack, so do not run
-it against the `.pkg`.
+Don't upload with `altool -p @keychain:AC_PASSWORD`. That keychain profile was
+made by `notarytool store-credentials`, and altool can't read it.
+
+MAS builds are a different path from Developer ID. `release-check.sh` checks
+Developer ID and hardened runtime, which MAS builds correctly lack, so don't
+run it against the `.pkg`.
 
 ## Local dogfood
 
@@ -65,20 +86,11 @@ open build/Spellbreak.app
 
 Unsigned builds are fine for testing, beta-only for distribution.
 
-## Screenshots to capture
-
-1. Break overlay in each palette (Aurora, Ember, Violet)
-2. Hold-to-skip ring
-3. Time tab in preferences
-4. Vibes tab in preferences
-5. Menu bar popover
-6. Heads-up countdown pill
-
 ## Sanity checklist
 
 - `./build-app.sh` produces `build/Spellbreak.app`
-- `./build-dmg.sh` produces `dist/Spellbreak-v1.1.0.dmg`
-- `./build-mas.sh` produces `dist/Spellbreak-v1.1.0-mas.pkg`
+- `./build-dmg.sh` produces `dist/Spellbreak-v1.2.0.dmg`
+- `./build-mas.sh` produces `dist/Spellbreak-v1.2.0-mas.pkg`
 - the app launches from the built bundle
 - signed app passes `codesign --verify` and `spctl`
 - notarized DMG staples successfully

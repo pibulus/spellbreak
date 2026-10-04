@@ -8,13 +8,17 @@ skipping conscious, never punitive.
 
 - **Aurora in four moods** — time-aware (shifts dawn → day → dusk → night),
   always-warm Ember, always-cool Violet, or Surprise Me (rolls one each break)
-- **Observational messages** — never the same line twice, tuned to the hour and
-  moon. They hint instead of ordering, and can be switched off entirely
+- **Observational messages** — hundreds of lines, rarely the same one twice,
+  tuned to the hour and moon, and they notice when you skip a few. They hint
+  instead of ordering, and can be switched off entirely
 - **Hold-to-skip** — a ring you hold for a beat; duration scales with break length
 - **Heads-up countdown pill** — a gentle warning before the spell lands
-- **Smart pauses** — waits out full-screen games, films, and presentations
-- **Private by design** — no accounts, no tracking, no network requests, no camera
-  or microphone access
+- **Smart pauses** — waits out calls, full-screen games, films, presentations,
+  and the end of your sentence; time away from the Mac counts as a break
+- **Every display** — the break lands on the screen with your pointer; the others
+  dim to match
+- **Private by design** — no accounts, no tracking, no network requests, no camera,
+  never records audio (it only checks whether the mic is busy)
 
 ## Requirements
 
@@ -23,8 +27,8 @@ skipping conscious, never punitive.
 
 ## Install
 
-Download from [spellbreak.app](https://spellbreak.app), move it to
-Applications, and launch.
+Get it from the Mac App Store (7-day trial, then a one-time unlock), or download
+from [spellbreak.app](https://spellbreak.app), move it to Applications, and launch.
 
 ## Build
 
@@ -48,12 +52,14 @@ Sources/Spellbreak/
 ├── MenuViewSimple.swift     # menu bar popover
 ├── StatusBarController.swift
 ├── SoundManager.swift
+├── Store.swift              # App Store trial + one-time unlock (App Store builds only)
 └── Utilities.swift          # palette, ScreenBusy heuristic
 ```
 
 ## Other docs
 
 - [`APP_STORE.md`](APP_STORE.md) — store listing copy
+- [`APP_STORE_SUBMISSION.md`](APP_STORE_SUBMISSION.md) — Mac App Store submission, step by step
 - [`SIGNING_GUIDE.md`](SIGNING_GUIDE.md) — signing, notarization, distribution
 - [`PRIVACY.md`](PRIVACY.md) — privacy policy
 - [`GLOSSARY.md`](GLOSSARY.md) — code glossary

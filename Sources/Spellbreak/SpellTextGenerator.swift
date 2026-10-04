@@ -100,23 +100,66 @@ struct SpellTextGenerator {
     ]
 
     // ===================================================================
+    // NOTICING - lines that know how the session is going. They only enter
+    // the draw when they're true, and they notice gently: no scolding, no
+    // streak-shaming, just the room clocking what happened.
+    // ===================================================================
+
+    /// A few breaks skipped this session
+    private static let skippedNotices = [
+        "The last few got waved off",
+        "The trance has been winning lately",
+        "Some spells take a few goes",
+        "The skips are piling up softly"
+    ]
+
+    /// Hours since a break was actually taken
+    private static let longStretchNotices = [
+        "A long stretch under the glass",
+        "Hours since the last surfacing",
+        "Time pooled while nobody looked"
+    ]
+
+    /// Breaks landing, none skipped
+    private static let rhythmNotices = [
+        "The rhythm is holding",
+        "Another one, right on time",
+        "The day has a pulse now"
+    ]
+
+    private static func notices(
+        breakCount: Int,
+        skippedCount: Int,
+        lastBreakInterval: TimeInterval?
+    ) -> [String] {
+        if skippedCount >= 2 { return skippedNotices }
+        if let interval = lastBreakInterval, interval >= 2 * 60 * 60 { return longStretchNotices }
+        if breakCount >= 4 && skippedCount == 0 { return rhythmNotices }
+        return []
+    }
+
+    // ===================================================================
     // MOON PHASE CALCULATION (approximate)
     // ===================================================================
 
     private static func getMoonPhase() -> String {
-        let referenceNewMoon = Date(timeIntervalSince1970: 947182440)
+        let referenceNewMoon = Date(timeIntervalSince1970: 947182440)  // 2000-01-06 18:14 UTC
         let lunarCycleSeconds: TimeInterval = 29.53058867 * 86400
         let moonAgeSeconds = Date().timeIntervalSince(referenceNewMoon)
             .truncatingRemainder(dividingBy: lunarCycleSeconds)
         let moonAge = moonAgeSeconds / 86400
 
+        // Full moon falls at day ~14.8 of the cycle; the old 18..<20 window lit up
+        // "Full moon pull" four days after the actual full moon. New moon wraps the
+        // end of the cycle as well as the start.
         switch moonAge {
-        case 0..<2: return "new"
-        case 2..<9: return "waxing"
-        case 9..<11: return "firstQuarter"
-        case 11..<18: return "waxingGibbous"
-        case 18..<20: return "full"
-        case 20..<27: return "waning"
+        case ..<1.5, 28.0...: return "new"
+        case ..<6.4: return "waxingCrescent"
+        case ..<8.4: return "firstQuarter"
+        case ..<13.8: return "waxingGibbous"
+        case ..<15.8: return "full"
+        case ..<21.1: return "waningGibbous"
+        case ..<23.1: return "lastQuarter"
         default: return "waningCrescent"
         }
     }
@@ -139,6 +182,20 @@ struct SpellTextGenerator {
     ]
 
     // ===================================================================
+    // MEMORY - recently shown lines, kept on this Mac (UserDefaults), so the
+    // same one doesn't come round again for days
+    // ===================================================================
+
+    private static let recentMessagesKey = "recentBreakMessages"
+    /// Nothing repeats for ~2.5 working days at the default 20 minutes. Sized to the
+    /// smallest pool: 18 observations drawn 20% of the time stay comfortably
+    /// unexhausted, so the 30/30/20/20 mix holds. A longer memory starves them.
+    private static let recentMessagesLimit = 60
+    /// Noticing lines are few and only drawn when true, so they get a shorter memory
+    /// of their own — still never the same thing twice in a day of breaks.
+    private static let recentNoticesWindow = 24
+
+    // ===================================================================
     // PUBLIC GENERATOR
     // ===================================================================
 
@@ -147,23 +204,58 @@ struct SpellTextGenerator {
         skippedCount: Int = 0,
         lastBreakInterval: TimeInterval? = nil
     ) -> String {
+        let defaults = UserDefaults.standard
+        var recent = defaults.stringArray(forKey: recentMessagesKey) ?? []
+        let seen = Set(recent)
+        let recentNotices = Set(recent.suffix(recentNoticesWindow))
+        let noticing = notices(
+            breakCount: breakCount,
+            skippedCount: skippedCount,
+            lastBreakInterval: lastBreakInterval
+        ).filter { !recentNotices.contains($0) }
+
+        let message: String
+        if let notice = noticing.randomElement(), Int.random(in: 1...100) <= 35 {
+            message = notice
+        } else {
+            // A mode whose whole pool was said lately re-rolls the mode. The memory is
+            // sized so that's rare; if it somehow keeps happening, a repeat beats a
+            // wordless break.
+            var drawn: String?
+            var attempts = 0
+            while drawn == nil && attempts < 24 {
+                drawn = drawLine(avoiding: seen)
+                attempts += 1
+            }
+            message = drawn ?? drawLine(avoiding: []) ?? "The trance gets comfortable"
+        }
+
+        recent.append(message)
+        if recent.count > recentMessagesLimit {
+            recent.removeFirst(recent.count - recentMessagesLimit)
+        }
+        defaults.set(recent, forKey: recentMessagesKey)
+        return message
+    }
+
+    /// One draw from the four modes, skipping anything in `seen`. Re-drawing inside
+    /// the rolled mode (rather than re-rolling the mode) is what keeps the mix honest.
+    /// Nil only when that mode's whole pool is in `seen`.
+    private static func drawLine(avoiding seen: Set<String>) -> String? {
         // Mode 1 (30%): Body + State ("Shoulders adrift", "Jaw softening", "Spine in orbit")
         // Mode 2 (30%): Ambient + State ("Static cooling", "Frame dissolving", "Horizon wide open")
         // Mode 3 (20%): Abstract Mystical Spark ("Soft geometry", "Quiet frequency", "Pale static")
         // Mode 4 (20%): Full observation ("The trance gets comfortable")
 
         let roll = Int.random(in: 1...100)
+        var pool: [String]
 
         if roll <= 30 {
-            let body = bodyParts.randomElement() ?? "Shoulders"
-            let state = bodyStates.randomElement() ?? "adrift"
-            return "\(body) \(state)"
+            pool = bodyParts.flatMap { body in bodyStates.map { "\(body) \($0)" } }
         } else if roll <= 60 {
-            let element = ambientElements.randomElement() ?? "Frame"
-            let state = ambientStates.randomElement() ?? "dissolving"
-            return "\(element) \(state)"
+            pool = ambientElements.flatMap { element in ambientStates.map { "\(element) \($0)" } }
         } else if roll <= 80 {
-            var pool = mysticalSparks
+            pool = mysticalSparks
 
             // Contextual sparks
             let hour = Calendar.current.component(.hour, from: Date())
@@ -185,16 +277,14 @@ struct SpellTextGenerator {
             if let lunar = moonSparks[getMoonPhase()] {
                 pool += lunar
             }
-
-            return pool.randomElement() ?? "Soft focus"
         } else {
-            var pool = observations
+            pool = observations
 
             if let lunar = moonSparks[getMoonPhase()] {
                 pool += lunar
             }
-
-            return pool.randomElement() ?? "The trance gets comfortable"
         }
+
+        return pool.filter { !seen.contains($0) }.randomElement()
     }
 }

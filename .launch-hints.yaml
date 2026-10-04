@@ -19,8 +19,8 @@ differentiators:
   - >-
     Hold-to-skip by default, optional unskippable mode
   - >-
-    Zero accounts, analytics, network requests, camera access, or microphone
-    access
+    Zero accounts, analytics, network requests, or camera access; never records
+    audio (it only checks whether the mic is busy, to wait out calls)
 proof_points:
   - >-
     Break experience: frosted desktop blur, animated backgrounds, ambient

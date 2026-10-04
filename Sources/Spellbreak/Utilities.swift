@@ -10,6 +10,7 @@ import SwiftUI
 import AppKit
 import CoreAudio
 import AudioToolbox
+import IOKit.pwr_mgt
 
 // MARK: - Palette
 extension Color {
@@ -56,6 +57,34 @@ extension TimeInterval {
 enum ScreenBusy {
     static func isBusy() -> Bool {
         return aFullscreenAppIsRunning() || isMicrophoneInUse()
+    }
+
+    /// Seconds since the last keyboard, mouse or trackpad event, system-wide. Quartz
+    /// answers without Input Monitoring permission: it's a timestamp, never the events.
+    static func secondsSinceLastInput() -> TimeInterval {
+        CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: anyInputEvent)
+    }
+
+    /// Seconds since the last key press anywhere. Same deal: when, never which key.
+    static func secondsSinceLastKeystroke() -> TimeInterval {
+        CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: .keyDown)
+    }
+
+    /// kCGAnyInputEventType — every event type at once, ~0 in the C header
+    private static let anyInputEvent = CGEventType(rawValue: ~0)!
+
+    /// Is something keeping the display awake — a playing video, a call? It's how
+    /// macOS knows not to dim the screen mid-film, and it's the difference between
+    /// a still keyboard and an empty chair: someone gazing at YouTube is in the
+    /// trance, not away from it. If powerd won't say, assume nothing is.
+    static func displayIsHeldAwake() -> Bool {
+        var status: Unmanaged<CFDictionary>?
+        guard IOPMCopyAssertionsStatus(&status) == kIOReturnSuccess,
+              let assertions = status?.takeRetainedValue() as? [String: Int] else { return false }
+        // kIOPMAssertPreventUserIdleDisplaySleep, and its older name. Both are
+        // CFSTR() macros, which Swift can't import, hence the literals.
+        return (assertions["PreventUserIdleDisplaySleep"] ?? 0) > 0
+            || (assertions["NoDisplaySleepAssertion"] ?? 0) > 0
     }
 
     static func aFullscreenAppIsRunning() -> Bool {

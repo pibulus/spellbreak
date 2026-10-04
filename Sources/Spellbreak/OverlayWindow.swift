@@ -39,16 +39,18 @@ struct OverlayWindow: View {
     @AppStorage("musicEnabled") private var musicEnabled: Bool = true
     @AppStorage("visualTheme") private var visualTheme: String = "aurora"
     @AppStorage("showBreakMessage") private var showBreakMessage: Bool = true
-    /// The palette THIS break is wearing. Rolled once, at init, and never read
-    /// straight from the preference in the body — a random value computed there
-    /// would re-roll on every redraw and strobe between palettes. Rolling at init
-    /// rather than in onAppear matters too: onAppear fires AFTER the first frame,
-    /// so a Surprise user would see one frame of the wrong palette.
-    /// A fresh OverlayWindow is built per break, so this is one roll per break.
-    @State private var resolvedTheme: String = OverlayWindow.rollTheme(
-        UserDefaults.standard.string(forKey: "visualTheme") ?? "aurora"
-    )
-    
+    /// The palette THIS break is wearing. Rolled once per break by AppState and
+    /// handed in at init — never read straight from the preference in the body,
+    /// where a random value would re-roll on every redraw and strobe between
+    /// palettes, and not in onAppear, which fires AFTER the first frame (a Surprise
+    /// user would see one frame of the wrong palette). Rolling outside the view is
+    /// also what lets every other display's mirror wear the same one.
+    @State private var resolvedTheme: String
+
+    init(theme: String) {
+        _resolvedTheme = State(initialValue: theme)
+    }
+
     // Calculate required hold duration from break length, clamped 2-15s.
     private var requiredHoldDuration: Double {
         let duration = actualBreakDuration / 60.0
@@ -208,6 +210,12 @@ struct OverlayWindow: View {
                     .accessibilityLabel("Hold to skip")
                     .accessibilityValue(isHoldingToSkip ? "\(Int(holdProgress * 100)) percent" : "idle")
                     .accessibilityAddTraits(.allowsDirectInteraction)
+                    // VoiceOver can't press-and-hold a ring; give it the skip as an action
+                    .accessibilityAction(named: "Skip break") {
+                        if showSkipRing && !lockMode {
+                            skipBreak()
+                        }
+                    }
                     .padding(.bottom, 60)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -410,6 +418,7 @@ struct OverlayWindow: View {
         guard !hasResolvedBreak, appState.showingOverlay else { return }
 
         hasResolvedBreak = true
+        NotificationCenter.default.post(name: OverlayMirror.fadeOut, object: nil)  // other displays fade with it
         isHoldingToSkip = false
         holdProgress = 0
         countdownTimer?.invalidate()
@@ -488,6 +497,54 @@ struct OverlayWindow: View {
                 withAnimation(.spring(duration: 0.3, bounce: 0.4)) {
                     holdProgress = 0
                 }
+            }
+        }
+    }
+}
+
+// MARK: - Overlay Mirror
+/// What every other display shows during a break: the same aurora, quiet — no
+/// line, no ring, no sound. The break itself lives on the display with the
+/// pointer. Keep these layers in step with the backdrop at the top of
+/// OverlayWindow's body.
+struct OverlayMirror: View {
+    /// Posted when the break resolves, so the mirrors fade out with it
+    static let fadeOut = Notification.Name("SpellbreakOverlayMirrorFadeOut")
+
+    let theme: String
+    @State private var opacity: Double = 0
+
+    var body: some View {
+        ZStack {
+            Rectangle()
+                .fill(Color(red: 0.078, green: 0.062, blue: 0.058))
+                .ignoresSafeArea()
+
+            Rectangle()
+                .fill(.ultraThickMaterial)
+                .opacity(0.35)
+                .ignoresSafeArea()
+
+            AuroraBackground(palette: AuroraPalette.from(theme: theme))
+                .blur(radius: 12)
+                .opacity(0.95)
+
+            Rectangle()
+                .fill(.black.opacity(0.12))
+                .ignoresSafeArea()
+
+            AmbientParticles(palette: AuroraPalette.from(theme: theme))
+                .opacity(0.7)
+        }
+        .opacity(opacity)
+        .onAppear {
+            withAnimation(.easeOut(duration: 1.2)) {
+                opacity = 1
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: OverlayMirror.fadeOut)) { _ in
+            withAnimation(.easeInOut(duration: 0.8)) {
+                opacity = 0
             }
         }
     }

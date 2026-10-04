@@ -67,6 +67,7 @@ struct PreferencesView: View {
     @State private var launchAtLoginStatus: SMAppService.Status = SMAppService.mainApp.status
     @State private var launchAtLoginError: String?
     @EnvironmentObject var soundManager: SoundManager
+    @EnvironmentObject var store: Store
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
     var body: some View {
@@ -178,44 +179,17 @@ struct PreferencesView: View {
             .animation(.easeInOut(duration: 0.2), value: selectedTab)
             }
             
-            // Test break button
-            Button(action: {
-                testButtonPressed = true
-                soundManager.playButtonPress()
-                NotificationCenter.default.post(name: NSNotification.Name("ShowTestBreak"), object: nil)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    testButtonPressed = false
-                }
-            }) {
+            // Test break, and beside it the App Store unlock while one's still needed
+            VStack(spacing: 10) {
                 HStack(spacing: 12) {
-                    Image(systemName: "play.fill")
-                        .font(.system(size: 18, weight: .bold))
-                    Text("Test Break")
-                        .font(.system(size: 18, weight: .bold))
+                    testBreakButton
+                    if needsUnlock {
+                        unlockButton
+                    }
                 }
-                .foregroundColor(.black.opacity(0.8))
-                .frame(maxWidth: .infinity)
-                .frame(height: 56)
-                .background(
-                    LinearGradient(
-                        colors: [
-                            Color.spellPink,
-                            Color.spellPeach,
-                            Color(red: 1.0, green: 0.8, blue: 0.4)
-                        ],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-                .clipShape(Capsule())
-                .scaleEffect(testButtonPressed ? 0.98 : (hoveredElement == "test-button" ? 1.01 : 1.0))
-                .shadow(color: .black.opacity(hoveredElement == "test-button" ? 0.3 : 0.15), 
-                        radius: hoveredElement == "test-button" ? 12 : 8, 
-                        x: 0, y: 4)
-            }
-        .buttonStyle(.plain)
-        .onHover { hovering in
-            hoveredElement = hovering ? "test-button" : nil
+                if needsUnlock {
+                    unlockCaption
+                }
             }
             .padding(.top, UI.buttonSpacing)
             .padding(.horizontal, UI.sidePadding)
@@ -249,6 +223,150 @@ struct PreferencesView: View {
         }
     }
     
+    // MARK: - Test Break & Unlock
+    private var testBreakButton: some View {
+        Button(action: {
+            testButtonPressed = true
+            soundManager.playButtonPress()
+            NotificationCenter.default.post(name: NSNotification.Name("ShowTestBreak"), object: nil)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                testButtonPressed = false
+            }
+        }) {
+            HStack(spacing: 12) {
+                Image(systemName: "play.fill")
+                    .font(.system(size: 18, weight: .bold))
+                Text("Test Break")
+                    .font(.system(size: 18, weight: .bold))
+            }
+            .foregroundColor(.black.opacity(0.8))
+            .frame(maxWidth: .infinity)
+            .frame(height: 56)
+            .background(
+                LinearGradient(
+                    colors: [
+                        Color.spellPink,
+                        Color.spellPeach,
+                        Color(red: 1.0, green: 0.8, blue: 0.4)
+                    ],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .clipShape(Capsule())
+            .scaleEffect(testButtonPressed ? 0.98 : (hoveredElement == "test-button" ? 1.01 : 1.0))
+            .shadow(color: .black.opacity(hoveredElement == "test-button" ? 0.3 : 0.15),
+                    radius: hoveredElement == "test-button" ? 12 : 8,
+                    x: 0, y: 4)
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering in
+            hoveredElement = hovering ? "test-button" : nil
+        }
+    }
+
+    /// Paying (and website) users never see any of this: the row is just Test Break
+    private var needsUnlock: Bool {
+        switch store.currentAccess {
+        case .notStarted, .trial, .trialEnded: return true
+        case .checking, .unlocked: return false
+        }
+    }
+
+    /// Start the free week, or unlock once it's running or done. The price always
+    /// comes from StoreKit, localized per storefront, never from a constant.
+    private var unlockButton: some View {
+        let startingTrial = store.currentAccess == .notStarted
+        let title: String
+        if startingTrial {
+            title = "Try Free for 7 Days"
+        } else if let price = store.unlockProduct?.displayPrice {
+            title = "Unlock · \(price)"
+        } else {
+            title = "Unlock"
+        }
+        // The trial can't start until the unlock price is showing too: App Review
+        // wants the downstream charge stated before the trial begins (3.1.1)
+        let unavailable = store.isWorking
+            || store.unlockProduct == nil
+            || (startingTrial && store.trialProduct == nil)
+
+        return Button {
+            soundManager.playButtonPress()
+            Task {
+                if startingTrial {
+                    await store.startTrial()
+                } else {
+                    await store.unlock()
+                }
+            }
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: startingTrial ? "sparkles" : "lock.open.fill")
+                    .font(.system(size: 16, weight: .bold))
+                Text(title)
+                    .font(.system(size: 17, weight: .bold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            .foregroundColor(.spellCream)
+            .frame(maxWidth: .infinity)
+            .frame(height: 56)
+            .background(Capsule().fill(Color.white.opacity(hoveredElement == "unlock-button" ? 0.14 : 0.08)))
+            .overlay(
+                Capsule().stroke(
+                    LinearGradient(colors: [Color.spellPink, Color.spellPeach], startPoint: .leading, endPoint: .trailing),
+                    lineWidth: 2
+                )
+            )
+        }
+        .buttonStyle(.plain)
+        .disabled(unavailable)
+        .opacity(unavailable ? 0.5 : 1)
+        .onHover { hovering in
+            hoveredElement = hovering ? "unlock-button" : nil
+        }
+    }
+
+    private var unlockCaption: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            Text(unlockCaptionText)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.spellCream.opacity(0.6))
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 8)
+            Button("Restore Purchase") {
+                Task { await store.restore() }
+            }
+            .buttonStyle(.plain)
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundColor(.spellCoral)
+            .disabled(store.isWorking)
+        }
+        .padding(.horizontal, 4)
+    }
+
+    /// Before the trial starts, App Review wants three things in plain sight (3.1.1):
+    /// how long it lasts, what stops when it ends, and what unlocking costs.
+    private var unlockCaptionText: String {
+        if let problem = store.problem {
+            return problem
+        }
+        let price = store.unlockProduct?.displayPrice
+        switch store.currentAccess {
+        case .notStarted:
+            let then = price.map { "then \($0) once to keep them" } ?? "then a one-time unlock to keep them"
+            return "Scheduled breaks are free for 7 days, \(then). Test Break always works."
+        case .trial:
+            let days = store.trialDaysLeft ?? 1
+            return "Free trial: \(days) \(days == 1 ? "day" : "days") left. After that, scheduled breaks stop until you unlock."
+        case .trialEnded:
+            return "Your free week is up. Scheduled breaks are paused until you unlock; Test Break still works."
+        case .checking, .unlocked:
+            return ""
+        }
+    }
+
     // MARK: - Timer Tab Content  
     private var timerContent: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -352,9 +470,11 @@ struct PreferencesView: View {
 
                 rowDivider
 
+                // Covers the mic too (ScreenBusy.isMicrophoneInUse), so it can't be named
+                // for fullscreen alone — switching it off stops both.
                 ToggleRow(
                     title: "Pause while busy",
-                    subtitle: "Waits for full-screen apps and active mic use",
+                    subtitle: "Waits for full-screen apps, active mic use, and a pause in typing",
                     isOn: deferDuringFullscreen,
                     soundManager: soundManager
                 ) { deferDuringFullscreen = $0 }

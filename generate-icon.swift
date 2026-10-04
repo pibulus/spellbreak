@@ -2,17 +2,14 @@
 
 // Generates Spellbreak app icon at all required sizes
 // Mystical crystal ball with aurora gradient - pastel-punk aesthetic
+//
+// Run from the repo root: swift generate-icon.swift
 
 import AppKit
+import SwiftUI  // RoundedRectangle(style: .continuous) is the system's own squircle
 
-func generateIcon(size: Int) -> NSImage {
-    let s = CGFloat(size)
-    let image = NSImage(size: NSSize(width: s, height: s))
-
-    image.lockFocus()
-
-    let context = NSGraphicsContext.current!.cgContext
-
+/// The artwork, full-bleed, in an `s`-point square. drawIcon() puts it on the grid.
+func drawArt(in context: CGContext, size s: CGFloat) {
     // Background: deep dark purple with subtle gradient
     let bgColors = [
         NSColor(red: 0.12, green: 0.08, blue: 0.20, alpha: 1.0).cgColor,
@@ -185,36 +182,62 @@ func generateIcon(size: Int) -> NSImage {
         context.setFillColor(NSColor(white: 1.0, alpha: sp.alpha).cgColor)
         context.fillEllipse(in: spRect)
     }
-
-    image.unlockFocus()
-    return image
 }
 
-func savePNG(_ image: NSImage, path: String, size: Int) {
-    let resized = NSImage(size: NSSize(width: size, height: size))
-    resized.lockFocus()
-    image.draw(in: NSRect(x: 0, y: 0, width: size, height: size),
-               from: NSRect(x: 0, y: 0, width: image.size.width, height: image.size.height),
-               operation: .copy, fraction: 1.0)
-    resized.unlockFocus()
+/// The icon on the macOS grid, in 1024-point design space: an 824pt body with a
+/// 100pt margin, like every other icon in the Dock. The body is drawn at 816 so no
+/// pixel pokes past Tahoe's squircle mask — anything that does gets shrunk onto a
+/// grey squircle ("icon jail"). The art runs 10pt past the mask on every side so
+/// its own rounded corners never show.
+func drawIcon(in context: CGContext) {
+    let body = CGRect(x: 104, y: 104, width: 816, height: 816)
+    let mask = RoundedRectangle(cornerRadius: body.width * 0.225, style: .continuous)
+        .path(in: body)
+        .cgPath
+    context.addPath(mask)
+    context.clip()
 
-    guard let tiffData = resized.tiffRepresentation,
-          let bitmap = NSBitmapImageRep(data: tiffData),
-          let pngData = bitmap.representation(using: .png, properties: [:]) else {
-        print("Failed to create PNG for size \(size)")
+    context.translateBy(x: 94, y: 94)
+    context.scaleBy(x: 836 / 1024, y: 836 / 1024)
+    drawArt(in: context, size: 1024)
+}
+
+/// Renders straight into a bitmap of exactly `pixels` square. lockFocus would
+/// render at the screen's backing scale instead — that's how every PNG once came
+/// out at double its slot size (icon_16x16.png at 32px, 512@2x at 2048px), and
+/// iconutil quietly dropped the reps it couldn't place.
+func renderIcon(pixels: Int) -> NSBitmapImageRep {
+    let rep = NSBitmapImageRep(
+        bitmapDataPlanes: nil, pixelsWide: pixels, pixelsHigh: pixels,
+        bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+        colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0
+    )!
+    rep.size = NSSize(width: pixels, height: pixels)
+
+    NSGraphicsContext.saveGraphicsState()
+    let graphics = NSGraphicsContext(bitmapImageRep: rep)!
+    NSGraphicsContext.current = graphics
+    let context = graphics.cgContext
+    context.scaleBy(x: CGFloat(pixels) / 1024, y: CGFloat(pixels) / 1024)
+    drawIcon(in: context)
+    NSGraphicsContext.restoreGraphicsState()
+    return rep
+}
+
+func savePNG(_ rep: NSBitmapImageRep, path: String) {
+    guard let pngData = rep.representation(using: .png, properties: [:]) else {
+        print("Failed to create PNG for \(path)")
         return
     }
 
     do {
         try pngData.write(to: URL(fileURLWithPath: path))
-        print("Created: \(path)")
+        print("Created: \(path) (\(rep.pixelsWide)x\(rep.pixelsHigh))")
     } catch {
         print("Error writing \(path): \(error)")
     }
 }
 
-// Generate at high resolution, then scale down for each size
-let masterIcon = generateIcon(size: 1024)
 let iconDir = "Sources/Spellbreak/Resources/Assets.xcassets/AppIcon.appiconset"
 
 // All required macOS icon sizes
@@ -231,8 +254,9 @@ let sizes: [(name: String, px: Int)] = [
     ("icon_512x512@2x", 1024),
 ]
 
+// Vector-drawn at every size, so even 16px gets its own render rather than a downscale
 for size in sizes {
-    savePNG(masterIcon, path: "\(iconDir)/\(size.name).png", size: size.px)
+    savePNG(renderIcon(pixels: size.px), path: "\(iconDir)/\(size.name).png")
 }
 
 print("\nAll icons generated!")

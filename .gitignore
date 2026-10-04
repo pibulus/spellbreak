@@ -22,6 +22,8 @@ DerivedData
 .build/
 .build-arm64/
 .build-x86_64/
+.build-arm64-appstore/
+.build-x86_64-appstore/
 Package.resolved
 /*.xcodeproj
 
@@ -48,3 +50,6 @@ dist/
 
 # Playwright MCP scratch screenshots
 .playwright-mcp/
+
+# Signing material — download from developer.apple.com, never commit
+*.provisionprofile
