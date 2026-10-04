@@ -1,95 +1,51 @@
 # Spellbreak — App Store Listing
 
 Paste-ready copy for App Store Connect. Every claim here is checked against the
-code; if a feature changes, change this file with it. Character limits are
-App Store Connect's.
+code; if a feature changes, change this file with it.
 
 For the step-by-step submission walkthrough, see
 [`APP_STORE_SUBMISSION.md`](APP_STORE_SUBMISSION.md).
 
 ---
 
-## App Name (30)
-**Spellbreak: Break Reminder** (26)
+## App Name
 
-A descriptive name ranks in search for "break reminder" — the name field
-carries the most search weight of anything here. Plain `Spellbreak` (10) also
-works if you'd rather keep it clean. Either way, check the name is free when
-you create the app record, and see the trademark note in the submission guide.
+Spellbreak
 
-## Subtitle (30)
-**Break the screen trance** (23)
+## Subtitle
 
-## Promotional Text (170)
-When it's time to look up, Spellbreak fills your screen with slow aurora light: a few quiet seconds for your eyes, shoulders and brain. No account. No tracking.
+Break the screen trance
 
-(160 — editable any time without a new review)
+## Promotional Text
 
-## Description (4000)
+A menu bar break timer for macOS. Set a rhythm, choose a short pause, and let animated color fill the screen for a moment.
 
-Lost three hours to the screen again?
-Shoulders up around your ears? Forgot to drink water, stretch, or feed the cat?
+## Description
 
-Spellbreak breaks the trance. Every 20 minutes (or whatever rhythm you set), your screen dissolves into slow, breathing aurora light — a real moment for your eyes, body and brain to reset. Then it gets out of the way.
+Spellbreak is a break timer for your Mac's menu bar. Choose how often breaks arrive and how long they last. When one begins, a full screen color field fills the screen for a short pause.
 
-✨ A BREAK YOU'LL ACTUALLY TAKE
-• Full-screen aurora that's hard to ignore and easy to come back from
-• A heads-up countdown before it lands, so it never catches you mid-sentence
-• Hold the ring for a couple of seconds to skip — just enough friction to make skipping a choice, not a reflex
-• Or switch on Unskippable when you want it to hold you to it
+Choose a look: Aurora shifts with the time of day, Ember stays warm, Violet stays cool, and Surprise picks one of the three for each break. Turn the optional message on or off, and adjust the sound to suit the room.
 
-🔮 WORDS THAT NOTICE, NOT NAG
-Each break can carry a short line, drawn from hundreds and rarely the same one twice. It knows the hour and the moon, and if you skip a few, it notices — gently. It never tells you what to do:
-• "The trance gets comfortable"
-• "The jaw unhooks itself"
-• "Shoulders unspooling"
-Prefer just colour and light? Turn the words off.
+Set a heads up notification, start Spellbreak at login, or let it defer breaks while a full screen app is open or microphone input is active. Lock mode hides the hold to skip control.
 
-⚙️ BUILT AROUND YOUR DAY
-• Breaks every 15 minutes to 3 hours, lasting 10 seconds to 3 minutes. Set it to 20-20-20 for your eyes, or make it a stretch bell or a tea timer
-• Aurora in four moods: shifts with the time of day, always-warm Ember, always-cool Violet, or Surprise
-• Smart pauses wait out calls, full-screen games, films and presentations
-• Breaks hyperfocus and doomscroll loops without a lecture
-• Lives in your menu bar: pause, pick up right where you left off, or take a break now
-• Optional ambient sound, with a mute button right on the break screen
-• Starts at login, if you want it to
+Breaks last 10 seconds to 3 minutes, at intervals from 15 minutes to 3 hours. Spellbreak runs on macOS 13 or later.
 
-🔒 PRIVATE BY DESIGN
-• No account, no analytics, no ads, no tracking
-• Never connects to the internet — your settings stay on your Mac
-• Never listens: it only checks whether your mic is busy, so a break doesn't land on your call
-• One purchase. No subscription.
+Your settings and break counts stay on your Mac. Spellbreak has no accounts, ads, analytics, or network requests. It is a one time purchase with no subscription or in app purchases.
 
-Break the spell. Your eyes and spine will thank you.
+## Keywords
 
-### Claim → code check
-| Claim | Where it's true |
-| --- | --- |
-| Every 20 minutes by default | `breakIntervalMin` default 20 |
-| 15 min – 3 h, 10 s – 3 min | `GradientSlider` options in `PreferencesView` |
-| Heads-up countdown | `BreakCountdownWindow`, 15 s lead, on by default |
-| Hold "a couple of seconds" | hold = break length ÷ 60, clamped to 2 s minimum (2–3 s in practice) |
-| Hundreds of lines, rarely twice | ~830 lines; last 60 never redrawn (`SpellTextGenerator`) |
-| Hour, moon, notices skips | hour sparks, full/new moon lines, noticing lines |
-| Quoted lines | all three are drawable from the generator's pools |
-| Smart pauses incl. calls | `ScreenBusy` — fullscreen window or mic in use (verify on the sandboxed build) |
-| Never listens | Core Audio "device is running somewhere" property only; no capture, no mic prompt |
+break timer,screen break,rest,posture,stretch,pomodoro,reminder,focus,aurora,wellness
 
-Don't put a price in any of this, or in screenshots: prices differ per storefront,
-and App Review rejects price references in metadata (guideline 2.3.7 — even "free"
-counts). "One purchase. No subscription." describes the model, not a price.
+(87 of 100.) Two notes, your call: "screen" and "break" are already indexed
+from the subtitle, so those slots could carry new words; and the longest break
+is 3 minutes, so someone searching "pomodoro" (25/5) won't find what they
+expect.
 
-## Keywords (100)
-```
-eye,strain,eyestrain,20-20-20,posture,stretch,rest,hyperfocus,adhd,focus,timer,wellness,rsi,desk
-```
-(96) Commas, no spaces. Words already in the name and subtitle ("spellbreak",
-"break", "reminder", "screen", "trance") are indexed anyway, so they're not
-repeated here. "pomodoro" is out: the longest break is 3 minutes, so a
-25/5 pomodoro isn't possible and those searchers would bounce.
+## Category
+Primary: Productivity
 
-## Categories
-Primary: **Productivity** · Secondary: **Health & Fitness**
+## Price
+$9.99 USD (Tier 10 / $14.99 AUD) — One-time purchase
 
 ## Age Rating
 Answer the questionnaire like this; App Store Connect computes the rating as you
@@ -104,13 +60,6 @@ go (expect **4+**):
 - Violence: all **None**
 - Chance-Based Activities: all **No / None**
 
-## Price
-**Recommendation: US$9.99, one-time.** Reasoning is in
-[`APP_STORE_SUBMISSION.md`](APP_STORE_SUBMISSION.md#pricing). Was $19.99.
-
-## In-App Purchases
-None.
-
 ## App Privacy ("nutrition label")
 **Data Not Collected.** Nothing leaves the Mac: no analytics, no crash
 reporting, no network calls. Matches `PrivacyInfo.xcprivacy` (no tracking, no
@@ -124,12 +73,6 @@ Connect won't ask.
 "Does your app contain, show, or access third-party content?" → **No**, provided
 the sounds in `Resources/Sounds` are yours or licensed for commercial use.
 Confirm that before you answer.
-
-## URLs
-- Support URL: https://spellbreak.app — must be live, with a way to contact you
-- Marketing URL: https://spellbreak.app
-- Privacy Policy URL: https://spellbreak.app/privacy — must be live at review
-  time; publish [`PRIVACY.md`](PRIVACY.md) there
 
 ## Copyright
 `2026 Pablo Alvarado`
@@ -149,36 +92,43 @@ Sign-in required: **No**. Contact: your name, phone, email.
 > • Press and hold the small "skip" ring at the bottom centre for about 2 seconds
 >   to skip. The ring appears 2 seconds into the break.
 > • The break also ends on its own after the set duration (20 seconds by default).
-> • "Unskippable" (in Settings) is off by default. Even when on, a break lasts at
->   most 3 minutes.
+> • "Lock mode" (in Settings) hides the skip ring and is off by default. Even when
+>   on, a break lasts at most 3 minutes.
 >
-> Smart Pauses: automatic breaks wait while another app is full screen or the
-> microphone is in use (e.g. a video call). Spellbreak reads only whether the
+> "Pause while busy": automatic breaks wait while another app is full screen or
+> the microphone is in use (e.g. a video call). Spellbreak reads only whether the
 > input device is running, through Core Audio. It never captures audio, so there
-> is no microphone permission prompt. Test Break and Break Now ignore Smart Pauses.
+> is no microphone permission prompt. Test Break and Break Now ignore this.
 >
 > The only permission requested is notifications (optional), for a heads-up 15
 > seconds before a break. No account, sign-in, network access, or in-app purchase.
 
 ## Screenshots
-2880×1800 (16:10) — upload the `screenshots/appstore/*-2880x1800.png` set, in
-order. Generated by `scripts/generate-appstore-cards.py`; see the submission
-guide for capturing real Settings and menu bar shots to add.
+
+2880×1800 (16:10) — upload `screenshots/appstore/*-2880x1800.png`, in order.
+Generated by `scripts/generate-appstore-cards.py`; see the submission guide for
+adding real captures.
+
+1. **01-break-the-spell** — A pause from the screen, with animated aurora color.
+2. **02-street-smart-wisdom** — Short generated phrases; messages are optional.
+3. **03-hold-to-skip** — Hold briefly to skip, or enable Lock mode to hide skip controls.
+4. **04-living-shaders** — Breaks from 10 seconds to 3 minutes, every 15 minutes to 3 hours.
+5. **05-no-subscriptions** — Local preferences and counts; no account, tracking, ads, or subscription.
+
+## URLs
+
+- Support URL: https://spellbreak.app — must be live, with a way to contact you
+- Marketing URL: https://spellbreak.app
+- Privacy Policy URL: https://spellbreak.app/privacy — must be live at review
+  time; publish [`PRIVACY.md`](PRIVACY.md) there
 
 ---
 
 ## What's New
-The first App Store version has no "What's New" field. For later updates,
-write it from the user's side, e.g.:
+The first App Store version has no "What's New" field. For later updates:
 
 **1.2.0** (also the website release notes)
-• Waking your Mac no longer opens straight onto a break — time asleep counts as time away
-• Break lines notice when you've skipped a few, and won't repeat themselves for days
-• Settings fits smaller screens
-
-### Release history (website builds — not for the store)
-- **1.1.0** — Aurora-only vibes; optional break messages; softer, observational
-  lines; rebalanced Preferences
-- **1.0.4** — Warmer backgrounds, About tab, Surprise Me theme
-- **1.0.1** — First launch opens Preferences; native menu bar icon; 20-20-20 interval
-- **1.0** — Initial release
+• Choose Aurora, Ember, Violet, or Surprise.
+• Hide the message for a word free break.
+• Adjust break timing, sound, and reminders in Settings.
+• Waking your Mac no longer opens straight onto a break.

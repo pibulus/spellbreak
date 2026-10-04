@@ -287,8 +287,8 @@ def overlay(theme):
 
 def card_hero():
     card = background()
-    header(card, "BREAK THE SCREEN TRANCE", "Lost 3 hours to the screen?",
-           "Gentle full-screen breaks that pull you out of the trance, for your eyes, shoulders and brain.")
+    header(card, "A PAUSE FROM THE SCREEN", "Let the screen go quiet.",
+           "Set a rhythm. Let animated aurora color fill a short break.")
     img, _ = overlay("aurora")
     l, t, r, b = CONTENT
     w, h = screen_size(r - l, b - t)
@@ -297,28 +297,40 @@ def card_hero():
     return card
 
 
-def card_moods():
+def card_words():
     card = background()
-    header(card, "FOUR MOODS  ·  A NEW LINE EVERY BREAK", "A new line every break.",
-           "Hundreds of lines, tuned to the hour and the moon. Aurora follows the day, Ember stays warm, Violet stays cool.")
+    header(card, "OPTIONAL BREAK MESSAGES", "A line for the moment.",
+           "Short phrases shift with the hour, with lunar notes at new and full moon.")
+    img, _ = overlay("ember")
     l, t, r, b = CONTENT
-    gap = 48
-    w = (r - l - gap * 2) // 3
-    labels = [("aurora", "AURORA", "Follows the time of day"),
-              ("ember", "EMBER", "Warm, any hour"),
-              ("violet", "VIOLET", "Cool, any hour")]
-    for i, (theme, title, caption) in enumerate(labels):
-        img, _ = overlay(theme)
-        x = l + i * (w + gap)
-        framed(card, fill_crop(img, w, b - t), (x, t, x + w, b), radius=30)
-        label_pill(card, (x + 24, b - 24 - 112, x + w - 24, b - 24), title, caption)
+    w, h = screen_size(r - l, b - t - 190)
+    x = (W - w) // 2
+    # Closer in on the line itself: the middle 60% of the break screen
+    cw, ch = round(img.width * 0.6), round(img.height * 0.6)
+    cx, cy = (img.width - cw) // 2, (img.height - ch) // 2
+    framed(card, fill_crop(img.crop((cx, cy, cx + cw, cy + ch)), w, h), (x, t, x + w, t + h))
+
+    # More lines the generator really draws, set as captions under the screen
+    lines = ["The jaw unhooks itself", "Shoulders unspooling", "Full moon pull"]
+    draw = ImageDraw.Draw(card)
+    caption = font("medium", 40)
+    texts = [f"\u201c{line}\u201d" for line in lines]
+    gap = 90
+    total = sum(caption.getlength(text) for text in texts) + gap * (len(texts) - 1)
+    xx, yy = (W - total) / 2, t + h + 80
+    for i, text in enumerate(texts):
+        draw.text((xx, yy), text, font=caption, fill=CREAM + (215,))
+        xx += caption.getlength(text)
+        if i < len(texts) - 1:
+            draw.ellipse((xx + gap / 2 - 6, yy + 22, xx + gap / 2 + 6, yy + 34), fill=PEACH + (200,))
+        xx += gap
     return card
 
 
 def card_skip():
     card = background()
-    header(card, "GENTLE FRICTION", "Hard to ignore. Easy to leave.",
-           "Hold the ring for a couple of seconds to skip, just long enough to think twice.")
+    header(card, "HOLD TO SKIP", "A little room to leave.",
+           "Hold briefly to skip. Lock mode hides the skip control.")
     capture, _ = load(RAW / "break-skip.png")
     l, t, r, b = CONTENT
     w, h = screen_size(r - l, b - t)
@@ -352,6 +364,24 @@ def card_skip():
     return card
 
 
+def card_rhythm():
+    card = background()
+    header(card, "SET YOUR OWN RHYTHM", "Short breaks, your way.",
+           "10 seconds to 3 minutes, every 15 minutes to 3 hours.")
+    l, t, r, b = CONTENT
+    gap = 48
+    w = (r - l - gap * 2) // 3
+    labels = [("aurora", "AURORA", "Shifts with the hour"),
+              ("ember", "EMBER", "Warm all day"),
+              ("violet", "VIOLET", "Cool all day")]
+    for i, (theme, title, caption) in enumerate(labels):
+        img, _ = overlay(theme)
+        x = l + i * (w + gap)
+        framed(card, fill_crop(img, w, b - t), (x, t, x + w, b), radius=30)
+        label_pill(card, (x + 24, b - 24 - 112, x + w - 24, b - 24), title, caption)
+    return card
+
+
 def card_settings():
     capture, _ = load(RAW / "settings.png")
     if capture is None:
@@ -382,8 +412,8 @@ def card_menubar():
 
 def card_private():
     card = background()
-    header(card, "PRIVATE BY DESIGN", "Everything stays on your Mac.",
-           "The spell only works on your Mac. Your data stays there too.")
+    header(card, "NO ACCOUNT  \u2022  NO TRACKING", "Private by design.",
+           "One purchase. No ads, analytics, subscriptions, or network requests.")
     img, _ = overlay("ember")
     l, t, r, b = CONTENT
     w = 1560
@@ -391,11 +421,10 @@ def card_private():
     y = t + 20
     framed(card, fill_crop(img, w, h), (l, y, l + w, y + h))
 
-    pillars = [("No account", "Nothing to sign up for. It just works."),
-               ("No tracking", "No analytics, no ads, no telemetry."),
-               ("Never online", "Spellbreak never touches the internet."),
-               ("Never listens", "Just checks if your mic is busy, to skip calls."),
-               ("No subscription", "One purchase. Yours to keep.")]
+    pillars = [("Preferences stay local", "Settings and counts stay on your Mac."),
+               ("Four colorways", "Surprise picks one of three palettes."),
+               ("Break on your terms", "Set the interval, length, and skip control."),
+               ("One purchase", "No subscription or in-app purchases.")]
     draw = ImageDraw.Draw(card)
     col_x = l + w + 110
     col_w = r - col_x
@@ -414,9 +443,10 @@ def card_private():
 
 
 def main():
-    builders = [("break-the-spell", card_hero), ("moods-and-words", card_moods),
-                ("hold-to-skip", card_skip), ("make-it-yours", card_settings),
-                ("menu-bar", card_menubar), ("private-by-design", card_private)]
+    builders = [("break-the-spell", card_hero), ("street-smart-wisdom", card_words),
+                ("hold-to-skip", card_skip), ("living-shaders", card_rhythm),
+                ("make-it-yours", card_settings), ("menu-bar", card_menubar),
+                ("no-subscriptions", card_private)]
     cards = [(slug, c) for slug, build in builders if (c := build()) is not None]
 
     OUT.mkdir(parents=True, exist_ok=True)

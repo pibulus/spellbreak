@@ -113,7 +113,7 @@ Each upload needs a new build number. `build-app.sh` stamps one from the clock
 
 ## 6. Screenshots ☐
 
-`screenshots/appstore/*-2880x1800.png` are upload-ready: four cards, in
+`screenshots/appstore/*-2880x1800.png` are upload-ready: five cards, in
 order. Every card shows the app, and none carries a price (guideline 2.3.7).
 
 **Stronger: add real captures.** The overlay images inside the cards come from
