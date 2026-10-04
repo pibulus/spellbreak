@@ -164,7 +164,10 @@ adding real captures.
 The first App Store version has no "What's New" field. For later updates:
 
 **1.2.0** (also the website release notes)
-• Choose Aurora, Ember, Violet, or Surprise.
-• Hide the message for a word free break.
-• Adjust break timing, sound, and reminders in Settings.
-• Waking your Mac no longer opens straight onto a break.
+• Breaks cover every display, landing on the one with your pointer.
+• Time away from your Mac counts as a break, and so does sleep. No more breaks the moment you sit down.
+• A break that comes due mid-sentence waits for a pause in your typing.
+• Today's break count in the menu bar.
+• Break messages notice when you've skipped a few, and won't repeat for days.
+• Choose Aurora, Ember, Violet, or Surprise. Hide the message for a word-free break.
+• Settings fits smaller screens.

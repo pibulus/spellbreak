@@ -5,8 +5,11 @@ The whole path, in order. Copy for every field lives in
 [`SIGNING_GUIDE.md`](SIGNING_GUIDE.md).
 
 **Status of the repo (Oct 2026):** the MAS build script, entitlements, icon,
-Info.plist, privacy manifest, privacy policy, listing copy, screenshots and the
-7-day trial with one-time unlock are done. What's left needs you, your Mac, or your Apple account — the ☐ items below.
+Info.plist, privacy manifest, privacy policy, listing copy, screenshots, the
+7-day trial with one-time unlock, and the smart breaks (away, typing, every
+display) are done. None of the Swift has been compiled yet, so the first build
+on your Mac is the real check. What's left needs you, your Mac, or your Apple
+account: the ☐ items below.
 
 ---
 
@@ -64,6 +67,25 @@ take the nearest.
 (say US$6.99), stepping back up to $9.99 after. Watch trial starts versus
 unlocks in App Store Connect's Sales and Trends; that ratio is your conversion.
 
+### Website ☐
+The About tab links to spellbreak.app, and the README says the DMG downloads
+from there. If the site hands out the full website build (no trial, no lock),
+anyone can skip the App Store purchase, so the App Store sale only ever
+catches people who didn't look. Pick one:
+- **Point the site at the App Store** (recommended): an "Download on the Mac App
+  Store" badge, and the DMG retired. Simplest, and it keeps every sale in one place.
+- **Keep the DMG, but sell it** (Gumroad, Paddle): needs licence-key code in the
+  website build. Not in the app today.
+
+Either way, the site needs a support/contact route and `/privacy` (publish
+[`PRIVACY.md`](PRIVACY.md)) live before you submit; App Review opens both. And
+don't put a "buy outside the App Store" link on the page the app links to:
+steering buyers off the App Store is a guideline 3.1.1 problem.
+
+The repo is public too, so anyone handy with Xcode can build Spellbreak
+unlocked. Most buyers won't bother, and plenty of indie apps sell fine that way;
+make it private if you'd rather not.
+
 ### Name and trademark ☐
 "Spellbreak" was also the name of Proletariat's battle-royale game (2019–2023,
 now under Epic Games), so the word may still be a registered trademark in the
@@ -110,7 +132,7 @@ what's missing.
 
 **Apps → + → New App**
 - Platform: **macOS**
-- Name: see [`APP_STORE.md`](APP_STORE.md#app-name-30)
+- Name: see [`APP_STORE.md`](APP_STORE.md#app-name)
 - Primary language: English (Australia) or English (U.S.)
 - Bundle ID: `com.pabloalvarado.spellbreak`
 - SKU: `spellbreak-mac` (yours only; never shown)
@@ -165,6 +187,13 @@ Settings and menu bar cards are added automatically when those files exist.
 Any `screenshots/raw/break-*.png` you capture (⌘⇧3 during a Test Break, on a
 plain dark wallpaper) replaces the re-drawn overlay in the cards.
 
+**Strongest of all: an App Preview video.** Spellbreak is motion, and a still
+can't show the aurora breathing. QuickTime → New Screen Recording during a Test
+Break, then trim to 15–30 seconds. The format is landscape 1920×1080 (crop the
+16:10 recording), .mov or .mp4, H.264, 30 fps; up to three per app. It must be
+footage of the app itself, not the re-drawn overlays. Upload it alongside the
+screenshots on the version page.
+
 ## 7. Version page ☐
 
 On the **1.2.0** version page:
@@ -182,12 +211,12 @@ builds, so a few things only show up there. Add yourself as an internal
 tester, install from TestFlight, and run through this:
 
 - [ ] First launch opens Settings; moon icon visible on light **and** dark menu bars
-- [ ] Test Break; Break Now; hold-to-skip; Unskippable; mute button on the break screen
+- [ ] Test Break; Break Now; hold-to-skip; Lock mode; mute button on the break screen
 - [ ] Start the timer: the notification permission prompt appears; the heads-up
       pill and notification arrive 15 s before a break
-- [ ] **Smart Pauses, full screen:** a full-screen video holds the break; it lands
+- [ ] **Pause while busy, full screen:** a full-screen video holds the break; it lands
       when you leave full screen
-- [ ] **Smart Pauses, calls:** during a FaceTime/Zoom/Meet call, the break holds.
+- [ ] **Pause while busy, calls:** during a FaceTime/Zoom/Meet call, the break holds.
       *This is the one to watch:* the mic check hasn't been run inside the
       sandbox. If it doesn't hold, tell me and I'll swap the approach, or drop
       "calls" from the copy and the card
@@ -240,9 +269,9 @@ get a rejection, paste it to me with the guideline number.
 
 - Updates go through App Store Connect the same way. "What's New" copy lives in
   [`APP_STORE.md`](APP_STORE.md#whats-new).
-- The website DMG (`build-dmg.sh`, Developer ID) can keep shipping alongside
-  the App Store version. It's the same code built without `-DAPP_STORE`: no
-  trial, no lock. If the website sells it, that sale stays honour-system.
+- The website DMG (`build-dmg.sh`, Developer ID) is the same code built without
+  `-DAPP_STORE`: no trial, no lock. See "Website" in step 0 before shipping it
+  alongside the App Store version.
 - **Tahoe icons:** the icon now sits on the standard grid, so macOS 26 shows it
   as-is instead of shrinking it onto a grey tile. For the full Liquid Glass
   treatment, make an Icon Composer `.icon` and compile it with `actool` on a Mac
