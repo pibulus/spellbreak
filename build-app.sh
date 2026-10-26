@@ -80,13 +80,17 @@ build_binaries=()
 if build_arch arm64 "$ARM64_SCRATCH"; then
     build_binaries+=("${ARM64_SCRATCH}/release/${APP_NAME}")
 else
-    echo "⚠ arm64 build failed"
+    echo "❌ arm64 build failed" >&2
+    exit 1
 fi
 
-if build_arch x86_64 "$X86_SCRATCH"; then
-    build_binaries+=("${X86_SCRATCH}/release/${APP_NAME}")
-else
-    echo "⚠ x86_64 build failed, falling back to arm64-only output"
+if [[ "${UNIVERSAL:-1}" == "1" ]]; then
+    if build_arch x86_64 "$X86_SCRATCH"; then
+        build_binaries+=("${X86_SCRATCH}/release/${APP_NAME}")
+    else
+        echo "❌ x86_64 build failed (refusing to silently ship an arm64-only binary; set UNIVERSAL=0 only for local debug)" >&2
+        exit 1
+    fi
 fi
 
 if [[ ${#build_binaries[@]} -eq 0 ]]; then

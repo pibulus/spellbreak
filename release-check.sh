@@ -50,13 +50,13 @@ fi
 if /usr/bin/file "${APP_BUNDLE}/Contents/MacOS/${APP_NAME}" | grep -q "arm64"; then
     pass "App binary includes arm64"
 else
-    warn "App binary does not include arm64"
+    fail "App binary does not include arm64"
 fi
 
 if /usr/bin/file "${APP_BUNDLE}/Contents/MacOS/${APP_NAME}" | grep -q "x86_64"; then
     pass "App binary includes x86_64"
 else
-    warn "App binary does not include x86_64"
+    fail "App binary does not include x86_64"
 fi
 
 if /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "${APP_BUNDLE}/Contents/Info.plist" | grep -q "com.pabloalvarado.spellbreak"; then
@@ -128,11 +128,13 @@ if [[ -f "$DMG_PATH" ]]; then
         sed 's/^/   /' /tmp/spellbreak-stapler.log
     fi
 
-    if spctl -a -vvv -t open --context context:primary-signature "$DMG_PATH" >/tmp/spellbreak-spctl-dmg.log 2>&1; then
-        pass "Gatekeeper accepts the DMG"
-    else
-        warn "Gatekeeper does not accept the DMG yet"
-        sed 's/^/   /' /tmp/spellbreak-spctl-dmg.log
+    if [[ -x "$HOME/.claude/scripts/dev-tools/dmg-doctor" ]]; then
+        echo ""
+        if "$HOME/.claude/scripts/dev-tools/dmg-doctor" "$DMG_PATH"; then
+            pass "dmg-doctor verified $DMG_PATH"
+        else
+            fail "dmg-doctor rejected $DMG_PATH"
+        fi
     fi
 fi
 
