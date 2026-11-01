@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-01T22:41:53.998Z",
+  "generated_at": "2026-11-01T23:07:56.694Z",
   "generation_mode": "deterministic",
   "brief_path": "briefs/spellbreak.yaml",
   "voice": {
-    "key": "sovereign",
-    "tone": "Straight-talking, kind, and useful.",
-    "closer": "Thanks for taking a look."
+    "key": "fresh",
+    "tone": "Plain, open, useful, and calm.",
+    "closer": "Hope it is useful."
   },
   "palette": {
     "key": "warm-paper",
