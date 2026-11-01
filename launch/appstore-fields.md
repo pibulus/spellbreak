@@ -57,32 +57,30 @@ That is true of the *app*; the website counts page views and says so on
 **Description** (4000) — first person, because that is what the About says too:
 
 ```
-I get lost in time. Coding, games, YouTube — it is always the same thing: I look
-up and it is dark and I have not eaten.
+Spellbreak is a small break timer for the Mac.
 
-I tried the usual break reminders. Banners, chimes, a little box in the corner. I
-would swipe them away without reading them. So I made the one I wanted: the whole
-screen changes for twenty seconds, then gives the screen back.
+Set the time and the tempo. When a break lands, the whole screen changes for as
+long as it lasts — sweet, mystical, and hard to look away from.
 
-That is the whole app. It has helped me eat lunch, drink tea while it is still
-hot, stand up, look out the window.
+A break can be left early with a short hold, or not at all: Lock mode takes the
+skip away, which is rather the point of it.
 
 - The break covers every display. The message lands on the screen with the
-  pointer; the others dim to match.
-- Hold 2–3 seconds to leave a break early. Lock mode takes the skip button away
-  and the break just runs.
+  pointer and the other displays dim to match.
 - Breaks from 10 seconds to 3 minutes, at intervals from 15 minutes to 3 hours.
   It starts at 20 seconds every 20 minutes.
-- It waits during calls, full-screen apps and mid-sentence typing. Time away
-  from the Mac counts as a break.
+- Holds during calls, full-screen apps and mid-sentence typing. Time away from
+  the Mac counts as a break.
 - Aurora shifts with the clock, Ember stays warm, Violet stays cool, Surprise
   rolls one each break.
 - The break message is a few words and can be switched off.
 
+Foggy eyes, a stiff back, a cat waiting to be patted, a cup of tea going cold.
+
 Free for a week, then one purchase. No subscription, no account, no ads, no
 analytics, and no network access at all — it is sandboxed with a single
 entitlement. It never records audio; it only asks whether the microphone is in
-use, which is how it knows to wait during a call.
+use, which is how it knows to hold during a call.
 
 macOS 13 or later. Apple silicon and Intel.
 ```
