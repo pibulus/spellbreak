@@ -1,3 +1,27 @@
+# Mac App Store submission guide
+
+> **PARKED 2 November 2026 — deliberate, not blocked.**
+>
+> The Apple Developer portal burned a session and won nothing. The decision:
+> Spellbreak sells direct, notarized, A$29, and the Store lane waits until
+> someone actually wants to go back in there. Nothing below is broken or
+> half-finished — it is simply not being run.
+>
+> **If it is ever un-parked, start here, because the expensive parts are done:**
+>
+> - App ID `com.pabloalvarado.spellbreak` is registered.
+> - Certificates + profile come from `scripts/asc-provision.ts` in one command.
+>   An App Store Connect API key (`Automation`, App Manager) lives in
+>   `~/.appstoreconnect/private_keys/`. The key id is in the filename; the
+>   issuer id is in the portal under Integrations.
+> - `dist/Spellbreak-v1.2.0-mas.pkg` builds and is signed by the certificate the
+>   profile names. Regenerate it if the version moves.
+> - The one thing no API can do: **create the app record** (Apps → + → New
+>   App). Apple returns 403 on `POST /v1/apps` even for an Admin key.
+> - Watch for a second session revoking certificates; it silently invalidates
+>   the profile. `deno run -A scripts/asc-provision.ts --check` says what Apple
+>   currently holds.
+
 # Submitting Spellbreak to the Mac App Store
 
 The whole path, in order. Copy for every field lives in
