@@ -54,7 +54,7 @@ struct PreferencesView: View {
     @AppStorage("fancyMenu") private var fancyMenu: Bool = true
     @AppStorage("visualTheme") private var visualTheme: String = "aurora"
     @AppStorage("showBreakMessage") private var showBreakMessage: Bool = true
-    @AppStorage("musicEnabled") private var musicEnabled: Bool = true
+    @AppStorage("musicEnabled") private var musicEnabled: Bool = false
     @AppStorage("soundEffectsEnabled") private var soundEffectsEnabled: Bool = true
     @AppStorage("soundVolume") private var soundVolume: Double = 0.5
     
@@ -359,9 +359,9 @@ struct PreferencesView: View {
             return "Scheduled breaks are free for 7 days, \(then). Test Break always works."
         case .trial:
             let days = store.trialDaysLeft ?? 1
-            return "Free trial: \(days) \(days == 1 ? "day" : "days") left. After that, scheduled breaks stop until you unlock."
+            return "Free trial: \(days) \(days == 1 ? "day" : "days") left. Scheduled breaks pause afterward until unlocked."
         case .trialEnded:
-            return "Your free week is up. Scheduled breaks are paused until you unlock; Test Break still works."
+            return "The free week has ended. Scheduled breaks pause until unlocked; Test Break still works."
         case .checking, .unlocked:
             return ""
         }
@@ -601,91 +601,72 @@ struct PreferencesView: View {
             .frostedCard()
             .padding(.horizontal, UI.sidePadding)
 
-            ToggleCard(
-                title: "Messages",
-                subtitle: "A line of words with each break",
-                isOn: showBreakMessage,
-                isHovered: hoveredElement == "message-toggle",
-                onChange: { showBreakMessage = $0 },
-                soundManager: soundManager
-            )
-            .onHover { hovering in
-                hoveredElement = hovering ? "message-toggle" : nil
-            }
-            .padding(.horizontal, UI.sidePadding)
+            // One quiet list instead of four separate cards. Ambient is opt-in on
+            // fresh installs; saved choices still win, including during a break.
+            VStack(spacing: 0) {
+                ToggleRow(
+                    title: "Messages",
+                    subtitle: "A line of words with each break",
+                    isOn: showBreakMessage,
+                    soundManager: soundManager
+                ) { showBreakMessage = $0 }
 
-            HStack(spacing: 16) {
-                ToggleCard(
+                rowDivider
+
+                ToggleRow(
                     title: "Ambient",
-                    subtitle: "A sound bed while the break plays",
+                    subtitle: "Optional sound bed; mixes with other audio",
                     isOn: musicEnabled,
-                    isHovered: hoveredElement == "music-toggle",
-                    onChange: { musicEnabled = $0 },
                     soundManager: soundManager
-                )
-                .onHover { hovering in
-                    hoveredElement = hovering ? "music-toggle" : nil
-                }
+                ) { musicEnabled = $0 }
 
-                ToggleCard(
+                rowDivider
+
+                ToggleRow(
                     title: "SFX",
-                    subtitle: "Clicks and chimes on the controls",
+                    subtitle: "Short chimes and control clicks",
                     isOn: soundEffectsEnabled,
-                    isHovered: hoveredElement == "sfx-toggle",
-                    onChange: { soundEffectsEnabled = $0 },
                     soundManager: soundManager
-                )
-                .onHover { hovering in
-                    hoveredElement = hovering ? "sfx-toggle" : nil
-                }
-            }
-            .padding(.horizontal, UI.sidePadding)
+                ) { soundEffectsEnabled = $0 }
 
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Text("Sound Volume")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.spellCream.opacity(0.9))
-                    Spacer()
-                    Text("\(Int(soundVolume * 100))%")
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [
-                                    Color.spellPink,
-                                    Color.spellPeach
-                                ],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                }
+                rowDivider
 
-                GradientSlider(
-                    value: $soundVolume,
-                    options: [0, 0.25, 0.5, 0.75, 1.0],
-                    accessibilityLabel: "Sound volume",
-                    accessibilityValueFormatter: { "\(Int($0 * 100)) percent" },
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text("Sound Volume")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(.spellCream.opacity(0.9))
+                        Spacer()
+                        Text("\(Int(SoundManager.outputVolume(preference: soundVolume, scale: 1) * 100))%")
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                            .foregroundColor(.spellPeach)
+                    }
+
+                    GradientSlider(
+                        value: $soundVolume,
+                        options: [0, 0.25, 0.5, 0.75, 1.0],
+                        accessibilityLabel: "Sound volume",
+                        accessibilityValueFormatter: { "\(Int(SoundManager.outputVolume(preference: $0, scale: 1) * 100)) percent" },
+                        soundManager: soundManager
+                    )
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+
+                rowDivider
+
+                ToggleRow(
+                    title: "Fancy Menu",
+                    subtitle: "Mystical menu bar or clean text",
+                    isOn: fancyMenu,
                     soundManager: soundManager
-                )
+                ) { fancyMenu = $0 }
             }
-            .padding(UI.cardPadding)
-            .frostedCard()
+            .padding(.vertical, 6)
+            .padding(.horizontal, UI.cardPadding)
+            .frostedCard(cornerRadius: 20)
             .padding(.horizontal, UI.sidePadding)
-
-            // Menu style toggle — menu-bar cosmetics, least-reached-for, so it sits last
-            ToggleCard(
-                title: "Fancy Menu",
-                subtitle: "Mystical vibes vs clean text",
-                isOn: fancyMenu,
-                isHovered: hoveredElement == "menu-toggle",
-                onChange: { fancyMenu = $0 },
-                soundManager: soundManager
-            )
-            .onHover { hovering in
-                hoveredElement = hovering ? "menu-toggle" : nil
-            }
-            .padding(.horizontal, UI.sidePadding)
+            .onChange(of: soundVolume) { _ in soundManager.updateAmbientVolume() }
 
             Spacer()  // Push content to top within fixed height
         }
@@ -721,7 +702,7 @@ struct PreferencesView: View {
                     Spacer()
                 }
 
-                Text("A short break timer that lives in your menu bar.")
+                Text("A short break timer in the menu bar.")
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(.spellCream.opacity(0.82))
                     .fixedSize(horizontal: false, vertical: true)
@@ -872,103 +853,6 @@ struct TabButton: View {
         .buttonStyle(.plain)
         .accessibilityLabel("\(title) tab")
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
-    }
-}
-
-// MARK: - Toggle Card
-struct ToggleCard: View {
-    let title: String
-    let subtitle: String
-    let isOn: Bool
-    let isHovered: Bool
-    let onChange: (Bool) -> Void
-    let soundManager: SoundManager
-
-    private var toggleAction: () -> Void {
-        {
-            let newValue = !isOn
-            onChange(newValue)
-            if newValue {
-                soundManager.playToggleOn()
-            } else {
-                soundManager.playToggleOff()
-            }
-        }
-    }
-
-    private var titleColors: [Color] {
-        isOn
-            ? [Color.spellCoral, Color.spellPink]
-            : [Color.spellCream, Color.spellCream]
-    }
-
-    private var trackColors: [Color] {
-        isOn
-            ? [Color.spellPink, Color.spellCoral]
-            : [Color.white.opacity(0.15), Color.white.opacity(0.1)]
-    }
-
-    private var accessibilityState: String {
-        isOn ? "On, \(subtitle)" : "Off, \(subtitle)"
-    }
-    
-    var body: some View {
-        HStack {
-            label
-            Spacer()
-            switchControl
-        }
-        .padding(12)
-        .contentShape(RoundedRectangle(cornerRadius: 20))
-        .onTapGesture(perform: toggleAction)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(title)
-        .accessibilityValue(accessibilityState)
-        .accessibilityAddTraits(.isButton)
-        .accessibilityAction(named: Text(isOn ? "Turn Off" : "Turn On"), toggleAction)
-        .frame(maxWidth: .infinity)
-        .frostedCard(cornerRadius: 20, fillOpacity: isHovered ? 0.10 : 0.06)
-        .scaleEffect(isHovered ? 1.01 : 1.0)
-        .animation(.easeOut(duration: 0.15), value: isHovered)
-    }
-
-    private var label: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: titleColors,
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-            Text(subtitle)
-                .font(.system(size: 14))
-                .foregroundColor(.spellCream.opacity(0.5))
-        }
-    }
-
-    private var switchControl: some View {
-        ZStack {
-            Capsule()
-                .fill(
-                    LinearGradient(
-                        colors: trackColors,
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-                .frame(width: 64, height: 36)
-
-            Circle()
-                .fill(Color.spellCream)
-                .frame(width: 28, height: 28)
-                .offset(x: isOn ? 15 : -15)
-                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isOn)
-        }
-        .scaleEffect(isHovered ? 1.08 : 1.0)
-        .animation(.easeOut(duration: 0.15), value: isHovered)
     }
 }
 

@@ -75,9 +75,9 @@ done
 echo "📦 Building unsigned app via build-app.sh (with the App Store unlock)..."
 SPELLBREAK_APP_STORE=1 ./build-app.sh
 
-# The Mac App Store lists Spellbreak for Intel and Apple silicon; build-app.sh
-# quietly falls back to arm64-only when the x86_64 build fails, which is fine for
-# local testing but not for this.
+# The Mac App Store lists Spellbreak for Intel and Apple silicon. Keep an
+# explicit architecture gate here even though build-app.sh already rejects
+# x86_64 build failures by default.
 ARCHS=$(lipo -archs "$APP_BINARY")
 if [[ "$ARCHS" != *arm64* || "$ARCHS" != *x86_64* ]]; then
     echo "❌ App Store build must be universal (arm64 + x86_64); got: ${ARCHS}"

@@ -18,7 +18,8 @@ let package = Package(
             name: "Spellbreak",
             path: "Sources/Spellbreak",
             exclude: [
-                "Resources/Info.plist"
+                "Resources/Info.plist",
+                "Resources/dmg-background.tiff"
             ],
             resources: [
                 .process("Resources/Sounds"),

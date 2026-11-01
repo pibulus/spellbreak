@@ -36,7 +36,7 @@ struct OverlayWindow: View {
     @AppStorage("lockMode") private var lockMode: Bool = false
     @State private var isHoveringMute = false
     @AppStorage("breakDurationSec") private var breakDuration: Double = 20
-    @AppStorage("musicEnabled") private var musicEnabled: Bool = true
+    @AppStorage("musicEnabled") private var musicEnabled: Bool = false
     @AppStorage("visualTheme") private var visualTheme: String = "aurora"
     @AppStorage("showBreakMessage") private var showBreakMessage: Bool = true
     /// The palette THIS break is wearing. Rolled once per break by AppState and
@@ -250,7 +250,8 @@ struct OverlayWindow: View {
                     .opacity(messageOpacity * 0.9)
                     .padding(.leading, 46)
                     .padding(.bottom, 66)
-                    .accessibilityLabel(musicEnabled ? "Mute break sound" : "Unmute break sound")
+                    .accessibilityLabel(musicEnabled ? "Mute ambient" : "Play ambient")
+                    .help(musicEnabled ? "Mute ambient" : "Play ambient")
 
                     Spacer()
                 }

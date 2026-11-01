@@ -30,6 +30,15 @@ jobs:
           swift --version
           xcrun --sdk macosx --show-sdk-version
 
+      - name: Sound volume safety check
+        run: |
+          swiftc Sources/Spellbreak/Utilities.swift \
+            Sources/Spellbreak/SoundManager.swift \
+            Sources/Spellbreak/Errors/AppErrors.swift \
+            Tests/SoundManagerCheck.swift \
+            -o "$RUNNER_TEMP/spellbreak-sound-check"
+          "$RUNNER_TEMP/spellbreak-sound-check"
+
       - name: Website build (universal bundle, icon, ad-hoc signature)
         run: ./build-app.sh
 

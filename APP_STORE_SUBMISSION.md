@@ -4,12 +4,20 @@ The whole path, in order. Copy for every field lives in
 [`APP_STORE.md`](APP_STORE.md); signing details in
 [`SIGNING_GUIDE.md`](SIGNING_GUIDE.md).
 
-**Status of the repo (Oct 2026):** the MAS build script, entitlements, icon,
-Info.plist, privacy manifest, privacy policy, listing copy, screenshots, the
-7-day trial with one-time unlock, and the smart breaks (away, typing, every
-display) are done. None of the Swift has been compiled yet, so the first build
-on your Mac is the real check. What's left needs you, your Mac, or your Apple
-account: the ☐ items below.
+**Local preflight (1 Nov 2026):** the full Xcode 26.6 toolchain is installed,
+and the Developer ID signing identity and `AC_PASSWORD` notary profile work.
+GitHub Actions built both the website and `-DAPP_STORE` variants successfully
+at `417ff80` (verify with `gh run list --repo pibulus/spellbreak --workflow build.yml`).
+The current local v1.2.0 DMG was freshly rebuilt, Developer ID signed, notarized,
+and stapled alongside its inner app; `./release-check.sh` reports **19 pass,
+0 warn, 0 fail**. It has not been uploaded as a release.
+The Mac App Store profile and the Apple Distribution / Mac Installer Distribution
+identities are **not installed**; `./build-mas.sh` stops at its preflight before
+building. `Desktop/SpellbreakCerts` contains a CSR and private key, not those
+distribution identities. Real-device audio and sandbox/TestFlight checks remain.
+Verify state again with `./release-check.sh`, `./build-mas.sh`, and
+`security find-identity -v -p codesigning` before submitting; the ☐ items
+below remain open until checked against App Store Connect.
 
 ---
 

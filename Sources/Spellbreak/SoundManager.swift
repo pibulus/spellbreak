@@ -75,8 +75,7 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
         do {
             audioPlayer = try AVAudioPlayer(contentsOf: url)
             audioPlayer?.numberOfLoops = -1  // Loop indefinitely
-            let volume = Float(soundVolume * 0.6)
-            audioPlayer?.volume = volume
+            audioPlayer?.volume = ambientTargetVolume
             audioPlayer?.prepareToPlay()
             lastError = nil
             logger.info("Successfully loaded audio from: \(url.lastPathComponent)")
@@ -92,30 +91,45 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
             logger.warning("Audio player not available")
             return
         }
+        guard ambientTargetVolume > 0 else { return }
 
         // Cancel any existing fade timers
         fadeInTimer?.invalidate()
         fadeOutTimer?.invalidate()
+        fadeInTimer = nil
+        fadeOutTimer = nil
 
-        // Fade in
-        player.volume = 0
-        let success = player.play()
-        if !success {
-            logger.error("Failed to start audio playback")
-            return
+        // A second tap during fade-out resumes from its current level, rather
+        // than restarting the loop from silence. Leave output routing to macOS
+        // rather than pinning a device (especially when headphones change).
+        if !player.isPlaying {
+            player.volume = 0
+            guard player.play() else {
+                logger.error("Failed to start audio playback")
+                isPlaying = false
+                return
+            }
         }
 
         isPlaying = true
 
-        // Gradually increase volume over 2 seconds
-        let targetVolume = Float(soundVolume * 0.6)
+        // Gradually increase volume over about 2 seconds. Read the target each
+        // tick so changing the volume cannot leave a stale fade running.
         fadeInTimer = Timer.scheduledCommonTimer(withTimeInterval: 0.05, repeats: true) { [weak self] timer in
             guard let self = self, let player = self.audioPlayer else {
                 timer.invalidate()
                 return
             }
+            let targetVolume = self.ambientTargetVolume
+            if targetVolume == 0 {
+                player.stop()
+                self.isPlaying = false
+                timer.invalidate()
+                self.fadeInTimer = nil
+                return
+            }
             if player.volume < targetVolume {
-                player.volume += Float(targetVolume / 40) // 40 steps = 2 seconds
+                player.volume = min(player.volume + targetVolume / 40, targetVolume)
             } else {
                 player.volume = targetVolume
                 timer.invalidate()
@@ -130,6 +144,8 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
         // Cancel any existing fade timers
         fadeInTimer?.invalidate()
         fadeOutTimer?.invalidate()
+        fadeInTimer = nil
+        fadeOutTimer = nil
 
         // Fade out over 1 second
         let fadeStep = max(player.volume / 20, 0.001)
@@ -142,12 +158,39 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
                 player.volume -= fadeStep
             } else {
                 player.stop()
-                player.volume = Float(self.soundVolume * 0.6)  // Reset for next time
+                player.volume = self.ambientTargetVolume  // Reset for next time
                 self.isPlaying = false
                 timer.invalidate()
                 self.fadeOutTimer = nil
             }
         }
+    }
+
+    /// Apply a changed preference to an already-playing loop. A running fade
+    /// owns the volume until it finishes; the next tick reads the new target.
+    func updateAmbientVolume() {
+        guard let player = audioPlayer, player.isPlaying else { return }
+        if ambientTargetVolume == 0 {
+            fadeInTimer?.invalidate()
+            fadeOutTimer?.invalidate()
+            fadeInTimer = nil
+            fadeOutTimer = nil
+            player.stop()
+            isPlaying = false
+        } else if fadeInTimer == nil && fadeOutTimer == nil {
+            player.volume = ambientTargetVolume
+        }
+    }
+
+    private var ambientTargetVolume: Float {
+        Self.outputVolume(preference: soundVolume, scale: 0.6)
+    }
+
+    /// A corrupt or out-of-range stored preference must never produce a blast
+    /// (or NaN) on a freshly connected output, including headphones.
+    static func outputVolume(preference: Double, scale: Float) -> Float {
+        guard preference.isFinite, scale.isFinite else { return 0 }
+        return Float(min(max(preference, 0), 1)) * min(max(scale, 0), 1)
     }
     
     // MARK: - Sound Effects
@@ -156,8 +199,7 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
     private func playCustomSound(named name: String, volume: Float = 0.5) {
         guard soundEffectsEnabled else { return }
 
-        let adjustedVolume = clampedVolume(volume * Float(soundVolume))
-        guard adjustedVolume > 0 else { return }
+        guard Self.outputVolume(preference: soundVolume, scale: volume) > 0 else { return }
 
         guard let soundURL = soundURL(named: name) else {
             logger.warning("Sound effect not found: \(name).mp3")
@@ -166,6 +208,10 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
 
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
+            // Preference may have changed while playback was queued.
+            guard self.soundEffectsEnabled else { return }
+            let adjustedVolume = Self.outputVolume(preference: self.soundVolume, scale: volume)
+            guard adjustedVolume > 0 else { return }
             guard let sound = NSSound(contentsOf: soundURL, byReference: false) else {
                 self.logger.warning("Failed to load sound effect: \(name).mp3")
                 return
@@ -185,10 +231,6 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
     private func soundURL(named name: String) -> URL? {
         Bundle.main.url(forResource: name, withExtension: "mp3", subdirectory: "Sounds")
             ?? Bundle.main.url(forResource: name, withExtension: "mp3")
-    }
-
-    private func clampedVolume(_ volume: Float) -> Float {
-        min(max(volume, 0), 1)
     }
 
     func sound(_ sound: NSSound, didFinishPlaying finished: Bool) {

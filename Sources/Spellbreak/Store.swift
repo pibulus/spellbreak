@@ -115,7 +115,7 @@ final class Store: ObservableObject {
         } catch StoreKitError.userCancelled {
             // They closed the sign-in sheet; nothing to say
         } catch {
-            problem = "Couldn't reach the App Store to restore. Try again in a moment."
+            problem = "App Store connection unavailable. Restore can resume later."
         }
         await refresh()
         announceUnlockIfNew(wasAllowed: wasAllowed)
@@ -142,7 +142,7 @@ final class Store: ObservableObject {
                 break
             }
         } catch {
-            problem = "The purchase didn't go through. Try again in a moment."
+            problem = "Purchase unavailable for now."
         }
     }
 
@@ -190,11 +190,11 @@ final class Store: ObservableObject {
             await MainActor.run {
                 self.trialProduct = products.first { $0.id == Store.trialProductID }
                 self.unlockProduct = products.first { $0.id == Store.unlockProductID }
-                self.problem = products.isEmpty ? "The App Store didn't answer. Try again in a moment." : nil
+                self.problem = products.isEmpty ? "The App Store didn't answer. Purchases are unavailable for now." : nil
             }
         } catch {
             await MainActor.run {
-                self.problem = "Couldn't reach the App Store. Check your connection and try again."
+                self.problem = "App Store connection unavailable. Purchases can resume later."
             }
         }
     }
