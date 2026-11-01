@@ -57,32 +57,31 @@ That is true of the *app*; the website counts page views and says so on
 **Description** (4000) — first person, because that is what the About says too:
 
 ```
-Spellbreak is a small break timer for the Mac.
+I lose track of time. Coding, gaming, watching videos — then it is dark, I am
+hungry, and I have not eaten.
 
-Set the time and the tempo. When a break lands, the whole screen changes for as
-long as it lasts — sweet, mystical, and hard to look away from.
+I needed something sweet but stern to break me from my spell, so I made
+Spellbreak. A small spell that gently takes over the screen and reminds me to pat
+the cat, drink some tea, look out the window.
 
-A break can be left early with a short hold, or not at all: Lock mode takes the
-skip away, which is rather the point of it.
+It has been working. I eat lunch now, and the cats seem happier.
 
-- The break covers every display. The message lands on the screen with the
-  pointer and the other displays dim to match.
-- Breaks from 10 seconds to 3 minutes, at intervals from 15 minutes to 3 hours.
-  It starts at 20 seconds every 20 minutes.
-- Holds during calls, full-screen apps and mid-sentence typing. Time away from
-  the Mac counts as a break.
-- Aurora shifts with the clock, Ember stays warm, Violet stays cool, Surprise
-  rolls one each break.
-- The break message is a few words and can be switched off.
-
-Foggy eyes, a stiff back, a cat waiting to be patted, a cup of tea going cold.
+- Skippable or unskippable, whichever way the day is going
+- Length and gap set by hand, from 10 seconds to 3 minutes, every 15 minutes to
+  3 hours
+- Luscious flowing waves of colour, across every display, Aurora shifting with
+  the clock
+- Sentences pulled out of entropy, so they rarely repeat
+- Its own soundtrack — a piano loop I recorded, with weather behind it
+- Holds during calls, full-screen apps and mid-sentence typing, because a break
+  in the middle of a sentence helps nobody
 
 Free for a week, then one purchase. No subscription, no account, no ads, no
 analytics, and no network access at all — it is sandboxed with a single
 entitlement. It never records audio; it only asks whether the microphone is in
 use, which is how it knows to hold during a call.
 
-macOS 13 or later. Apple silicon and Intel.
+macOS 13 or later. Apple silicon and Intel. Made with love in Melbourne.
 ```
 
 **Keywords** (100 chars, comma separated, no spaces):
