@@ -65,6 +65,11 @@ The free trial and the unlock are App Store in-app purchases. Apple handles
 them. Spellbreak only learns whether you own them, never your payment details
 or your Apple Account.
 
+Buying from [spellbreak.app](https://spellbreak.app) is different: Square takes
+the card on Square's own checkout page, and what arrives is the notarized app
+itself. There is no licence check inside it, it never contacts the site, and
+nothing about the purchase is stored on the Mac.
+
 ## Third-Party Services
 
 Spellbreak uses no third-party services. No data is sent anywhere, ever.

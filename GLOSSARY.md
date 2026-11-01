@@ -2,13 +2,19 @@
 
 Quick reference for Spellbreak's break reminder architecture.
 
+Source of truth for numbers, behaviours and the repo map is
+[`AGENTS.md`](AGENTS.md). This file is the fast lookup by symbol.
+
 ## Views (SwiftUI)
 
 **OverlayWindow** - Full-screen break overlay with animations
 `Sources/Spellbreak/OverlayWindow.swift` - Main break UI
 
-**PreferencesView** - Settings with Time/Vibes tabs
-`Sources/Spellbreak/PreferencesView.swift` - Break interval, duration, theme config
+**BreakCountdownWindow** - The floating heads-up pill
+`Sources/Spellbreak/BreakCountdownWindow.swift` - Counts down the last seconds before a break lands
+
+**PreferencesView** - Settings, three tabs: Time / Vibes / About
+`Sources/Spellbreak/PreferencesView.swift` - Break interval, duration, theme, behaviour rows
 
 **MenuViewSimple** - Menu bar popover
 `Sources/Spellbreak/MenuViewSimple.swift` - Timer status, stats, quick actions
@@ -40,8 +46,8 @@ Quick reference for Spellbreak's break reminder architecture.
 
 ## Services & Utilities
 
-**SpellTextGenerator** - NY tarot reader message system
-`Sources/Spellbreak/SpellTextGenerator.swift` - Break messages (5-6 word max)
+**SpellTextGenerator** - Observational message system
+`Sources/Spellbreak/SpellTextGenerator.swift` - Break messages (2-7 words, most 2-4; no hard cap in code)
 
 **Store** - App Store trial + one-time unlock
 `Sources/Spellbreak/Store.swift` - StoreKit 2; a free "7-Day Trial" non-consumable starts the clock, "Unlock" ends it. Gates scheduled breaks only. Compiled in for App Store builds (`-DAPP_STORE`); website builds are always unlocked
@@ -64,7 +70,7 @@ Quick reference for Spellbreak's break reminder architecture.
 
 **Message System** - Observational, never instructional
 - Grammar: Body parts as witnesses, patterns as entities
-- Format: 5-6 word maximum per message
+- Format: 2-7 words, most 2-4. There is no enforced cap
 - Distribution: 30% body, 30% ambient, 20% mystical spark, 20% full observation
 - Context: hour-of-day sparks; full/new moon lines; *noticing* lines when the
   session warrants it (2+ skips, 2h+ since a completed break, 4+ breaks with no
@@ -75,10 +81,19 @@ Quick reference for Spellbreak's break reminder architecture.
 - Optional: `showBreakMessage` toggle hides the line entirely
 
 **Hold-to-Skip Mechanism**
-- Duration scales with break length
-- Clamped between 2-15 seconds
+- Duration scales with break length (`actualBreakDuration / 60`)
+- Clamped between 2-15 seconds, so 2-3 seconds in practice at the 180s max
 - Visual ring progress indicator
 - Shows percentage while holding
+
+**Lock mode** - `@AppStorage("lockMode")`, off by default
+- Hides the hold-to-skip ring entirely; the reveal is refused too, so the break
+  runs its clock. Escape only pulses the screen
+- The one setting where a break genuinely cannot be skipped
+- Does not silence the break: the sound control still works while locked
+
+**Utilities** - Small shared pieces
+`Sources/Spellbreak/Utilities.swift` - Color/Timer/TimeInterval extensions, `ScreenBusy`
 
 **Time-Based Palettes**
 - Dawn (5-10am): Rose gold, dusty rose

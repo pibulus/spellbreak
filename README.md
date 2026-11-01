@@ -12,6 +12,8 @@ skipping conscious, never punitive.
   tuned to the hour and moon, and they notice when you skip a few. They hint
   instead of ordering, and can be switched off entirely
 - **Hold-to-skip** — a ring you hold for a beat; duration scales with break length
+- **Lock mode** — the ring goes away and the break cannot be skipped, for the
+  days where a way out is the whole problem
 - **Heads-up countdown pill** — a gentle warning before the spell lands
 - **Smart pauses** — waits out calls, full-screen games, films, presentations,
   and the end of your sentence; time away from the Mac counts as a break
@@ -27,8 +29,11 @@ skipping conscious, never punitive.
 
 ## Install
 
-Get it from the Mac App Store (7-day trial, then a one-time unlock), or download
-from [spellbreak.app](https://spellbreak.app), move it to Applications, and launch.
+Download from [spellbreak.app](https://spellbreak.app), move it to Applications,
+and launch. A$29 once, unlocked — no account, no trial timer, no subscription.
+
+The Mac App Store build (free download, 7-day trial, one-time unlock) is built
+and ready, but not submitted yet; it needs Apple distribution certificates.
 
 ## Build
 
@@ -47,8 +52,9 @@ Sources/Spellbreak/
 ├── OverlayWindow.swift      # full-screen break overlay
 ├── AuroraBackground.swift   # animated waves + AuroraPalette
 ├── AmbientParticles.swift   # floating orbs
+├── BreakCountdownWindow.swift # heads-up pill before a break
 ├── SpellTextGenerator.swift # observational message engine
-├── PreferencesView.swift    # Time / Vibes settings
+├── PreferencesView.swift    # Time / Vibes / About settings
 ├── MenuViewSimple.swift     # menu bar popover
 ├── StatusBarController.swift
 ├── SoundManager.swift
@@ -58,6 +64,7 @@ Sources/Spellbreak/
 
 ## Other docs
 
+- [`AGENTS.md`](AGENTS.md) — project guide: status, repo map, where the truth lives
 - [`APP_STORE.md`](APP_STORE.md) — store listing copy
 - [`APP_STORE_SUBMISSION.md`](APP_STORE_SUBMISSION.md) — Mac App Store submission, step by step
 - [`SIGNING_GUIDE.md`](SIGNING_GUIDE.md) — signing, notarization, distribution
