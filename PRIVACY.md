@@ -74,6 +74,10 @@ nothing about the purchase is stored on the Mac.
 
 Spellbreak uses no third-party services. No data is sent anywhere, ever.
 
+The website is a separate thing, and worth saying plainly: spellbreak.app counts
+page views on hardware of ours, without cookies and without a profile of who is
+reading. The app itself sends nothing.
+
 ## Learn More
 
 Find out more about Spellbreak at [spellbreak.app](https://spellbreak.app)
