@@ -2,6 +2,26 @@
 
 set -euo pipefail
 
+# --check-only runs the preflight and stops. It exists because the preflight
+# is the whole answer to "what is missing for the App Store", and nobody should
+# need a two-architecture release build to find that out.
+CHECK_ONLY=0
+for arg in "$@"; do
+    case "$arg" in
+        --check-only) CHECK_ONLY=1 ;;
+        -h|--help)
+            echo "Usage: ./build-mas.sh [--check-only]"
+            echo "  --check-only  run the preflight only, then exit"
+            exit 0
+            ;;
+        *)
+            echo "Unknown argument: $arg" >&2
+            echo "Usage: ./build-mas.sh [--check-only]" >&2
+            exit 2
+            ;;
+    esac
+done
+
 APP_NAME="Spellbreak"
 BUILD_ROOT="build"
 APP_BUNDLE="${BUILD_ROOT}/${APP_NAME}.app"
@@ -69,6 +89,12 @@ for identity in "$APP_SIGN_IDENTITY" "$INSTALLER_SIGN_IDENTITY"; do
         exit 1
     fi
 done
+
+if [[ "$CHECK_ONLY" == "1" ]]; then
+    echo "✅ Preflight passed — certificates, profile and Xcode are all in place."
+    echo "   Run ./build-mas.sh without --check-only to build dist/${APP_NAME}-v${VERSION}-mas.pkg"
+    exit 0
+fi
 
 # --- Build ---
 

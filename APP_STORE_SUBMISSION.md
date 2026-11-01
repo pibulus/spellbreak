@@ -25,15 +25,24 @@ below remain open until checked against App Store Connect.
 
 ### Pricing
 
-> **What sells today (2 Nov 2026): the direct DMG at A$29, paid once, unlocked.**
-> That's the live offer on spellbreak.app, and the build it hands out is compiled
-> without `-DAPP_STORE`, so there is no trial and no lock in it. The App Store
-> model described below is the plan for the MAS lane and takes effect only when
-> that lane ships its own build. Until then the site, the DMG, `APP_STORE.md` and
-> the project ledger should all read "A$29 once", and nothing on the site should
-> quote US$9.99.
+> **DECIDED 2 Nov 2026 — two lanes, one price story each.**
+>
+> | Lane | Offer | Why |
+> | --- | --- | --- |
+> | spellbreak.app (live) | **A$29 once, unlocked** — no trial, no store, notarized by us | Highest margin per sale (~A$28 after Square), and it is already working. The buyer gets the app and nothing else to do |
+> | Mac App Store | **Free download, 7-day trial, then US$9.99 · A$14.99 unlock** | Discovery. Nobody installs a paid unknown break reminder; a free week with a real break does the selling, and ratings are the only free traffic the Store gives a small app |
+>
+> The direct build is compiled without `-DAPP_STORE`, so it has no trial and no
+> lock in it at all. Paying A$29 direct buys the unlocked app and skips the
+> trial; the Store version is cheaper but starts on a clock. That is a real
+> difference, not a markup, and it is the line to use if anyone asks.
+>
+> **A$14.99, not A$12.99.** US$9.99 is about A$15.30 at current rates; A$14.99 is
+> near parity after GST rather than an 18% discount. Apple's cut is 15% under the
+> Small Business Program, so a Store sale nets about A$11 against A$28 direct —
+> which is exactly why the direct lane stays where it is.
 
-**App Store model (deferred): free download, 7-day trial, one-time unlock: US$9.99 · A$12.99.**
+**App Store model: free download, 7-day trial, one-time unlock: US$9.99 · A$14.99.**
 
 Apple has no trials for paid-upfront apps, but guideline 3.1.1 explicitly allows
 this shape for one-time purchases: a free in-app purchase named "7-Day Trial"
@@ -50,7 +59,7 @@ work. The trial and the unlock gate only *scheduled* breaks.
 | Restier | 14-day trial, then a licence | €7.99/yr or €19.99 lifetime |
 | Stretchly · BreakTimer · Workrave | Free, open source | $0 |
 | EyeBreak · StandLock | Free | $0 |
-| **Spellbreak** | **Free download, 7-day trial, one-time unlock** | **US$9.99 · A$12.99** |
+| **Spellbreak** | **Free download, 7-day trial, one-time unlock** | **US$9.99 · A$14.99** |
 
 From search results, Oct 2026. The App Store and these sites were blocked from
 where this was researched, so check a competitor's store page before quoting it.
@@ -63,21 +72,21 @@ selling, and the break is the best thing Spellbreak has.
 and well under LookAway's lifetime price. Raise it to $12.99–14.99 once reviews
 land. Raising after launch is easy; dropping later reads as a markdown.
 
-**A$12.99 is a home-turf discount, not parity.** Australian prices include GST.
-Ex-GST, A$12.99 is about US$8.20 at Oct 2026 rates (~0.695), ~18% under the US
-price. Parity would be about A$15.99. Fine if that's the intent.
+**A$14.99 is parity, not a discount.** Australian prices include GST. Ex-GST,
+A$14.99 is about A$13.63, which is ~US$9.47 — within rounding of the US price.
+Apple keeps adjusting the other storefronts; only Australia is set by hand.
 
 **What you keep**, on the Small Business Program (15%):
 
 | Sale | Less tax | Your cut |
 | --- | --- | --- |
 | US$9.99 | US sales tax is added on top | ~US$8.49 |
-| A$12.99 | A$11.81 after GST | ~A$10.04 (~US$6.98) |
+| A$14.99 | A$13.63 after GST | ~A$11.59 (~US$7.57) |
 
 **Setting two prices.** The app itself is Free. On the **Unlock** IAP's price
 schedule, set base country United States at US$9.99, then adjust Australia by
-hand to A$12.99. Apple keeps adjusting the other storefronts for currency and
-tax, but not the ones you've set yourself. If A$12.99 isn't on the AUD list,
+hand to A$14.99. Apple keeps adjusting the other storefronts for currency and
+tax, but not the ones you've set yourself. If A$14.99 isn't on the AUD list,
 take the nearest.
 
 **Seeding reviews (optional).** Schedule a launch-week price on the unlock
@@ -130,20 +139,98 @@ In App Store Connect → **Business** (paid apps can't go live until this is gre
    **are shown publicly on EU product pages** — use details you're comfortable
    publishing.
 
-## 2. Identifiers, certificates, profile — developer.apple.com ☐
+## 2. Identifiers, certificates, profile ☐
 
-1. **Identifiers → App IDs → +** → macOS, explicit Bundle ID
-   `com.pabloalvarado.spellbreak`, no capabilities.
-2. **Certificates** (Keychain needs both, with private keys):
-   - *Apple Distribution*
-   - *Mac Installer Distribution* — shows in Keychain as
-     `3rd Party Mac Developer Installer: Pablo Alvarado (V433H655PN)`
-3. **Profiles → +** → *Mac App Store Connect* → the App ID above → the Apple
-   Distribution certificate. Download it and save as
-   `Spellbreak_MAS.provisionprofile` in the repo root. It's gitignored.
+Three things are missing and nothing else is: an **App ID**, two **signing
+certificates**, and a **provisioning profile**. The certificates come from Xcode
+in about a minute each — no CSR download, no portal dance. Only the profile
+needs the website.
 
-`./build-mas.sh` checks all of this before it builds, and tells you exactly
-what's missing.
+Admin or Account Holder on the team is required for the profile step.
+
+### 2a. Sign Xcode in (once)
+
+Xcode → **Settings** (⌘,) → **Accounts** → **+** → *Apple ID* → sign in →
+select the team `Pablo Alvarado (V433H655PN)`. Wait for the list to populate.
+
+### 2b. Create both certificates, in Xcode
+
+Still in **Accounts** → select the team → **Manage Certificates…** → **+**:
+
+- **Apple Distribution** — for the app
+- **Mac Installer Distribution** — for the installer package
+
+Each appears in the list within a few seconds and lands in the login keychain
+with its private key already attached. If **Mac Installer Distribution** is not
+in the `+` menu on this Xcode, create it on the website instead:
+Certificates → + → *Mac Installer Distribution* → upload
+`~/Desktop/SpellbreakCerts/Spellbreak.certSigningRequest` (it still matches the
+MAS private key on disk) → download → double-click to import.
+
+Check it took:
+
+```bash
+security find-identity -v -p codesigning | grep -E 'Apple Distribution|Developer ID'
+security find-identity -v | grep 'Installer'
+```
+
+You should see `Apple Distribution: Pablo Alvarado (V433H655PN)` and
+`3rd Party Mac Developer Installer: Pablo Alvarado (V433H655PN)`.
+
+### 2c. Register the App ID (if it is not there yet)
+
+developer.apple.com → **Certificates, Identifiers & Profiles** → **Identifiers**
+→ filter *App IDs* → look for `com.pabloalvarado.spellbreak`.
+
+If it is missing: **+** → *App IDs* → *App* → Description `Spellbreak` →
+Bundle ID **explicit** `com.pabloalvarado.spellbreak` → no capabilities →
+Continue → Register.
+
+### 2d. The provisioning profile
+
+Same site → **Profiles** → **+** → **Mac App Store Connect** → Continue →
+App ID `com.pabloalvarado.spellbreak` → select the **Apple Distribution**
+certificate → select the team → name it `Spellbreak MAS` → Generate →
+**Download**.
+
+Rename the downloaded file to exactly:
+
+```
+Spellbreak_MAS.provisionprofile
+```
+
+and put it in the **root of the Spellbreak repo** (next to `Package.swift`). It
+is gitignored on purpose — do not commit it.
+
+```bash
+mv ~/Downloads/Spellbreak_MAS*.provisionprofile \
+   ~/Projects/active/mac/spellbreak/Spellbreak_MAS.provisionprofile
+```
+
+### 2e. Prove it before building
+
+```bash
+cd ~/Projects/active/mac/spellbreak
+./build-mas.sh --check-only   # preflight only: no build, just the answer
+```
+
+`build-mas.sh` checks, before it compiles anything: full Xcode selected, the
+profile present, the profile's app ID matching `V433H655PN.com.pabloalvarado.spellbreak`,
+the profile being distribution rather than development, and both identities in
+the keychain. If one is missing it names it.
+
+**Traps, in the order they bite:**
+
+- **A development profile** looks the same in the filename and fails at upload.
+  `build-mas.sh` refuses it; if it says "lists devices", the profile came from
+  *App Store Connect* → wrong, that one is for iOS. Use **Mac App Store
+  Connect**.
+- **Both identities must have private keys.** `find-identity -v` without `-p
+  codesigning` shows certificates; a certificate with no key shows as invalid
+  and signs nothing.
+- **Xcode must be the selected toolchain** (`xcode-select -p` →
+  `/Applications/Xcode.app/Contents/Developer`). Command Line Tools alone cannot
+  stamp the `DT*` keys App Store Connect checks.
 
 ## 3. Create the app record — App Store Connect ☐
 

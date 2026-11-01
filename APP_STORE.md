@@ -52,7 +52,7 @@ Primary: Productivity
 > certificates and provisioning profile exist; they are not the current price.
 
 For the App Store build, the app is **Free** and the price lives on the unlock
-in-app purchase: **US$9.99 · A$12.99**, one time, after a 7-day trial. Setup and
+in-app purchase: **US$9.99 · A$14.99**, one time, after a 7-day trial. Setup and
 reasoning are in the
 [submission guide](APP_STORE_SUBMISSION.md#pricing).
 
@@ -66,11 +66,11 @@ must match `Store.swift` exactly.
 | Reference name | 7-Day Trial | Unlock |
 | Product ID | `com.pabloalvarado.spellbreak.trial` | `com.pabloalvarado.spellbreak.unlock` |
 | Type | Non-Consumable | Non-Consumable |
-| Price | Free ($0) | US$9.99 base, Australia set to A$12.99 |
+| Price | Free ($0) | US$9.99 base, Australia set to A$14.99 |
 | Display name (30) | 7-Day Trial | Unlock Spellbreak |
 | Description (45) | Try scheduled breaks free for 7 days. | Scheduled breaks for good. One purchase. |
 | Family Sharing | Off | On (can't be turned off later) |
-| Review screenshot | Settings, bottom row, before the trial: "Try Free for 7 Days" | Settings during the trial: "Unlock · A$12.99" |
+| Review screenshot | Settings, bottom row, before the trial: "Try Free for 7 Days" | Settings during the trial: "Unlock · A$14.99" |
 | Review notes | Free time-based trial per guideline 3.1.1. Its purchase date starts the 7-day clock. | One-time unlock of scheduled breaks once the trial ends. |
 
 The trial *must* be named "7-Day Trial". That's Apple's convention for trials
