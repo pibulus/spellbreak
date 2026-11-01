@@ -1,0 +1,20 @@
+Hey,
+
+I made Spellbreak because time disappears in a tunnel, corner banners lose to deep focus within days, and a break you can dismiss with a reflex never happens.
+
+It is a desktop app for people who disappear into work — hyperfocus, coding tunnels, eyes that need the 20-20-20 rule.
+
+What it does:
+
+- Lock mode takes the skip ring away. The break runs its clock.
+- One purchase. No subscription, no account, no streak to keep.
+- The app has no network access at all — sandboxed, sealed, notarized.
+- Apple silicon and Intel, macOS 13 and later.
+
+It is still small, but the core flow is working.
+
+I would be interested in feedback after one real batch: whether the controls made sense before reading anything.
+
+Buy on spellbreak.app — A$29 once
+
+Pablo

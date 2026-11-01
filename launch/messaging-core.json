@@ -1,0 +1,34 @@
+{
+  "name": "Spellbreak",
+  "slug": "spellbreak",
+  "appType": "desktop app",
+  "audience": "time-blind workdays, ADHD hyperfocus, and long coding tunnels on a Mac",
+  "problem": "time disappears in a tunnel, corner banners lose to deep focus within days, and a break you can dismiss with a reflex never happens",
+  "promise": "The screen goes quiet and changes colour for the length of the break, then hands the screen back. No account, no streak to protect, nothing leaving the Mac.",
+  "differentiators": [
+    "Lock mode takes the skip ring away. The break runs its clock.",
+    "One purchase. No subscription, no account, no streak to keep.",
+    "The app has no network access at all — sandboxed, sealed, notarized.",
+    "Apple silicon and Intel, macOS 13 and later."
+  ],
+  "proofPoints": [
+    "Lock mode takes the skip ring away. The break runs its clock.",
+    "One purchase. No subscription, no account, no streak to keep.",
+    "The app has no network access at all — sandboxed, sealed, notarized.",
+    "Apple silicon and Intel, macOS 13 and later."
+  ],
+  "objections": [
+    "Mac only, macOS 13 and later",
+    "Not a Pomodoro planner — no sessions to plan, no task list",
+    "The longest break is 3 minutes, so it is a pause rather than a walk"
+  ],
+  "callToAction": "Buy on spellbreak.app — A$29 once",
+  "primaryLink": "https://spellbreak.app",
+  "hashtags": [
+    "#spellbreak",
+    "#breakremindermac",
+    "#adhdbreakremindermac",
+    "#202020ruleapp"
+  ],
+  "notes": "MONETISATION, because the fleet is not uniform and copying the wrong shape is the fastest way to sound fake. Spellbreak is a ONE-TIME APP SALE: the buyer pays A$29 and owns the notarized DMG, unlocked, forever. It is NOT a supporter pass, NOT a yearly membership, NOT a free tier with an upsell. ZipList and TalkType in the same fleet sell $29/year supporter passes and their copy reads like a membership; Hexbloop sells its app once, like Spellbreak. Never import pass language (tiers, membership, supporter, unlock more lists) into this kit. The Mac App Store lane (free + 7-day trial + US$9.99) is PARKED and must not appear in any copy: today there is one price and one way to buy.\nOne maker, Melbourne. The voice observes and never instructs — no \"you\", no questions, no imperatives beyond a control's own label. Lock mode is the only thing that may be called unskippable; the default break is left with a brief hold, on purpose. Never quote a hold longer than 3 seconds or a break longer than 3 minutes."
+}

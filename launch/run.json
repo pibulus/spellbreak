@@ -1,0 +1,46 @@
+{
+  "generated_at": "2026-11-01T22:41:53.998Z",
+  "generation_mode": "deterministic",
+  "brief_path": "briefs/spellbreak.yaml",
+  "voice": {
+    "key": "sovereign",
+    "tone": "Straight-talking, kind, and useful.",
+    "closer": "Thanks for taking a look."
+  },
+  "palette": {
+    "key": "warm-paper",
+    "name": "Soft Neutral",
+    "primary": "#F472B6",
+    "accent": "#6366F1",
+    "neutral": "#111827"
+  },
+  "positioning": {
+    "audience": "time-blind workdays, ADHD hyperfocus, and long coding tunnels on a Mac",
+    "problem": "time disappears in a tunnel, corner banners lose to deep focus within days, and a break you can dismiss with a reflex never happens",
+    "one_liner": "Turn a chosen interval into a full-screen pause across every display. Hold briefly to leave — or lock it and the break cannot be skipped.",
+    "call_to_action": "Buy on spellbreak.app — A$29 once",
+    "primary_link": "https://spellbreak.app"
+  },
+  "keywords": {
+    "seeds": [
+      "break reminder mac",
+      "adhd break reminder mac",
+      "20-20-20 rule app",
+      "unskippable break timer",
+      "break reminder for developers",
+      "hyperfocus timer mac"
+    ],
+    "suggested": []
+  },
+  "hashtags": [
+    "#spellbreak",
+    "#breakremindermac",
+    "#adhdbreakremindermac",
+    "#202020ruleapp"
+  ],
+  "links": {
+    "website": "https://spellbreak.app",
+    "github": "https://github.com/pibulus/spellbreak",
+    "download": "https://github.com/pibulus/spellbreak/releases/latest/download/Spellbreak.dmg"
+  }
+}

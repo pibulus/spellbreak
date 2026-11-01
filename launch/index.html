@@ -1,0 +1,1053 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Spellbreak launch board</title>
+    <meta name="description" content="Spellbreak is a desktop app for people who disappear into work — hyperfocus, coding tunnels, eyes that need the 20-20-20 rule. Lock mode takes the skip..." />
+    <meta property="og:title" content="Spellbreak - Turn a chosen interval into a full-screen pause across every display" />
+    <meta property="og:description" content="Spellbreak is a desktop app for people who disappear into work — hyperfocus, coding tunnels, eyes that need the 20-20-20 rule. Lock mode takes the skip ring away. The break runs..." />
+    <meta property="og:image" content="./assets/og-card.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Spellbreak - Turn a chosen interval into a full-screen pause across every display" />
+    <meta name="twitter:description" content="Spellbreak is a desktop app for people who disappear into work — hyperfocus, coding tunnels, eyes that need the 20-20-20 rule. Lock mode takes the skip ring away. The break runs..." />
+    <meta name="twitter:image" content="./assets/og-card.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --paper: #fbf1e4;
+        --ink: #1e1714;
+        --muted: #574840;
+        --panel: #fffef7;
+        --line: #1e1714;
+        --primary: #fde68a;
+        --accent: #fbcfe8;
+        --mint: #a7f3d0;
+        --lavender: #e9d5ff;
+        --peach: #fed7aa;
+        --shadow: 6px 6px 0px #1e1714;
+        --hard-shadow: 4px 4px 0px #1e1714;
+        --radius: 22px;
+      }
+
+      * { box-sizing: border-box; }
+
+      html { scroll-behavior: smooth; }
+
+      body {
+        margin: 0;
+        font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+        background: linear-gradient(135deg, #fffdf5 0%, #fbf1e4 52%, #fce7f3 100%);
+        color: var(--ink);
+      }
+
+      main {
+        width: min(1220px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 24px 0 64px;
+        position: relative;
+      }
+
+      .hero {
+        border: 3.5px solid #1e1714;
+        border-radius: 28px;
+        background: #fffef7;
+        box-shadow: 8px 8px 0px #1e1714;
+        padding: 28px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .hero-grid,
+      .grid,
+      .resource-grid {
+        display: grid;
+        gap: 18px;
+      }
+
+      .hero-grid { position: relative; z-index: 1; }
+
+      .chips,
+      .pill-row,
+      .action-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .eyebrow {
+        display: inline-block;
+        margin: 0 0 10px;
+        padding: 4px 12px;
+        border-radius: 999px;
+        background: #fde68a;
+        border: 2px solid #1e1714;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11.5px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink);
+      }
+
+      h1, h2, h3 {
+        margin: 0;
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.05;
+      }
+
+      h1 {
+        font-size: clamp(2.4rem, 6vw, 4.2rem);
+      }
+
+      h2 {
+        font-size: clamp(1.5rem, 3.5vw, 2.15rem);
+      }
+
+      h3 {
+        font-size: 1.15rem;
+      }
+
+      p {
+        margin: 0;
+        color: var(--ink);
+        line-height: 1.55;
+      }
+
+      .lede {
+        max-width: 60ch;
+        font-size: 1.12rem;
+        font-weight: 600;
+        color: #3d322c;
+        margin-top: 12px;
+      }
+
+      .badge,
+      .pill-link,
+      .jump-link,
+      .primary-link,
+      .ghost-link,
+      .copy-button {
+        min-height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 6px 16px;
+        text-decoration: none;
+        font-weight: 800;
+        font-size: 0.92rem;
+      }
+
+      .badge {
+        background: #fbf1e4;
+        border: 2.5px solid #1e1714;
+        box-shadow: 3px 3px 0px #1e1714;
+        color: var(--ink);
+      }
+
+      .primary-link,
+      .copy-button {
+        background: #fde68a;
+        color: var(--ink);
+        border: 2.5px solid #1e1714;
+        cursor: pointer;
+        box-shadow: var(--hard-shadow);
+      }
+
+      .primary-link:hover,
+      .copy-button:hover { transform: translate(-1px, -1px); }
+
+      .ghost-link,
+      .pill-link,
+      .jump-link {
+        color: var(--ink);
+        border: 2.5px solid #1e1714;
+        box-shadow: 3px 3px 0px #1e1714;
+        background: #fffef7;
+      }
+
+      .jump-link {
+        background: #fbcfe8;
+      }
+
+      section {
+        margin-top: 28px;
+      }
+
+      .panel,
+      .step,
+      .resource-card,
+      .angle-card,
+      .check-card {
+        border-radius: var(--radius);
+        border: 3px solid #1e1714;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        padding: 20px;
+      }
+
+      .section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 16px;
+        margin-bottom: 14px;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .hero-side {
+        display: grid;
+        gap: 16px;
+      }
+
+      .links-panel,
+      .brain-panel {
+        display: grid;
+        gap: 12px;
+      }
+
+      .brain-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .brain-item strong {
+        display: block;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.78rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 3px;
+      }
+
+      .step {
+        display: grid;
+        gap: 14px;
+      }
+
+      .step-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: start;
+      }
+
+      .step-num {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: #a7f3d0;
+        border: 2.5px solid #1e1714;
+        box-shadow: 3px 3px 0px #1e1714;
+        color: var(--ink);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 800;
+        flex: 0 0 auto;
+      }
+
+      .resource-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: start;
+      }
+
+      .card-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: end;
+      }
+
+      .card-description {
+        color: var(--muted);
+        margin: 10px 0 12px;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 196px;
+        border-radius: 16px;
+        border: 2.5px solid #1e1714;
+        padding: 16px;
+        resize: vertical;
+        background: #fbf1e4;
+        color: var(--ink);
+        font: 600 14.5px/1.55 "JetBrains Mono", Menlo, Consolas, monospace;
+      }
+
+      .wide textarea { min-height: 260px; }
+      .short textarea { min-height: 120px; }
+
+      .og-card-preview {
+        width: 100%;
+        align-self: start;
+        border-radius: 18px;
+        border: 2.5px solid #1e1714;
+        box-shadow: 4px 4px 0px #1e1714;
+        overflow: hidden;
+        background: #fbf1e4;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .og-card-preview img {
+        display: block;
+        width: 100%;
+        max-height: 520px;
+        object-fit: contain;
+        height: auto;
+      }
+
+      .scorecard-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+        font-size: 0.92rem;
+      }
+
+      .scorecard-table th,
+      .scorecard-table td {
+        border: 2px solid #1e1714;
+        padding: 10px 12px;
+        text-align: left;
+      }
+
+      .scorecard-table th {
+        background: #fde68a;
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 800;
+      }
+
+      .angle-card {
+        display: grid;
+        gap: 8px;
+      }
+
+      .check-list {
+        display: grid;
+        gap: 12px;
+      }
+
+      .check-row {
+        display: flex;
+        gap: 12px;
+        align-items: start;
+        min-height: 44px;
+      }
+
+      .check-row input {
+        width: 22px;
+        height: 22px;
+        margin-top: 2px;
+        accent-color: var(--ink);
+      }
+
+      .footer-note {
+        margin-top: 18px;
+        padding: 16px 18px;
+        border-radius: 18px;
+        background: #e9d5ff;
+        border: 2.5px solid #1e1714;
+      }
+
+      @media (max-width: 779px) {
+        main {
+          width: min(100vw - 18px, 1180px);
+        }
+
+        .section-head,
+        .card-top,
+        .step-top {
+          flex-direction: column;
+          align-items: start;
+        }
+
+        .action-row {
+          display: grid;
+          grid-template-columns: 1fr;
+        }
+
+        .primary-link,
+        .jump-link {
+          width: 100%;
+        }
+
+        .card-actions {
+          justify-content: start;
+        }
+      }
+
+      @media (min-width: 780px) {
+        .hero-grid {
+          grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.85fr);
+          align-items: start;
+        }
+
+        .grid.two {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .resource-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .resource-card.wide {
+          grid-column: span 2;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <div class="hero-grid">
+          <div>
+            <p class="eyebrow">Launch board / deterministic</p>
+            <h1>Spellbreak</h1>
+            <p class="lede">Turn a chosen interval into a full-screen pause across every display. Hold briefly to leave — or lock it and the break cannot be skipped.</p>
+            <div class="chips" style="margin-top:16px;">
+              <span class="badge">desktop app</span>
+              <span class="badge">for time-blind workdays, ADHD hyperfocus, and long coding tunnels on a Mac</span>
+              <span class="badge">problem: time disappears in a tunnel, corner banners lose to deep focus within days, and a break you can dismiss with a reflex never happens</span>
+            </div>
+            <div class="action-row" style="margin-top:18px;">
+              <a class="primary-link" href="#resources">Start with the resources</a>
+              <a class="jump-link" href="#sequence">Jump to launch order</a>
+            </div>
+          </div>
+          <div class="hero-side">
+            <div class="panel links-panel">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">App links</p>
+                  <h2>What this launch points at</h2>
+                </div>
+              </div>
+              <div class="pill-row">
+                <a class="pill-link" href="https://spellbreak.app" target="_blank" rel="noreferrer">website</a><a class="pill-link" href="https://github.com/pibulus/spellbreak" target="_blank" rel="noreferrer">github</a><a class="pill-link" href="https://github.com/pibulus/spellbreak/releases/latest/download/Spellbreak.dmg" target="_blank" rel="noreferrer">download</a>
+              </div>
+            </div>
+            <div class="panel brain-panel">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Message spine</p>
+                  <h2>What this launch is really saying</h2>
+                </div>
+              </div>
+              <div class="brain-list">
+                <div class="brain-item"><strong>Promise</strong><p>The screen goes quiet and changes colour for the length of the break, then hands the screen back. No account, no streak to protect, nothing leaving the Mac.</p></div>
+                <div class="brain-item"><strong>Why now</strong><p>Time disappears in a tunnel, corner banners lose to deep focus within days, and a break you can dismiss with a reflex never happens.</p></div>
+                <div class="brain-item"><strong>Proof</strong><p>Lock mode takes the skip ring away. The break runs its clock. / One purchase. No subscription, no account, no streak to keep.</p></div>
+                <div class="brain-item"><strong>CTA</strong><p>Buy on spellbreak.app — A$29 once</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="sequence">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Launch order</p>
+            <h2>Do this, then that</h2>
+          </div>
+          <p class="muted">Short version: destination first, warm people second, wide rooms after that.</p>
+        </div>
+        <div class="grid two">
+          <article class="step">
+            <div class="step-top">
+              <div class="step-num">1</div>
+              <div>
+                <p class="eyebrow">Step 1</p>
+                <h3>Tune the destination first</h3>
+              </div>
+            </div>
+            <p>Use the hero and metadata before you send anyone to the page. If the page feels foggy, every later post feels foggy too.</p>
+            <p class="muted">This is the source page every other surface points back to. Tight page copy makes every later click less fragile.</p>
+            <div class="pill-row"><a class="pill-link file-pill" href="./website/hero.md">Hero copy</a><a class="pill-link file-pill" href="./website/meta.json">Metadata</a><a class="pill-link file-pill" href="./assets/og-card.png">OG card</a></div>
+            
+          </article><article class="step">
+            <div class="step-top">
+              <div class="step-num">2</div>
+              <div>
+                <p class="eyebrow">Step 2</p>
+                <h3>Start with warm humans</h3>
+              </div>
+            </div>
+            <p>Send the email first to people who already know your work, opted in, or will give honest replies instead of drive-by vibes.</p>
+            <p class="muted">Warm replies tell you which line is landing before you spray the wider internet.</p>
+            <div class="pill-row"><a class="pill-link file-pill" href="./angles.md">Angle pack</a><a class="pill-link file-pill" href="./email/subject.txt">Email subject</a><a class="pill-link file-pill" href="./email/launch.txt">Email body</a><a class="pill-link file-pill" href="./email/launch.html">Email HTML</a></div>
+            
+          </article><article class="step">
+            <div class="step-top">
+              <div class="step-num">3</div>
+              <div>
+                <p class="eyebrow">Step 3</p>
+                <h3>Ship the short version</h3>
+              </div>
+            </div>
+            <p>Post the thread and pair it with the OG card. If the thread feels long, steal one caption option and go lighter.</p>
+            <p class="muted">Short surfaces test the hook fast. They tell you which framing survives first contact.</p>
+            <div class="pill-row"><a class="pill-link file-pill" href="./angles.md">Angle pack</a><a class="pill-link file-pill" href="./social/thread.txt">Thread</a><a class="pill-link file-pill" href="./social/caption-options.txt">Caption options</a><a class="pill-link file-pill" href="./assets/og-card.png">OG card</a></div>
+            
+          </article><article class="step">
+            <div class="step-top">
+              <div class="step-num">4</div>
+              <div>
+                <p class="eyebrow">Step 4</p>
+                <h3>Post the fuller story</h3>
+              </div>
+            </div>
+            <p>Use the community post as the base for Indie Hackers, DEV, Product Hunt prep notes, or a Show HN style write-up. Rewrite the opener to match the room.</p>
+            <p class="muted">Longer posts convert curiosity into understanding. They are where the honest backstory and proof actually land.</p>
+            <div class="pill-row"><a class="pill-link file-pill" href="./angles.md">Angle pack</a><a class="pill-link file-pill" href="./community/post.md">Community post</a><a class="pill-link file-pill" href="./release/changelog.md">Launch notes</a></div>
+            <div class="pill-row"><a class="pill-link" href="https://www.indiehackers.com/" target="_blank" rel="noreferrer">Indie Hackers</a><a class="pill-link" href="https://www.indiehackers.com/post/how-do-you-make-a-successful-post-on-indie-hackers-f6745260fd" target="_blank" rel="noreferrer">IH post tips</a><a class="pill-link" href="https://dev.to/new/writing" target="_blank" rel="noreferrer">DEV new post</a><a class="pill-link" href="https://news.ycombinator.com/submit" target="_blank" rel="noreferrer">Hacker News submit</a><a class="pill-link" href="https://news.ycombinator.com/newsguidelines.html" target="_blank" rel="noreferrer">HN guidelines</a><a class="pill-link" href="https://www.producthunt.com/launch/preparing-for-launch" target="_blank" rel="noreferrer">Product Hunt launch guide</a><a class="pill-link" href="https://www.producthunt.com/launch" target="_blank" rel="noreferrer">Product Hunt launch hub</a></div>
+          </article><article class="step">
+            <div class="step-top">
+              <div class="step-num">5</div>
+              <div>
+                <p class="eyebrow">Step 5</p>
+                <h3>Close the loop</h3>
+              </div>
+            </div>
+            <p>Update the changelog, make sure the visual matches the copy, and keep one clean CTA everywhere instead of five soft asks.</p>
+            <p class="muted">A launch feels real when the page, image, and release note agree with each other.</p>
+            <div class="pill-row"><a class="pill-link file-pill" href="./release/changelog.md">Changelog</a><a class="pill-link file-pill" href="./messaging-core.json">Messaging core</a><a class="pill-link file-pill" href="./run.json">Run data</a></div>
+            
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Angle pack</p>
+            <h2>Four ways in</h2>
+          </div>
+          <p class="muted">If the copy feels flat, switch the entry point before you rewrite the whole launch.</p>
+        </div>
+        <div class="grid two">
+          <article class="angle-card">
+            <p class="eyebrow">Plain description</p>
+            <p><strong>Hook</strong><br />Spellbreak is a desktop app for people who disappear into work — hyperfocus, coding tunnels, eyes that need the 20-20-20 rule. Lock mode takes the skip ring away. The break runs its clock.</p>
+            <p><strong>Use when</strong><br />When a form or post needs a straightforward product description.</p>
+            <p><strong>Why it lands</strong><br />It tells people what the app is, who it is for, and what it does.</p>
+            <p><strong>Social lead</strong><br />Spellbreak is a desktop app for people who disappear into work — hyperfocus, coding tunnels, eyes that need the 20-20-20 rule. Lock mode takes the skip ring away. The break runs its clock.</p>
+            <p><strong>Email subject</strong><br />Spellbreak</p>
+          </article><article class="angle-card">
+            <p class="eyebrow">Problem note</p>
+            <p><strong>Hook</strong><br />Time disappears in a tunnel, corner banners lose to deep focus within days, and a break you can dismiss with a reflex never happens. The screen goes quiet and changes colour for the length of the break, then hands the screen back. No account, no streak to protect, nothing leaving the Mac.</p>
+            <p><strong>Use when</strong><br />When the audience already recognizes the problem.</p>
+            <p><strong>Why it lands</strong><br />It explains the reason for the app without overselling it.</p>
+            <p><strong>Social lead</strong><br />Time disappears in a tunnel, corner banners lose to deep focus within days, and a break you can dismiss with a reflex never happens. The screen goes quiet and changes colour for the length of the break, then hands the screen back. No account, no streak to protect, nothing leaving the Mac.</p>
+            <p><strong>Email subject</strong><br />Spellbreak: Turn a chosen interval into a full-screen pause across every display</p>
+          </article><article class="angle-card">
+            <p class="eyebrow">Feature note</p>
+            <p><strong>Hook</strong><br />Spellbreak includes: Lock mode takes the skip ring away. The break runs its clock. One purchase. No subscription, no account, no streak to keep.</p>
+            <p><strong>Use when</strong><br />When a directory, forum, or reply needs quick proof of what works.</p>
+            <p><strong>Why it lands</strong><br />It gives concrete product details instead of a slogan.</p>
+            <p><strong>Social lead</strong><br />Spellbreak includes:
+- Lock mode takes the skip ring away. The break runs its clock.
+- One purchase. No subscription, no account, no streak to keep.
+- The app has no network access at all — sandboxed, sealed, notarized.</p>
+            <p><strong>Email subject</strong><br />Spellbreak details</p>
+          </article><article class="angle-card">
+            <p class="eyebrow">Feedback ask</p>
+            <p><strong>Hook</strong><br />I would be interested in feedback after one real batch: whether the controls made sense before reading anything.</p>
+            <p><strong>Use when</strong><br />When posting in maker communities or sending a warm note.</p>
+            <p><strong>Why it lands</strong><br />It asks for useful feedback instead of acting like a finished campaign.</p>
+            <p><strong>Social lead</strong><br />I would be interested in feedback after one real batch: whether the controls made sense before reading anything.</p>
+            <p><strong>Email subject</strong><br />Feedback on Spellbreak</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="resources">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Resources</p>
+            <h2>Paste this here</h2>
+          </div>
+          <p class="muted">These are the actual drafts. Edit in place, copy, then post.</p>
+        </div>
+        <div class="resource-grid">
+          <article class="resource-card wide">
+    <div class="card-top">
+      <div>
+        <p class="eyebrow">Message options</p>
+        <h3>Angle pack</h3>
+      </div>
+      <div class="card-actions">
+        <button class="copy-button" type="button" data-copy-target="angle-pack">Copy</button>
+        <a class="ghost-link" href="./angles.md">Open raw</a>
+      </div>
+    </div>
+    <p class="card-description">Four different ways into the same launch. Pick one before you start editing individual surfaces.</p>
+    <textarea id="angle-pack" spellcheck="false">## Plain description
+
+Hook: Spellbreak is a desktop app for people who disappear into work — hyperfocus, coding tunnels, eyes that need the 20-20-20 rule. Lock mode takes the skip ring away. The break runs its clock.
+Use when: When a form or post needs a straightforward product description.
+Why it lands: It tells people what the app is, who it is for, and what it does.
+Social lead: Spellbreak is a desktop app for people who disappear into work — hyperfocus, coding tunnels, eyes that need the 20-20-20 rule. Lock mode takes the skip ring away. The break runs its clock.
+Email subject: Spellbreak
+
+## Problem note
+
+Hook: Time disappears in a tunnel, corner banners lose to deep focus within days, and a break you can dismiss with a reflex never happens. The screen goes quiet and changes colour for the length of the break, then hands the screen back. No account, no streak to protect, nothing leaving the Mac.
+Use when: When the audience already recognizes the problem.
+Why it lands: It explains the reason for the app without overselling it.
+Social lead: Time disappears in a tunnel, corner banners lose to deep focus within days, and a break you can dismiss with a reflex never happens. The screen goes quiet and changes colour for the length of the break, then hands the screen back. No account, no streak to protect, nothing leaving the Mac.
+Email subject: Spellbreak: Turn a chosen interval into a full-screen pause across every display
+
+## Feature note
+
+Hook: Spellbreak includes: Lock mode takes the skip ring away. The break runs its clock. One purchase. No subscription, no account, no streak to keep.
+Use when: When a directory, forum, or reply needs quick proof of what works.
+Why it lands: It gives concrete product details instead of a slogan.
+Social lead: Spellbreak includes:
+- Lock mode takes the skip ring away. The break runs its clock.
+- One purchase. No subscription, no account, no streak to keep.
+- The app has no network access at all — sandboxed, sealed, notarized.
+Email subject: Spellbreak details
+
+## Feedback ask
+
+Hook: I would be interested in feedback after one real batch: whether the controls made sense before reading anything.
+Use when: When posting in maker communities or sending a warm note.
+Why it lands: It asks for useful feedback instead of acting like a finished campaign.
+Social lead: I would be interested in feedback after one real batch: whether the controls made sense before reading anything.
+Email subject: Feedback on Spellbreak</textarea>
+  </article>
+          <article class="resource-card">
+    <div class="card-top">
+      <div>
+        <p class="eyebrow">Destination copy</p>
+        <h3>Website hero</h3>
+      </div>
+      <div class="card-actions">
+        <button class="copy-button" type="button" data-copy-target="hero-copy">Copy</button>
+        <a class="ghost-link" href="./website/hero.md">Open raw</a>
+      </div>
+    </div>
+    <p class="card-description">Use this on the page everyone lands on after the click.</p>
+    <textarea id="hero-copy" spellcheck="false"># The screen goes quiet. One purchase. No subscription, no account, no streak to keep.
+
+Spellbreak is a desktop app for people who disappear into work — hyperfocus, coding tunnels, eyes that need the 20-20-20 rule. Lock mode takes the skip ring away. The break runs its clock. Time disappears in a tunnel, corner banners lose to deep focus within days, and a break you can dismiss with a reflex never happens.
+
+CTA: Buy on spellbreak.app — A$29 once
+
+## Proof Bullets
+- Lock mode takes the skip ring away. The break runs its clock.
+- One purchase. No subscription, no account, no streak to keep.
+- The app has no network access at all — sandboxed, sealed, notarized.</textarea>
+  </article>
+          <article class="resource-card">
+    <div class="card-top">
+      <div>
+        <p class="eyebrow">Search + share</p>
+        <h3>Website metadata</h3>
+      </div>
+      <div class="card-actions">
+        <button class="copy-button" type="button" data-copy-target="meta-copy">Copy</button>
+        <a class="ghost-link" href="./website/meta.json">Open raw</a>
+      </div>
+    </div>
+    <p class="card-description">Paste into your site head, page config, or whatever owns title and OG fields.</p>
+    <textarea id="meta-copy" spellcheck="false">{
+  "title": "Spellbreak | Turn a chosen interval into a full-screen pause across...",
+  "description": "Spellbreak is a desktop app for people who disappear into work — hyperfocus, coding tunnels, eyes that need the 20-20-20 rule. Lock mode takes the skip...",
+  "ogTitle": "Spellbreak - Turn a chosen interval into a full-screen pause across every display",
+  "ogDescription": "Spellbreak is a desktop app for people who disappear into work — hyperfocus, coding tunnels, eyes that need the 20-20-20 rule. Lock mode takes the skip ring away. The break runs..."
+}</textarea>
+  </article>
+          <article class="resource-card">
+    <div class="card-top">
+      <div>
+        <p class="eyebrow">Warm send</p>
+        <h3>Email subject</h3>
+      </div>
+      <div class="card-actions">
+        <button class="copy-button" type="button" data-copy-target="email-subject">Copy</button>
+        <a class="ghost-link" href="./email/subject.txt">Open raw</a>
+      </div>
+    </div>
+    <p class="card-description">Short, human, and clear. Tighten this before the body if anything feels off.</p>
+    <textarea id="email-subject" spellcheck="false">A small app: Spellbreak</textarea>
+  </article>
+          <article class="resource-card">
+    <div class="card-top">
+      <div>
+        <p class="eyebrow">Warm send</p>
+        <h3>Launch email</h3>
+      </div>
+      <div class="card-actions">
+        <button class="copy-button" type="button" data-copy-target="email-body">Copy</button>
+        <a class="ghost-link" href="./email/launch.txt">Open raw</a>
+      </div>
+    </div>
+    <p class="card-description">Send this to people who already know your work or will give useful replies.</p>
+    <textarea id="email-body" spellcheck="false">Hey,
+
+I made Spellbreak because time disappears in a tunnel, corner banners lose to deep focus within days, and a break you can dismiss with a reflex never happens.
+
+It is a desktop app for people who disappear into work — hyperfocus, coding tunnels, eyes that need the 20-20-20 rule.
+
+What it does:
+
+- Lock mode takes the skip ring away. The break runs its clock.
+- One purchase. No subscription, no account, no streak to keep.
+- The app has no network access at all — sandboxed, sealed, notarized.
+- Apple silicon and Intel, macOS 13 and later.
+
+It is still small, but the core flow is working.
+
+I would be interested in feedback after one real batch: whether the controls made sense before reading anything.
+
+Buy on spellbreak.app — A$29 once
+
+Pablo</textarea>
+  </article>
+          <article class="resource-card">
+    <div class="card-top">
+      <div>
+        <p class="eyebrow">Short surface</p>
+        <h3>Social thread</h3>
+      </div>
+      <div class="card-actions">
+        <button class="copy-button" type="button" data-copy-target="social-thread">Copy</button>
+        <a class="ghost-link" href="./social/thread.txt">Open raw</a>
+      </div>
+    </div>
+    <p class="card-description">Use this for the fast version. Cut harder if the room hates longer posts.</p>
+    <textarea id="social-thread" spellcheck="false">1/ I made Spellbreak, a desktop app for people who disappear into work — hyperfocus, coding tunnels, eyes that need the 20-20-20 rule.
+
+2/ Time disappears in a tunnel, corner banners lose to deep focus within days, and a break you can dismiss with a reflex never happens. Spellbreak is a desktop app for people who disappear into work — hyperfocus, coding tunnels, eyes that need the 20-20-20 rule. Lock mode takes the skip ring away. The break runs its clock.
+
+3/ What it does:
+- Lock mode takes the skip ring away. The break runs its clock.
+- One purchase. No subscription, no account, no streak to keep.
+- The app has no network access at all — sandboxed, sealed, notarized.
+
+4/ Buy on spellbreak.app — A$29 once</textarea>
+  </article>
+          <article class="resource-card">
+    <div class="card-top">
+      <div>
+        <p class="eyebrow">Short surface</p>
+        <h3>Caption options</h3>
+      </div>
+      <div class="card-actions">
+        <button class="copy-button" type="button" data-copy-target="caption-options">Copy</button>
+        <a class="ghost-link" href="./social/caption-options.txt">Open raw</a>
+      </div>
+    </div>
+    <p class="card-description">Steal one of these when the thread is too much or you just need the sharp line.</p>
+    <textarea id="caption-options" spellcheck="false">1. I made Spellbreak, a desktop app for people who disappear into work — hyperfocus, coding tunnels, eyes that need the 20-20-20 rule.
+
+2. The screen goes quiet. One purchase. No subscription, no account, no streak to keep.
+
+3. Spellbreak turns time disappears in a tunnel, corner banners lose to deep focus within days, and a break you can dismiss with a reflex never happens into the screen goes quiet and changes colour for the length of the break, then hands the screen back. No account, no streak to protect, nothing leaving the Mac.
+
+4. Spellbreak: Lock mode takes the skip ring away. The break runs its clock. One purchase. No subscription, no account, no streak to keep.
+
+5. I would be interested in feedback after one real batch: whether the controls made sense before reading anything.</textarea>
+  </article>
+          <article class="resource-card wide">
+    <div class="card-top">
+      <div>
+        <p class="eyebrow">Longer room</p>
+        <h3>Community post</h3>
+      </div>
+      <div class="card-actions">
+        <button class="copy-button" type="button" data-copy-target="community-post">Copy</button>
+        <a class="ghost-link" href="./community/post.md">Open raw</a>
+      </div>
+    </div>
+    <p class="card-description">Use this as the base for Indie Hackers, DEV, or a more considered founder post.</p>
+    <textarea id="community-post" spellcheck="false"># Spellbreak
+
+Spellbreak is a desktop app for people who disappear into work — hyperfocus, coding tunnels, eyes that need the 20-20-20 rule. Lock mode takes the skip ring away. The break runs its clock.
+
+## Why I made it
+Time disappears in a tunnel, corner banners lose to deep focus within days, and a break you can dismiss with a reflex never happens.
+
+## What it does
+The screen goes quiet. One purchase. No subscription, no account, no streak to keep.
+
+## Current features
+- Lock mode takes the skip ring away. The break runs its clock.
+- One purchase. No subscription, no account, no streak to keep.
+- The app has no network access at all — sandboxed, sealed, notarized.
+- Apple silicon and Intel, macOS 13 and later.
+
+## Who it is for
+People who disappear into work — hyperfocus, coding tunnels, eyes that need the 20-20-20 rule.
+
+## Feedback
+I would be interested in feedback after one real batch: whether the controls made sense before reading anything.
+
+## Link
+Buy on spellbreak.app — A$29 once</textarea>
+  </article>
+          <article class="resource-card">
+    <div class="card-top">
+      <div>
+        <p class="eyebrow">Release note</p>
+        <h3>Changelog</h3>
+      </div>
+      <div class="card-actions">
+        <button class="copy-button" type="button" data-copy-target="changelog-note">Copy</button>
+        <a class="ghost-link" href="./release/changelog.md">Open raw</a>
+      </div>
+    </div>
+    <p class="card-description">This keeps the launch honest. Update the page and the release note together.</p>
+    <textarea id="changelog-note" spellcheck="false">## Spellbreak — 2026-11-01
+Turn a chosen interval into a full-screen pause across every display. Hold briefly to leave — or lock it and the break cannot be skipped.
+
+Shipped this:
+- Lock mode takes the skip ring away. The break runs its clock.
+- One purchase. No subscription, no account, no streak to keep.
+- The app has no network access at all — sandboxed, sealed, notarized.
+- Apple silicon and Intel, macOS 13 and later.
+
+Built for time-blind workdays, ADHD hyperfocus, and long coding tunnels on a Mac.
+Why now: Time disappears in a tunnel, corner banners lose to deep focus within days, and a break you can dismiss with a reflex never happens.
+Honest bit: Mac only, macOS 13 and later.
+CTA: Buy on spellbreak.app — A$29 once</textarea>
+  </article>
+          <article class="resource-card">
+    <div class="card-top">
+      <div>
+        <p class="eyebrow">Internal brain</p>
+        <h3>Messaging core</h3>
+      </div>
+      <div class="card-actions">
+        <button class="copy-button" type="button" data-copy-target="messaging-core">Copy</button>
+        <a class="ghost-link" href="./messaging-core.json">Open raw</a>
+      </div>
+    </div>
+    <p class="card-description">This is the spine. If the launch feels off, fix this before you fix the surfaces.</p>
+    <textarea id="messaging-core" spellcheck="false">{
+  "name": "Spellbreak",
+  "slug": "spellbreak",
+  "appType": "desktop app",
+  "audience": "time-blind workdays, ADHD hyperfocus, and long coding tunnels on a Mac",
+  "problem": "time disappears in a tunnel, corner banners lose to deep focus within days, and a break you can dismiss with a reflex never happens",
+  "promise": "The screen goes quiet and changes colour for the length of the break, then hands the screen back. No account, no streak to protect, nothing leaving the Mac.",
+  "differentiators": [
+    "Lock mode takes the skip ring away. The break runs its clock.",
+    "One purchase. No subscription, no account, no streak to keep.",
+    "The app has no network access at all — sandboxed, sealed, notarized.",
+    "Apple silicon and Intel, macOS 13 and later."
+  ],
+  "proofPoints": [
+    "Lock mode takes the skip ring away. The break runs its clock.",
+    "One purchase. No subscription, no account, no streak to keep.",
+    "The app has no network access at all — sandboxed, sealed, notarized.",
+    "Apple silicon and Intel, macOS 13 and later."
+  ],
+  "objections": [
+    "Mac only, macOS 13 and later",
+    "Not a Pomodoro planner — no sessions to plan, no task list",
+    "The longest break is 3 minutes, so it is a pause rather than a walk"
+  ],
+  "callToAction": "Buy on spellbreak.app — A$29 once",
+  "primaryLink": "https://spellbreak.app",
+  "hashtags": [
+    "#spellbreak",
+    "#breakremindermac",
+    "#adhdbreakremindermac",
+    "#202020ruleapp"
+  ],
+  "notes": "MONETISATION, because the fleet is not uniform and copying the wrong shape is the fastest way to sound fake. Spellbreak is a ONE-TIME APP SALE: the buyer pays A$29 and owns the notarized DMG, unlocked, forever. It is NOT a supporter pass, NOT a yearly membership, NOT a free tier with an upsell. ZipList and TalkType in the same fleet sell $29/year supporter passes and their copy reads like a membership; Hexbloop sells its app once, like Spellbreak. Never import pass language (tiers, membership, supporter, unlock more lists) into this kit. The Mac App Store lane (free + 7-day trial + US$9.99) is PARKED and must not appear in any copy: today there is one price and one way to buy.\nOne maker, Melbourne. The voice observes and never instructs — no \"you\", no questions, no imperatives beyond a control's own label. Lock mode is the only thing that may be called unskippable; the default break is left with a brief hold, on purpose. Never quote a hold longer than 3 seconds or a break longer than 3 minutes."
+}</textarea>
+  </article>
+          <article class="resource-card wide">
+            <div class="card-top">
+              <div>
+                <p class="eyebrow" style="background:#a7f3d0;">Visual Arsenal (Soft Neo-Toybrut)</p>
+                <h3>Generated Social & Comparison Cards</h3>
+              </div>
+              <div class="card-actions">
+                <a class="ghost-link" href="./assets/og-card.png">OG Card (1200x630)</a>
+                <a class="ghost-link" href="./assets/comparison-card.png">Comparison (1200x900)</a>
+                <a class="ghost-link" href="./assets/social-square.png">Square (1080x1080)</a>
+                <a class="ghost-link" href="./assets/ig-story.png">Story (1080x1920)</a>
+              </div>
+            </div>
+            <p class="card-description">All 4 assets rendered via headless Playwright with the app's native icon, warm cream surfaces, and chunky #1e1714 borders.</p>
+            <div class="grid two">
+          <div class="og-card-preview"><img src="./assets/og-card.png" alt="OG card preview" /></div>
+          <div class="og-card-preview"><img src="./assets/comparison-card.png" alt="Comparison card preview" /></div>
+          <div class="og-card-preview"><img src="./assets/social-square.png" alt="Social square preview" /></div>
+          <div class="og-card-preview"><img src="./assets/ig-story.png" alt="IG story preview" /></div>
+        </div>
+          </article>
+          <article class="resource-card wide">
+            <div class="card-top">
+              <div>
+                <p class="eyebrow" style="background:#fbcfe8;">80/20 Channel & Unit Economics Scorecard</p>
+                <h3>Break-Even CAC: $27.98 USD · Target 3x ROAS CAC: $9.67 USD</h3>
+              </div>
+              <div class="card-actions">
+                <a class="ghost-link" href="./GOODS.md">Open GOODS.md</a>
+              </div>
+            </div>
+            <p class="card-description">Pricing anchor: About the price of two coffees, once, for something used every twenty minutes of every working day.</p>
+            <table class="scorecard-table">
+              <thead>
+                <tr>
+                  <th>Buyer Intent Tier</th>
+                  <th>Assumed CVR</th>
+                  <th>Break-Even Max CPC</th>
+                  <th>Target 3x ROAS Max CPC</th>
+                  <th>Verdict</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+        <td><strong>Cold / Broad Search</strong></td>
+        <td>2.0%</td>
+        <td>$0.56 USD</td>
+        <td><strong>$0.19 USD</strong></td>
+        <td>Avoid broad head-term CPCs ($2.50–$6.00+ bid inflation funded by $120–$420/yr hostage SaaS)</td>
+      </tr><tr>
+        <td><strong>High-Intent Comparison / No-Sub</strong></td>
+        <td>5.0%</td>
+        <td>$1.40 USD</td>
+        <td><strong>$0.48 USD</strong></td>
+        <td>Viable on exact-match alternative &amp; anti-subscription buyer queries</td>
+      </tr><tr>
+        <td><strong>Hostage-Rescue / Agency Bulk</strong></td>
+        <td>8.0%</td>
+        <td>$2.24 USD</td>
+        <td><strong>$0.77 USD</strong></td>
+        <td>Highest leverage pocket; pair with organic comparison pages &amp; Reddit threads</td>
+      </tr>
+              </tbody>
+            </table>
+            <div class="grid two" style="margin-top:16px;">
+              <div>
+                <strong>High-Intent Buyer Keywords (Credit Card Out)</strong>
+                <div class="pill-row" style="margin-top:8px;">
+                  <span class="badge" style="background:#a7f3d0;">stop disappearing into a coding tunnel</span><span class="badge" style="background:#a7f3d0;">take breaks without a nagging wellness app</span><span class="badge" style="background:#a7f3d0;">an app that cannot be swiped away</span>
+                </div>
+              </div>
+              <div>
+                <strong>Force-Multiplier Personas (1 Pass -> 10+ Clients)</strong>
+                <ul style="margin:8px 0 0 18px;padding:0;line-height:1.45;">
+                  <li>Brand, Print &amp; Packaging Designers — buy 1 pass to deliver print-verified assets across 10–30 client projects</li><li>Hospitality &amp; Multi-Venue Operators — manage dynamic schedules, menus, and signage across multiple locations without per-seat SaaS fees</li><li>Print Shops, Signwriters &amp; Production Houses — batch-generate client runs with high-res exports and CSV manifests in one click</li><li>Boutique Marketing &amp; Event Agencies — deploy white-label pages, campaign routing, and client analytics reports from a single workspace</li>
+                </ul>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Human pass</p>
+            <h2>What to fix before you hit send</h2>
+          </div>
+          <p class="muted">These keep the launch from sounding like a generated intern.</p>
+        </div>
+        <div class="grid two">
+          <article class="check-card">
+            <div class="check-list">
+              <label class="check-row">
+                <input type="checkbox" data-check-id="human-0" />
+                <span>Swap one bullet for an oddly specific detail only this app can claim.</span>
+              </label><label class="check-row">
+                <input type="checkbox" data-check-id="human-1" />
+                <span>Cut any line you cannot prove in one click, one screenshot, or one sentence.</span>
+              </label><label class="check-row">
+                <input type="checkbox" data-check-id="human-2" />
+                <span>Keep one CTA per surface. Do not ask for five things at once.</span>
+              </label><label class="check-row">
+                <input type="checkbox" data-check-id="human-3" />
+                <span>Make the desktop app listing read clean before you push traffic anywhere.</span>
+              </label><label class="check-row">
+                <input type="checkbox" data-check-id="human-4" />
+                <span>If posting to Hacker News, lead with usefulness. Save the launch theater for somewhere else.</span>
+              </label>
+            </div>
+          </article>
+          <article class="check-card">
+            <p class="eyebrow">Useful terms</p>
+            <h3>Metadata + search hints</h3>
+            <div class="pill-row" style="margin-top:12px;">
+              <span class="badge">break reminder mac</span><span class="badge">adhd break reminder mac</span><span class="badge">20-20-20 rule app</span><span class="badge">unskippable break timer</span><span class="badge">break reminder for developers</span><span class="badge">hyperfocus timer mac</span>
+            </div>
+            <div class="footer-note">
+              <strong>Why this works</strong>
+              <p style="margin-top:8px;">Short surfaces test the hook. Longer rooms explain the story. The page catches the click. The changelog makes it real. Keep those in sync and the launch suddenly stops feeling fake.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <script>
+        const slug = "spellbreak";
+        const storageKey = "launch-arsenal-board:" + slug;
+
+        function copyFromTextarea(id) {
+          const el = document.getElementById(id);
+          if (!el) return;
+          const value = el.value;
+          if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(value).catch(() => {
+              el.focus();
+              el.select();
+            });
+            return;
+          }
+          el.focus();
+          el.select();
+          try { document.execCommand("copy"); } catch (_) {}
+        }
+
+        document.querySelectorAll("[data-copy-target]").forEach((button) => {
+          button.addEventListener("click", () => {
+            copyFromTextarea(button.getAttribute("data-copy-target"));
+          });
+        });
+
+        const checks = Array.from(document.querySelectorAll("[data-check-id]"));
+        let saved = {};
+        try {
+          saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
+        } catch (_) {
+          saved = {};
+        }
+
+        checks.forEach((check) => {
+          const id = check.getAttribute("data-check-id");
+          check.checked = Boolean(saved[id]);
+          check.addEventListener("change", () => {
+            saved[id] = check.checked;
+            localStorage.setItem(storageKey, JSON.stringify(saved));
+          });
+        });
+      </script>
+    </main>
+  </body>
+</html>
