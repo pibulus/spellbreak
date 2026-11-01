@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-01T23:07:56.694Z",
+  "generated_at": "2026-11-01T23:28:39.196Z",
   "generation_mode": "deterministic",
   "brief_path": "briefs/spellbreak.yaml",
   "voice": {
@@ -8,11 +8,11 @@
     "closer": "Hope it is useful."
   },
   "palette": {
-    "key": "warm-paper",
-    "name": "Soft Neutral",
-    "primary": "#F472B6",
-    "accent": "#6366F1",
-    "neutral": "#111827"
+    "key": "paper",
+    "name": "Warm Paper",
+    "primary": "#F3EDE2",
+    "accent": "#BD694C",
+    "neutral": "#292521"
   },
   "positioning": {
     "audience": "time-blind workdays, ADHD hyperfocus, and long coding tunnels on a Mac",
