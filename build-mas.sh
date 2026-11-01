@@ -45,6 +45,28 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# A team can legitimately hold more than one "Apple Distribution" certificate,
+# and when it does, `codesign --sign "<name>"` fails with "ambiguous" — the
+# build stops with two identical-looking identities. Signing by SHA-1 instead
+# names exactly one certificate, and .asc-work/distribution.cer is the
+# certificate the provisioning profile points at.
+sign_identity_for() {
+    local cert="$1" fallback="$2"
+    if [[ -f "$cert" ]]; then
+        local sha
+        sha=$(openssl x509 -inform der -in "$cert" -fingerprint -sha1 -noout 2>/dev/null \
+            | sed 's/.*=//; s/://g')
+        if [[ -n "$sha" ]]; then
+            echo "$sha"
+            return
+        fi
+    fi
+    echo "$fallback"
+}
+
+APP_SIGN_TARGET="$(sign_identity_for ".asc-work/distribution.cer" "$APP_SIGN_IDENTITY")"
+INSTALLER_SIGN_TARGET="$(sign_identity_for ".asc-work/mac_installer_distribution.cer" "$INSTALLER_SIGN_IDENTITY")"
+
 # --- Preflight: everything that can fail fast, before a two-arch release build ---
 
 # App Store Connect works out which Xcode/SDK built the app from DT* keys in
@@ -142,7 +164,7 @@ cp "$PROVISION_PROFILE" "${CONTENTS_DIR}/embedded.provisionprofile"
 echo "🔏 Signing app for Mac App Store with: ${APP_SIGN_IDENTITY}"
 codesign --force --timestamp \
     --entitlements "$ENTITLEMENTS" \
-    --sign "$APP_SIGN_IDENTITY" \
+    --sign "$APP_SIGN_TARGET" \
     "$APP_BUNDLE"
 codesign --verify --strict --verbose=2 "$APP_BUNDLE"
 
@@ -156,7 +178,7 @@ echo "📦 Building installer package..."
 mkdir -p "$DIST_DIR"
 rm -f "$PKG_PATH"
 productbuild --component "$APP_BUNDLE" /Applications \
-    --sign "$INSTALLER_SIGN_IDENTITY" \
+    --sign "$INSTALLER_SIGN_TARGET" \
     "$PKG_PATH"
 pkgutil --check-signature "$PKG_PATH"
 

@@ -200,6 +200,21 @@ Store one; a certificate whose private key is missing (it shows as invalid in
 
 ## 3. Create the app record — App Store Connect ☐
 
+**This is the one step with no API.** `POST /v1/apps` returns
+`FORBIDDEN_ERROR: The resource 'apps' does not allow 'CREATE'` even for an
+App Manager key, so the record has to be made in the web UI once. Everything
+after it is scriptable again.
+
+**Apps → + → New App:**
+
+- Platform: **macOS**
+- Name: `Spellbreak`
+- Primary language: English (Australia)
+- Bundle ID: `com.pabloalvarado.spellbreak` (registered — the provisioning
+  script created it)
+- SKU: `spellbreak-mac`
+- User access: Full
+
 **Apps → + → New App**
 - Platform: **macOS**
 - Name: see [`APP_STORE.md`](APP_STORE.md#app-name)

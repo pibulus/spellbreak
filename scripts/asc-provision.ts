@@ -254,6 +254,57 @@ async function sh(cmd: string, args: string[], cwd?: string) {
 
 // ------------------------------------------------------------------
 
+async function importKeychain(
+  dist: { cerPath: string },
+  installer: { cerPath: string },
+  keyFile: string,
+) {
+  const p12 = `${WORK_DIR}/spellbreak-mas.p12`;
+  const p12pass = crypto.randomUUID();
+  await sh("openssl", [
+    "pkcs12",
+    "-export",
+    "-inkey",
+    keyFile,
+    "-in",
+    dist.cerPath,
+    "-name",
+    "Spellbreak MAS",
+    "-out",
+    p12,
+    // OpenSSL 3+ defaults to AES-256 + PBKDF2, which `security import` cannot
+    // read ("MAC verification failed"). Force the legacy PBE macOS accepts.
+    "-certpbe",
+    "PBE-SHA1-3DES",
+    "-keypbe",
+    "PBE-SHA1-3DES",
+    "-macalg",
+    "sha1",
+    "-passout",
+    `pass:${p12pass}`,
+  ]);
+  await sh("security", [
+    "import",
+    p12,
+    "-k",
+    KEYCHAIN,
+    "-P",
+    p12pass,
+    "-T",
+    "/usr/bin/codesign",
+    "-T",
+    "/usr/bin/productbuild",
+  ]);
+  await sh("security", [
+    "import",
+    installer.cerPath,
+    "-k",
+    KEYCHAIN,
+    "-T",
+    "/usr/bin/productbuild",
+  ]);
+}
+
 async function main() {
   if (SELF_TEST) return await selfTest();
 
@@ -325,23 +376,62 @@ async function main() {
   await Deno.mkdir(WORK_DIR, { recursive: true });
   const keyFile = `${WORK_DIR}/spellbreak-mas.pem`;
   const csrFile = `${WORK_DIR}/spellbreak-mas.crtSigningRequest`;
-  await sh("openssl", [
-    "req",
-    "-new",
-    "-newkey",
-    "rsa:2048",
-    "-nodes",
-    "-keyout",
-    keyFile,
-    "-out",
-    csrFile,
-    "-subj",
-    "/C=AU/CN=Pablo Alvarado/emailAddress=pibulus@gmail.com",
-  ]);
-  const csr = await Deno.readTextFile(csrFile);
-  ok("Generated a fresh key and CSR in .asc-work/");
+
+  const present = async (path: string) => {
+    try {
+      await Deno.stat(path);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const haveBothCerts = !args.has("--force-certs") &&
+    await present(`${WORK_DIR}/distribution.cer`) &&
+    await present(`${WORK_DIR}/mac_installer_distribution.cer`);
+
+  let csr = "";
+  if (haveBothCerts && await present(keyFile)) {
+    ok("Reusing the key and certificates already in .asc-work/");
+  } else {
+    await sh("openssl", [
+      "req",
+      "-new",
+      "-newkey",
+      "rsa:2048",
+      "-nodes",
+      "-keyout",
+      keyFile,
+      "-out",
+      csrFile,
+      "-subj",
+      "/C=AU/CN=Pablo Alvarado/emailAddress=pibulus@gmail.com",
+    ]);
+    csr = await Deno.readTextFile(csrFile);
+    ok("Generated a fresh key and CSR in .asc-work/");
+  }
 
   async function createCert(type: string, label: string) {
+    const reused = `${WORK_DIR}/${type.toLowerCase()}.cer`;
+    if (!args.has("--force-certs")) {
+      try {
+        const bytes = await Deno.readFile(reused);
+        const mine = btoa(String.fromCharCode(...bytes));
+        const match = (certs.json.data ?? []).find(
+          (c: any) =>
+            c.attributes.certificateType === type &&
+            c.attributes.certificateContent === mine,
+        );
+        if (match) {
+          ok(`${label} already exists for this key (id ${match.id}) — reusing`);
+          return { id: match.id as string, cerPath: reused };
+        }
+        warn(
+          `${label} file present but not found at Apple — a new one will be created`,
+        );
+      } catch { /* not there, create */ }
+    }
+
     const r = await api("/certificates", {
       method: "POST",
       body: {
@@ -371,45 +461,29 @@ async function main() {
 
   // 4. Import both into the login keychain, with the key that signed the CSR.
   //    productbuild is the tool that signs the installer package, codesign the app.
-  const p12 = `${WORK_DIR}/spellbreak-mas.p12`;
-  const p12pass = crypto.randomUUID();
-  await sh("openssl", [
-    "pkcs12",
-    "-export",
-    "-inkey",
-    keyFile,
-    "-in",
-    dist.cerPath,
-    "-name",
-    "Spellbreak MAS",
-    "-out",
-    p12,
-    "-passout",
-    `pass:${p12pass}`,
-  ]);
-  await sh("security", [
-    "import",
-    p12,
-    "-k",
-    KEYCHAIN,
-    "-P",
-    p12pass,
-    "-T",
-    "/usr/bin/codesign",
-    "-T",
-    "/usr/bin/productbuild",
-  ]);
-  await sh("security", [
-    "import",
-    installer.cerPath,
-    "-k",
-    KEYCHAIN,
-    "-T",
-    "/usr/bin/productbuild",
-  ]);
+  const identities = await sh("security", ["find-identity", "-v"])
+    .catch(() => "");
+  if (
+    !args.has("--force-certs") &&
+    identities.includes("Apple Distribution: Pablo Alvarado")
+  ) {
+    ok("Both identities are already in the login keychain — nothing to import");
+  } else {
+    await importKeychain(dist, installer, keyFile);
+    ok("Imported both certificates into the login keychain");
+  }
+
   ok("Imported both certificates into the login keychain");
 
   // 5. The profile, pointed at the certificate ID we just made — never a name.
+  const existingProfiles = await api(
+    `/profiles?filter[name]=${encodeURIComponent(PROFILE_NAME)}`,
+  );
+  for (const old of existingProfiles.json?.data ?? []) {
+    const del = await api(`/profiles/${old.id}`, { method: "DELETE" });
+    if (del.status < 300) warn(`Removed the old profile ${old.id} (same name)`);
+  }
+
   const prof = await api("/profiles", {
     method: "POST",
     body: {
