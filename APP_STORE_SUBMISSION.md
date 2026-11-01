@@ -141,96 +141,62 @@ In App Store Connect → **Business** (paid apps can't go live until this is gre
 
 ## 2. Identifiers, certificates, profile ☐
 
-Three things are missing and nothing else is: an **App ID**, two **signing
-certificates**, and a **provisioning profile**. The certificates come from Xcode
-in about a minute each — no CSR download, no portal dance. Only the profile
-needs the website.
+**Do not do this by hand.** The download/upload loop fails structurally: Apple
+binds every certificate to a CSR, then the profile dropdown lists every cert in
+the team with nothing to say which is the distribution one, and a mismatch only
+surfaces at upload.
 
-Admin or Account Holder on the team is required for the profile step.
+`scripts/asc-provision.ts` does the whole thing through the App Store Connect
+API, re-runnably:
 
-### 2a. Sign Xcode in (once)
+- generates a fresh private key and CSR locally, so key and cert match **by
+  construction** — they are the same pair, made in the same run;
+- asks Apple for an **Apple Distribution** and a **Mac Installer
+  Distribution** certificate from that CSR;
+- imports both into the login keychain with the matching key;
+- creates the **Mac App Store** profile pointed at the certificate ID it just
+  received, never at a name someone had to recognise;
+- writes `Spellbreak_MAS.provisionprofile` and prints the preflight command.
 
-Xcode → **Settings** (⌘,) → **Accounts** → **+** → *Apple ID* → sign in →
-select the team `Pablo Alvarado (V433H655PN)`. Wait for the list to populate.
+### The one-time key (the only clicking left, and it is one form)
 
-### 2b. Create both certificates, in Xcode
-
-Still in **Accounts** → select the team → **Manage Certificates…** → **+**:
-
-- **Apple Distribution** — for the app
-- **Mac Installer Distribution** — for the installer package
-
-Each appears in the list within a few seconds and lands in the login keychain
-with its private key already attached. If **Mac Installer Distribution** is not
-in the `+` menu on this Xcode, create it on the website instead:
-Certificates → + → *Mac Installer Distribution* → upload
-`~/Desktop/SpellbreakCerts/Spellbreak.certSigningRequest` (it still matches the
-MAS private key on disk) → download → double-click to import.
-
-Check it took:
+App Store Connect → **Users and Access** → **Integrations** → **App Store
+Connect API** → **+** → name `spellbreak-automation`, access role **App
+Manager** → Generate. Download the `.p8` (once, ever) and copy the **Key ID**
+and the **Issuer ID** shown above the list.
 
 ```bash
-security find-identity -v -p codesigning | grep -E 'Apple Distribution|Developer ID'
-security find-identity -v | grep 'Installer'
+mkdir -p ~/.appstoreconnect/private_keys
+mv ~/Downloads/AuthKey_XXXXXXXXXX.p8 ~/.appstoreconnect/private_keys/
+export ASC_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ```
 
-You should see `Apple Distribution: Pablo Alvarado (V433H655PN)` and
-`3rd Party Mac Developer Installer: Pablo Alvarado (V433H655PN)`.
+`ASC_KEY_ID` is read from the filename, so it only needs setting if the file
+was renamed.
 
-### 2c. Register the App ID (if it is not there yet)
-
-developer.apple.com → **Certificates, Identifiers & Profiles** → **Identifiers**
-→ filter *App IDs* → look for `com.pabloalvarado.spellbreak`.
-
-If it is missing: **+** → *App IDs* → *App* → Description `Spellbreak` →
-Bundle ID **explicit** `com.pabloalvarado.spellbreak` → no capabilities →
-Continue → Register.
-
-### 2d. The provisioning profile
-
-Same site → **Profiles** → **+** → **Mac App Store Connect** → Continue →
-App ID `com.pabloalvarado.spellbreak` → select the **Apple Distribution**
-certificate → select the team → name it `Spellbreak MAS` → Generate →
-**Download**.
-
-Rename the downloaded file to exactly:
-
-```
-Spellbreak_MAS.provisionprofile
-```
-
-and put it in the **root of the Spellbreak repo** (next to `Package.swift`). It
-is gitignored on purpose — do not commit it.
-
-```bash
-mv ~/Downloads/Spellbreak_MAS*.provisionprofile \
-   ~/Projects/active/mac/spellbreak/Spellbreak_MAS.provisionprofile
-```
-
-### 2e. Prove it before building
+### Then, every time
 
 ```bash
 cd ~/Projects/active/mac/spellbreak
-./build-mas.sh --check-only   # preflight only: no build, just the answer
+deno run -A scripts/asc-provision.ts --check   # what exists already, creates nothing
+deno run -A scripts/asc-provision.ts           # create what is missing
+./build-mas.sh --check-only                    # prove certificates + profile agree
+./build-mas.sh                                 # dist/Spellbreak-vX.Y.Z-mas.pkg
 ```
 
-`build-mas.sh` checks, before it compiles anything: full Xcode selected, the
-profile present, the profile's app ID matching `V433H655PN.com.pabloalvarado.spellbreak`,
-the profile being distribution rather than development, and both identities in
-the keychain. If one is missing it names it.
+`--self-test` proves the JWT signing offline without touching Apple.
 
-**Traps, in the order they bite:**
+### The manual path, if the API is ever unavailable
 
-- **A development profile** looks the same in the filename and fails at upload.
-  `build-mas.sh` refuses it; if it says "lists devices", the profile came from
-  *App Store Connect* → wrong, that one is for iOS. Use **Mac App Store
-  Connect**.
-- **Both identities must have private keys.** `find-identity -v` without `-p
-  codesigning` shows certificates; a certificate with no key shows as invalid
-  and signs nothing.
-- **Xcode must be the selected toolchain** (`xcode-select -p` →
-  `/Applications/Xcode.app/Contents/Developer`). Command Line Tools alone cannot
-  stamp the `DT*` keys App Store Connect checks.
+Still possible, just slower and the source of the loop: Xcode → Settings →
+Accounts → Manage Certificates → **+** → *Apple Distribution*, then *Mac
+Installer Distribution*; developer.apple.com → Profiles → **+** → **Mac App
+Store Connect** → App ID `com.pabloalvarado.spellbreak` → the Apple Distribution
+certificate → download → rename to `Spellbreak_MAS.provisionprofile` → repo root.
+
+**Traps, in the order they bite:** a development profile instead of a Mac App
+Store one; a certificate whose private key is missing (it shows as invalid in
+`security find-identity -v`); Command Line Tools selected instead of full Xcode.
 
 ## 3. Create the app record — App Store Connect ☐
 

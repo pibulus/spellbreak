@@ -53,3 +53,6 @@ dist/
 
 # Signing material — download from developer.apple.com, never commit
 *.provisionprofile
+
+# App Store Connect provisioning workspace — holds a private key
+.asc-work/
