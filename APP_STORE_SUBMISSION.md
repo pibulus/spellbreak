@@ -45,6 +45,24 @@ below remain open until checked against App Store Connect.
 
 ---
 
+## What App Review actually rejects
+
+Not margins. Reviewers are not designers and there is no pixel inspection. The
+rejections that actually happen, and where Spellbreak sits against each:
+
+| Guideline | What it means | Spellbreak |
+| --- | --- | --- |
+| **2.1 App Completeness** | It crashes, a link is dead, a screen is placeholder | Low risk, *if* the sandbox build is walked first: mic deferral, full-screen deferral and multi-display all behave differently inside the sandbox |
+| **2.3.7 / 2.3.3 Accurate Metadata** | Screenshots that aren't the app, claims that aren't true, a name already taken | Screenshots are rendered from the real app at all four sizes. The likeliest failure here is the **name**: `Spellbreak` was a 2019 battle royale, so the plain name may be unavailable — have "Spellbreak – Break Reminder" ready |
+| **3.1.1 In-App Purchase** | Unlocking digital features outside the store, or a trial woven in a way Apple doesn't recognise | The trial is a free non-consumable named exactly **7-Day Trial**, the shape Apple documents for one-time unlocks. The review notes have to explain it, or a reviewer marks it 3.1.1 |
+| **4.2 Minimum Functionality** | "Too simple to deserve an app" — the usual trap for timers and menu-bar utilities | The real risk. The counter is on the tin: pointer-screen anchoring with mirror displays, deferral during calls, full-screen apps and typing, three palettes, the message engine, Lock mode. Say it in the description |
+| **5.1.1 Privacy** | Missing manifest, undeclared data | Nothing is collected, `PrivacyInfo.xcprivacy` declares exactly that, and there is no network access in the entitlements |
+
+**What a rejection actually costs:** a metadata rejection is a same-day fix and
+resubmit — an edited field, a new screenshot, a sentence in the notes. It is
+annoying, not fatal, and it does not repeat once fixed. The expensive outcome is
+not rejection; it is the portal, which is why this lane is parked.
+
 ## 0. Decide before you start
 
 ### Pricing
