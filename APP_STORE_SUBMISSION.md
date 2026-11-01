@@ -186,6 +186,12 @@ deno run -A scripts/asc-provision.ts           # create what is missing
 
 `--self-test` proves the JWT signing offline without touching Apple.
 
+**If a certificate is revoked elsewhere** (another person or session working the
+same team, hitting the two-certificate cap), the profile goes `INVALID` and a
+build signed with the dead chain is rejected at upload. Re-running the script
+rebuilds the chain from a fresh key; `--check` reports what Apple currently
+holds before anything is created. The preflight is not a revocation check.
+
 ### The manual path, if the API is ever unavailable
 
 Still possible, just slower and the source of the loop: Xcode → Settings →

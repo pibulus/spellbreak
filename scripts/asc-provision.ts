@@ -386,13 +386,15 @@ async function main() {
     }
   };
 
-  const haveBothCerts = !args.has("--force-certs") &&
-    await present(`${WORK_DIR}/distribution.cer`) &&
-    await present(`${WORK_DIR}/mac_installer_distribution.cer`);
-
+  // One key pair per run, always: both certificates are cut from this CSR, so
+  // they share the key that gets imported. Regenerating the key while reusing
+  // a certificate from a previous run is exactly the mismatch this script is
+  // meant to make impossible.
+  const haveKeyPair = (await present(keyFile)) && (await present(csrFile));
   let csr = "";
-  if (haveBothCerts && await present(keyFile)) {
-    ok("Reusing the key and certificates already in .asc-work/");
+  if (haveKeyPair && !args.has("--force-certs")) {
+    csr = await Deno.readTextFile(csrFile);
+    ok("Reusing the key and CSR already in .asc-work/");
   } else {
     await sh("openssl", [
       "req",
@@ -461,16 +463,28 @@ async function main() {
 
   // 4. Import both into the login keychain, with the key that signed the CSR.
   //    productbuild is the tool that signs the installer package, codesign the app.
+  // Match our certificate by hash, not by name: a team can hold several
+  // "Apple Distribution" identities, and the ones in the keychain may be the
+  // revoked ones from an earlier attempt. Signing with those fails at upload.
+  const oursHash = (await sh("openssl", [
+    "x509",
+    "-inform",
+    "der",
+    "-in",
+    dist.cerPath,
+    "-fingerprint",
+    "-sha1",
+    "-noout",
+  ])).replace(/.*=/, "").replace(/:/g, "").trim().toUpperCase();
   const identities = await sh("security", ["find-identity", "-v"])
     .catch(() => "");
   if (
     !args.has("--force-certs") &&
-    identities.includes("Apple Distribution: Pablo Alvarado")
+    identities.toUpperCase().includes(oursHash)
   ) {
     ok("Both identities are already in the login keychain — nothing to import");
   } else {
     await importKeychain(dist, installer, keyFile);
-    ok("Imported both certificates into the login keychain");
   }
 
   ok("Imported both certificates into the login keychain");
