@@ -57,32 +57,30 @@ That is true of the *app*; the website counts page views and says so on
 **Description** (4000) — first person, because that is what the About says too:
 
 ```
-I built Spellbreak for a specific kind of afternoon: the one where I look up and
-it is dark, and I have been in the same chair since morning, reading about
-something I will never need again.
+I get lost in time. Coding, games, YouTube — it is always the same thing: I look
+up and it is dark and I have not eaten.
 
-Coding, games, YouTube — the trance is the same whichever screen it comes
-through. The body files its complaints late: dry eyes, a jaw like a vice, tea
-gone cold two hours ago.
+I tried the usual break reminders. Banners, chimes, a little box in the corner. I
+would swipe them away without reading them. So I made the one I wanted: the whole
+screen changes for twenty seconds, then gives the screen back.
 
-So the app does one thing. Every so often the screen goes quiet and turns into
-moving light for twenty seconds, then hands the screen back. That is the whole
-trick.
+That is the whole app. It has helped me eat lunch, drink tea while it is still
+hot, stand up, look out the window.
 
-- Full screen across every display. The message lands on the screen holding the
+- The break covers every display. The message lands on the screen with the
   pointer; the others dim to match.
-- Hold 2–3 seconds to leave a break early. Lock mode takes the hold away, and
-  the break runs its clock with nothing to click.
+- Hold 2–3 seconds to leave a break early. Lock mode takes the skip button away
+  and the break just runs.
 - Breaks from 10 seconds to 3 minutes, at intervals from 15 minutes to 3 hours.
   It starts at 20 seconds every 20 minutes.
-- Waits during calls, full-screen apps and mid-sentence typing. Time away from
-  the Mac counts as a break.
-- Aurora shifts with the clock; Ember stays warm; Violet stays cool; Surprise
-  rolls one per break.
-- The break message is a few words, observational, and can be switched off.
+- It waits during calls, full-screen apps and mid-sentence typing. Time away
+  from the Mac counts as a break.
+- Aurora shifts with the clock, Ember stays warm, Violet stays cool, Surprise
+  rolls one each break.
+- The break message is a few words and can be switched off.
 
 Free for a week, then one purchase. No subscription, no account, no ads, no
-analytics, and no network access at all — the app is sandboxed with a single
+analytics, and no network access at all — it is sandboxed with a single
 entitlement. It never records audio; it only asks whether the microphone is in
 use, which is how it knows to wait during a call.
 
