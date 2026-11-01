@@ -24,7 +24,16 @@ below remain open until checked against App Store Connect.
 ## 0. Decide before you start
 
 ### Pricing
-**Model: free download, 7-day trial, one-time unlock: US$9.99 · A$12.99.**
+
+> **What sells today (2 Nov 2026): the direct DMG at A$29, paid once, unlocked.**
+> That's the live offer on spellbreak.app, and the build it hands out is compiled
+> without `-DAPP_STORE`, so there is no trial and no lock in it. The App Store
+> model described below is the plan for the MAS lane and takes effect only when
+> that lane ships its own build. Until then the site, the DMG, `APP_STORE.md` and
+> the project ledger should all read "A$29 once", and nothing on the site should
+> quote US$9.99.
+
+**App Store model (deferred): free download, 7-day trial, one-time unlock: US$9.99 · A$12.99.**
 
 Apple has no trials for paid-upfront apps, but guideline 3.1.1 explicitly allows
 this shape for one-time purchases: a free in-app purchase named "7-Day Trial"

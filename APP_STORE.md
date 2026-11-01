@@ -45,9 +45,16 @@ expect.
 Primary: Productivity
 
 ## Price
-The app is **Free**. The price lives on the unlock in-app purchase:
-**US$9.99 · A$12.99**, one time, after a 7-day trial. Setup and reasoning are in
-the [submission guide](APP_STORE_SUBMISSION.md#pricing).
+
+> **Live offer today: A$29 once, unlocked, from spellbreak.app.** The direct DMG
+> is built without `-DAPP_STORE`, so no trial and no lock. The App Store columns
+> below describe the MAS lane, which is deferred until the distribution
+> certificates and provisioning profile exist; they are not the current price.
+
+For the App Store build, the app is **Free** and the price lives on the unlock
+in-app purchase: **US$9.99 · A$12.99**, one time, after a 7-day trial. Setup and
+reasoning are in the
+[submission guide](APP_STORE_SUBMISSION.md#pricing).
 
 ## In-App Purchases
 Two non-consumables: app → Monetization → In-App Purchases. A first IAP has to
