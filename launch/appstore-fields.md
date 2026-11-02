@@ -61,27 +61,20 @@ I lose track of time. Coding, gaming, watching videos — then it is dark, I am
 hungry, and I have not eaten.
 
 I needed something sweet but stern to break me from my spell, so I made
-Spellbreak. A small spell that gently takes over the screen and reminds me to pat
-the cat, drink some tea, look out the window.
+Spellbreak: a small thing that takes over the screen for a moment and reminds me
+to feed the cat, look out the window, stretch my back.
 
-It has been working. I eat lunch now, and the cats seem happier.
+Breaks can be unskippable, or skippable if that is the kind of day it is. The
+length and the gap are set by hand. The colours drift with the clock or stay
+where they are put, and the little fortunes arrive or do not.
 
-- Skippable or unskippable, whichever way the day is going
-- Length and gap set by hand, from 10 seconds to 3 minutes, every 15 minutes to
-  3 hours
-- Luscious flowing waves of colour, across every display, Aurora shifting with
-  the clock
-- Sentences pulled out of entropy, so they rarely repeat
-- Its own soundtrack — a piano loop I recorded, with weather behind it
-- Holds during calls, full-screen apps and mid-sentence typing, because a break
-  in the middle of a sentence helps nobody
+Foggy eyes, a stiff back, a cup of tea going cold.
 
-Free for a week, then one purchase. No subscription, no account, no ads, no
-analytics, and no network access at all — it is sandboxed with a single
-entitlement. It never records audio; it only asks whether the microphone is in
-use, which is how it knows to hold during a call.
+It is only $29. Handmade with love in Melbourne.
 
-macOS 13 or later. Apple silicon and Intel. Made with love in Melbourne.
+Requires macOS 13 or later. Apple silicon and Intel. It never records audio; it
+only asks whether the microphone is in use, which is how it knows to hold during
+a call. No network access at all.
 ```
 
 **Keywords** (100 chars, comma separated, no spaces):
