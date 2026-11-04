@@ -2,7 +2,7 @@
 
 A Mac menu bar timer that washes every display in moving aurora light when an interval comes round. Hold the ring for 2 to 3 seconds to leave early, or turn on Lock mode so the break runs its full clock.
 
-CTA: Buy on spellbreak.app (A$29 once)
+CTA: Buy on spellbreak.app (A$19 once)
 
 ## Proof Bullets
 - 20-second breaks every 20 minutes by default, or Lock mode with no skip ring.

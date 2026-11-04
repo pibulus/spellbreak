@@ -46,7 +46,7 @@ Primary: Productivity
 
 ## Price
 
-> **Live offer today: A$29 once, unlocked, from spellbreak.app.** The direct DMG
+> **Live offer today: A$19 once, unlocked, from spellbreak.app.** The direct DMG
 > is built without `-DAPP_STORE`, so no trial and no lock. Both MAS signing
 > certificates, `Spellbreak_MAS.provisionprofile`, and `dist/Spellbreak-v1.2.2-mas.pkg`
 > are built and verified locally; the App Store columns below describe the MAS

@@ -31,7 +31,7 @@ deliberate, never punitive.
 ## Install
 
 Download from [spellbreak.app](https://spellbreak.app), move Spellbreak to
-Applications, and launch. A$29 once, unlocked, with no account, trial timer, or
+Applications, and launch. A$19 once, unlocked, with no account, trial timer, or
 subscription.
 
 The Mac App Store build (free download, 7-day trial, one-time unlock) builds via

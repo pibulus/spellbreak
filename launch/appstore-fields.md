@@ -6,7 +6,7 @@ portal is the one part no script can do: `POST /v1/apps` returns
 key. So this file exists to make that single sitting as short as possible.
 
 Checked against `../APP_STORE.md` and `../APP_STORE_SUBMISSION.md`. The numbers
-here (A$29 direct, US$9.99 / A$14.99 store unlock) are the decided ones as of
+here (A$19 direct, US$9.99 / A$14.99 store unlock) are the decided ones as of
 2 Nov 2026.
 
 ---

@@ -41,11 +41,11 @@ The brief is the only input that matters. Change the brief, not the output.
 
 ## The brief knows things the generator would otherwise guess wrong
 
-- **One-time app sale, A$29.** Not a supporter pass, not a yearly membership.
+- **One-time app sale, A$19.** Not a supporter pass, not a yearly membership.
   ZipList and TalkType in the same fleet sell `$29/year` passes and their copy
   reads like a membership — that language must never appear here.
-- **The Mac App Store lane is parked.** No trial, no US$9.99, no "also on the
-  App Store". One price, one way to buy.
+- **The Mac App Store lane is built, not submitted.** No trial mention, no
+  US$9.99, no "also on the App Store" in site copy. One price, one way to buy.
 - **Lock mode is the only thing called unskippable.** The default break has a
   2–3 second hold, on purpose.
 - Never a hold longer than 3 seconds or a break longer than 3 minutes.

@@ -20,7 +20,7 @@ that hold away. Street-smart occult, never corporate wellness.
 `Assets.car`, `CFBundleIconName`, `PrivacyInfo.xcprivacy` `CA92.1` + `35F9.1`, and
 MAS-safe About links) both verify cleanly alongside each other.
 
-Selling today: A$29 once, unlocked, from spellbreak.app (Square checkout).
+Selling today: A$19 once, unlocked, from spellbreak.app (Square checkout).
 
 Open for MAS launch: creating the App Store Connect app record (`POST /v1/apps`
 is web-UI only), uploading `dist/Spellbreak-v1.2.2-mas.pkg` via Transporter, and

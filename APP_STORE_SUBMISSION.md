@@ -3,7 +3,7 @@
 > **PARKED 2 November 2026 — deliberate, not blocked.**
 >
 > The Apple Developer portal burned a session and won nothing. The decision:
-> Spellbreak sells direct, notarized, A$29, and the Store lane waits until
+> Spellbreak sells direct, notarized, A$19, and the Store lane waits until
 > someone actually wants to go back in there. Nothing below is broken or
 > half-finished — it is simply not being run.
 >
@@ -70,11 +70,11 @@ not rejection; it is the portal, which is why this lane is parked.
 >
 > | Lane | Offer | Why |
 > | --- | --- | --- |
-> | spellbreak.app (live) | **A$29 once, unlocked** — no trial, no store, notarized by us | Highest margin per sale (~A$28 after Square), and it is already working. The buyer gets the app and nothing else to do |
+> | spellbreak.app (live) | **A$19 once, unlocked** — no trial, no store, notarized by us | Best margin per sale (~A$18 after Square), and it is already working. The buyer gets the app and nothing else to do |
 > | Mac App Store | **Free download, 7-day trial, then US$9.99 · A$14.99 unlock** | Discovery. Nobody installs a paid unknown break reminder; a free week with a real break does the selling, and ratings are the only free traffic the Store gives a small app |
 >
 > The direct build is compiled without `-DAPP_STORE`, so it has no trial and no
-> lock in it at all. Paying A$29 direct buys the unlocked app and skips the
+> lock in it at all. Paying A$19 direct buys the unlocked app and skips the
 > trial; the Store version is cheaper but starts on a clock. That is a real
 > difference, not a markup, and it is the line to use if anyone asks.
 >
@@ -140,7 +140,7 @@ and `mailto:pibulus@gmail.com` (`PreferencesView.swift`) — the direct-purchase
 homepage (`spellbreak.app`) and GitHub release links are compiled out of the MAS
 binary so the app never steers buyers off the App Store (Guideline 3.1.1).
 
-The direct DMG (`spellbreak.app`, A$29 via Square) and the Mac App Store build
+The direct DMG (`spellbreak.app`, A$19 via Square) and the Mac App Store build
 (`7-Day Trial` + `Unlock` IAP) can run side by side. Keep `/privacy` (publishing
 [`PRIVACY.md`](PRIVACY.md)) and support live on `spellbreak.app` before
 submitting — App Review opens `/privacy` directly — and never put an external
