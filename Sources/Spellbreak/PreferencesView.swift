@@ -68,7 +68,7 @@ struct PreferencesView: View {
     @State private var selectedTab = 0
     @State private var hoveredElement: String? = nil
     @State private var testButtonPressed = false
-    @State private var sparkleRotation: Double = 0
+    @State private var moonRotation: Double = 0
     @State private var titleOffset: CGFloat = 0
     @State private var launchAtLogin: Bool = false
     @State private var launchAtLoginStatus: SMAppService.Status = SMAppService.mainApp.status
@@ -87,7 +87,7 @@ struct PreferencesView: View {
             VStack(spacing: UI.sectionSpacing) {
                 // Signature header — sits cleanly below the hidden-title traffic lights
                 HStack(spacing: 11) {
-                    Image(systemName: "sparkles")
+                    Image(systemName: "moon.stars.fill")
                         .font(.system(size: 23, weight: .bold))
                         .foregroundStyle(
                             LinearGradient(
@@ -99,12 +99,12 @@ struct PreferencesView: View {
                                 endPoint: .bottomTrailing
                             )
                         )
-                        .rotationEffect(.degrees(sparkleRotation))
+                        .rotationEffect(.degrees(moonRotation))
                         .accessibilityHidden(true)
                         .onAppear {
                             guard !reduceMotion else { return }
                             withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) {
-                                sparkleRotation = 8
+                                moonRotation = 8
                             }
                         }
 
@@ -344,7 +344,7 @@ struct PreferencesView: View {
             iconName = "arrow.clockwise"
         } else if startingTrial {
             title = "Try Free for 7 Days"
-            iconName = "sparkles"
+            iconName = "moon.stars"
         } else if let price = store.unlockProduct?.displayPrice {
             title = "Unlock · \(price)"
             iconName = "lock.open.fill"
@@ -520,7 +520,6 @@ struct PreferencesView: View {
             }
             .padding(.horizontal, UI.sidePadding)
 
-            // Rule-of-three behaviour card: Lock mode, Pause while busy, Autostart.
             VStack(spacing: 0) {
                 ToggleRow(
                     title: "Lock mode",
@@ -764,14 +763,11 @@ struct PreferencesView: View {
             .padding(.horizontal, UI.sidePadding)
 
             VStack(alignment: .leading, spacing: 6) {
-                #if APP_STORE
+                #if !APP_STORE
+                aboutLink(title: "Website", icon: "globe", url: "https://spellbreak.app")
+                #endif
                 aboutLink(title: "Privacy Policy", icon: "hand.raised", url: "https://spellbreak.app/privacy")
                 aboutLink(title: "Support", icon: "envelope", url: "mailto:pibulus@gmail.com?subject=Spellbreak%20Support")
-                #else
-                aboutLink(title: "spellbreak.app", icon: "globe", url: "https://spellbreak.app")
-                aboutLink(title: "madebypablo.app", icon: "square.grid.2x2", url: "https://madebypablo.app")
-                aboutLink(title: "Source on GitHub", icon: "chevron.left.forwardslash.chevron.right", url: "https://github.com/pibulus/spellbreak")
-                #endif
             }
             .padding(.vertical, 10)
             .padding(.horizontal, 16)

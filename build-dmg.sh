@@ -154,15 +154,19 @@ if [[ -n "$SIGN_IDENTITY" && "$LOCAL_BUILD" != "1" && "${SKIP_NOTARIZE:-0}" != "
     fi
 fi
 
-if [[ -x "$HOME/.claude/scripts/dev-tools/dmg-doctor" ]]; then
+DMG_DOCTOR="$(command -v dmg-doctor || true)"
+if [[ -z "$DMG_DOCTOR" && -x "$HOME/.local/bin/dmg-doctor" ]]; then
+    DMG_DOCTOR="$HOME/.local/bin/dmg-doctor"
+fi
+if [[ -n "$DMG_DOCTOR" ]]; then
     if [[ "$LOCAL_BUILD" == "1" || "${SKIP_NOTARIZE:-0}" == "1" ]]; then
-        "$HOME/.claude/scripts/dev-tools/dmg-doctor" "$DMG_PATH" --local
+        "$DMG_DOCTOR" "$DMG_PATH" --local
     else
-        "$HOME/.claude/scripts/dev-tools/dmg-doctor" "$DMG_PATH"
+        "$DMG_DOCTOR" "$DMG_PATH"
     fi
 fi
 
-echo "✨ DMG build complete"
+echo "DMG build complete"
 echo "   App: ${APP_BUNDLE}"
 echo "   DMG: ${DMG_PATH}"
 du -h "$DMG_PATH" | awk '{print "   Size: " $1}'

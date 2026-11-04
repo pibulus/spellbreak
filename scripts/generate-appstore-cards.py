@@ -461,7 +461,7 @@ def main():
             print(f"✅ {path.relative_to(ROOT)}")
 
     using = "real captures" if any(RAW.glob("break-*.png")) else "re-drawn overlays (add screenshots/raw/ captures to upgrade)"
-    print(f"\n✨ {len(cards)} cards from {using}")
+    print(f"\nBuilt {len(cards)} cards from {using}")
 
 
 if __name__ == "__main__":

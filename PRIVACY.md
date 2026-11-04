@@ -2,88 +2,55 @@
 
 *Last updated: November 5, 2026*
 
-## Your Privacy Matters
+## Data Collection
 
-Spellbreak respects your privacy. We built this app to help you take healthy breaks, not to collect your data.
+Spellbreak collects zero data.
 
-## What We Collect
+- No analytics, tracking, telemetry, or crash reporting
+- No network requests (the app carries no network entitlement)
+- No accounts or cloud storage
+- No camera access
+- No audio recording or microphone capture
 
-**Nothing.** Spellbreak collects zero user data.
+## Local Activity Checks
 
-- ❌ No analytics
-- ❌ No tracking
-- ❌ No telemetry
-- ❌ No crash reporting
-- ❌ No network requests
-- ❌ No user accounts
-- ❌ No cloud storage
-- ❌ No camera access
-- ❌ No audio recording, ever
+When **Pause while busy** is enabled, Spellbreak reads local macOS system state so a break waits out calls, presentations, drags, and active typing:
 
-## What Spellbreak Checks
+- **Microphone running state**: queries Core Audio (`kAudioDevicePropertyDeviceIsRunningSomewhere`) on the default input device. Core Audio returns a boolean flag only; audio is never captured, read, or requested, and macOS never prompts for microphone permission.
+- **Fullscreen windows**: reads window bounds reported by macOS to detect full-screen spaces or borderless windows, without reading window titles or screen contents.
+- **Display-sleep assertions**: queries IOKit (`IOPMCopyAssertionsByProcess` and `IOPMCopyAssertionsStatus`) to detect active video playback or screen sharing.
+- **Input timing**: queries Quartz (`CGEventSource.secondsSinceLastEventType`) for elapsed seconds since the last keystroke and current mouse-button state. Only the elapsed-seconds counter and boolean button flag are read; keystrokes and screen contents are never inspected.
 
-So a break doesn't land in the middle of a video call, Spellbreak's **Pause
-while busy** setting checks whether your Mac's microphone is currently in use
-by another app. That's all it can see: a yes or a no. It never listens to,
-records, or receives any audio, which is why macOS never asks you for
-microphone permission.
+Turning **Pause while busy** off in Settings stops those deferral checks.
 
-It also notices when another app is full screen (a game, a film, a
-presentation), using the window sizes macOS reports, and doesn't see what's in
-those windows. It checks whether a mouse button is currently held down, whether
-a screen-recording or video-playback assertion is keeping the display awake, and
-how many seconds it's been since a key was pressed, so a break can wait for the
-end of a drag, a share, or a sentence. That's a single number or a yes/no flag:
-never which keys, never what you typed or watched. Turn Pause while busy off in
-Settings and these checks stop.
+To count time away from the Mac as a completed break, Spellbreak also checks total input idle seconds via `CGEventSource` alongside `IOPMCopyAssertionsStatus` display-awake state. Both values stay in memory and are discarded immediately.
 
-Separately, Spellbreak asks how long it's been since you last touched the
-keyboard, mouse or trackpad, and whether anything (like a playing video) is
-keeping the display awake, so time away from your Mac counts as a break. Again,
-just a number of seconds and a yes or a no.
+## Local Storage
 
-## What Stays on Your Device
+Settings stay in standard macOS `UserDefaults` inside the app container and never leave the Mac:
 
-All preferences stay local:
-- Break interval and duration
-- Sound, theme, and message choices
-- Timer state, so a restart picks up where it left off
-- The last few dozen break messages shown, so lines don't repeat
+- Timing preferences (`breakIntervalMin`, `breakDurationSec`, `lockMode`, `deferDuringFullscreen`)
+- Visual, audio, and message preferences (`visualTheme`, `showBreakMessage`, `musicEnabled`, `soundEffectsEnabled`)
+- Session continuity keys (`hasLaunchedBefore`, `timerWasRunning`, `lastBreakTimestamp`)
+- Recently displayed break lines (`recentBreakMessages`, `recentNoticingMessages`) so lines do not repeat immediately
 
-These are stored in macOS's standard UserDefaults and never leave the Mac.
+## System Permissions
 
-## Permissions We Request
-
-**None required.** Spellbreak works without special permissions.
-
-One optional setting starts off until turned on:
-- **Launch at Login**: to start automatically (optional, off by default)
+Spellbreak requires no macOS privacy permissions. **Launch at Login** uses `SMAppService` and remains off until enabled in Settings.
 
 ## Purchases
 
-In the Mac App Store version, the free trial and the unlock are App Store in-app
-purchases handled by Apple. Spellbreak only learns whether they are owned, never
-payment details or Apple Account credentials.
+- **Mac App Store build**: the 7-day trial and one-time unlock are non-consumable In-App Purchases processed by Apple via StoreKit. Spellbreak reads local entitlement state only and never sees payment details or Apple Account credentials.
+- **Direct notarized build**: runs unlocked with no license server, receipt check, or payment record on the Mac.
 
-In the direct notarized version, there is no licence check inside the app, it
-never contacts any server, and nothing about payment is stored on the Mac.
+## Website
 
-## Third-Party Services
-
-Spellbreak uses no third-party services. No data is sent anywhere, ever.
-
-The website is a separate thing, and worth saying plainly: it counts page views
-on hardware of ours, without cookies and without a profile of who is reading.
-The app itself sends nothing.
+The Spellbreak app makes zero network connections. Separately, the website at `spellbreak.app` counts aggregate page views on self-hosted hardware without cookies, ad trackers, or personal profiles.
 
 ## Contact
 
-Questions about privacy: pibulus@gmail.com
+Privacy questions: pibulus@gmail.com
 
-## Changes
+## Updates
 
-If this policy ever changes (unlikely), we'll update the date at the top.
-
----
-
-*The spell only works on your Mac. Your data stays there too.*
+Material changes to this policy will update the date at the top of this page.

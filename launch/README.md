@@ -1,9 +1,8 @@
 # Spellbreak · launch kit
 
-Initially scaffolded by [Launch Arsenal](https://github.com/pibulus/claude-config)
-from `apps/launch-arsenal/briefs/spellbreak.yaml`, then **hand-rewritten on
-2026-11-04** (`social/`, `community/`, `email/`, `angles.md`, and
-`release/changelog.md`) in Pablo's maker voice.
+Built from `apps/launch-arsenal/briefs/spellbreak.yaml`, with `social/`,
+`community/`, `email/`, `website/`, `angles.md`, and `release/changelog.md`
+written in Pablo's maker voice.
 
 > **Heads-up before regenerating:** running `deno task launch` will overwrite
 > those hand-written files with raw template output. Re-run `deno task arsenal`

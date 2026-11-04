@@ -70,7 +70,7 @@ where they are put, and the little fortunes arrive or do not.
 
 Foggy eyes, a stiff back, a cup of tea going cold.
 
-It is only $29. Handmade with love in Melbourne.
+Try it free for 7 days, then unlock it once (US$9.99 / A$14.99). Handmade with love in Melbourne.
 
 Requires macOS 13 or later. Apple silicon and Intel. It never records audio; it
 only asks whether the microphone is in use, which is how it knows to hold during

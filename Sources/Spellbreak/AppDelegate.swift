@@ -22,7 +22,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         store = Store()
         appState = AppState(soundManager: soundManager, store: store)
 
-        // Create and configure status bar controller immediately
         statusBarController = StatusBarController()
         statusBarController.configure(with: appState)
 

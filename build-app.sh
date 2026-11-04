@@ -145,6 +145,34 @@ if command -v iconutil >/dev/null 2>&1 && [[ -d "$ICONSET_SOURCE" ]]; then
     cp "${ICONSET_SOURCE}"/icon_*.png "$ICONSET_DIR"/
     iconutil -c icns "$ICONSET_DIR" -o "${RESOURCES_DIR}/AppIcon.icns"
     rm -rf "$(dirname "$ICONSET_DIR")"
+    # macOS ImageIO injects synthetic eXIf chunks when iconutil repacks PNG slots;
+    # strip non-image metadata chunks so AppIcon.icns ships with pure PNG streams.
+    python3 - "${RESOURCES_DIR}/AppIcon.icns" <<'PY'
+import pathlib, struct, sys
+p = pathlib.Path(sys.argv[1])
+icns = p.read_bytes()
+if icns[:4] == b"icns":
+    drop = {b"tEXt", b"zTXt", b"iTXt", b"eXIf", b"tIME"}
+    slots, pos = bytearray(), 8
+    while pos < len(icns):
+        ostype = icns[pos:pos+4]
+        length = struct.unpack(">I", icns[pos+4:pos+8])[0]
+        payload = icns[pos+8:pos+length]
+        if payload.startswith(b"\x89PNG\r\n\x1a\n"):
+            out, q = bytearray(b"\x89PNG\r\n\x1a\n"), 8
+            while q < len(payload):
+                clen = struct.unpack(">I", payload[q:q+4])[0]
+                ctype = payload[q+4:q+8]
+                if ctype not in drop:
+                    out.extend(payload[q:q+12+clen])
+                q += 12 + clen
+                if ctype == b"IEND":
+                    break
+            payload = bytes(out)
+        slots.extend(ostype + struct.pack(">I", 8 + len(payload)) + payload)
+        pos += length
+    p.write_bytes(b"icns" + struct.pack(">I", 8 + len(slots)) + bytes(slots))
+PY
 else
     echo "⚠ iconutil unavailable, app icon was not rebuilt"
 fi
@@ -172,6 +200,6 @@ else
     echo "⚠ Unsigned build ready (ad-hoc only — not distributable)"
 fi
 
-echo "✨ App build complete"
+echo "App build complete"
 echo "   App: ${APP_BUNDLE}"
 file "${MACOS_DIR}/${APP_NAME}"

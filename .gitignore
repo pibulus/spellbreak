@@ -58,3 +58,7 @@ dist/
 
 # App Store Connect provisioning workspace — holds a private key
 .asc-work/
+
+# Local workspace tooling
+.claude/
+CLAUDE.md

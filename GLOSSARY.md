@@ -107,7 +107,7 @@ Source of truth for numbers, behaviours and the repo map is
 - Violet: always-cool night colours
 - Surprise: rolls a fresh harmonious 4-stop jewel palette each break
 
-**Smart Pauses** - `shouldHoldBreak()` in `SpellbreakApp.swift`
+**Pause while busy** - `shouldHoldBreak()` in `SpellbreakApp.swift`
 - Under "Pause while busy": full-screen windows (including notched MacBook Full Screen Spaces), mic in use, screen capture / watched video, typing or dragging (waits for 2s of quiet keys, 30s max)
 - Always: away (3+ min with no input, and nothing holding the display awake)
   holds the break and restarts the interval on return; sleep does the same. A

@@ -214,7 +214,7 @@ productbuild --component "$APP_BUNDLE" /Applications \
     "$PKG_PATH"
 pkgutil --check-signature "$PKG_PATH"
 
-echo "✨ MAS build complete"
+echo "MAS build complete"
 echo "   Package: ${PKG_PATH}"
 echo "   Version: ${VERSION} ($(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$APP_INFO_PLIST"))"
 echo ""

@@ -170,9 +170,13 @@ if [[ -f "$DMG_PATH" ]]; then
         sed 's/^/   /' "$CHECK_TMP/mount.log"
     fi
 
-    if [[ -x "$HOME/.claude/scripts/dev-tools/dmg-doctor" ]]; then
+    DMG_DOCTOR="$(command -v dmg-doctor || true)"
+    if [[ -z "$DMG_DOCTOR" && -x "$HOME/.local/bin/dmg-doctor" ]]; then
+        DMG_DOCTOR="$HOME/.local/bin/dmg-doctor"
+    fi
+    if [[ -n "$DMG_DOCTOR" ]]; then
         echo ""
-        if "$HOME/.claude/scripts/dev-tools/dmg-doctor" "$DMG_PATH"; then
+        if "$DMG_DOCTOR" "$DMG_PATH"; then
             pass "dmg-doctor verified $DMG_PATH"
         else
             fail "dmg-doctor rejected $DMG_PATH"

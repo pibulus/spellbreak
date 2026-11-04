@@ -10,8 +10,6 @@ that hold away. Street-smart occult, never corporate wellness.
 - **Bundle ID**: `com.pabloalvarado.spellbreak` (both Direct and MAS; MAS adds `-DAPP_STORE` + `Spellbreak.mas.entitlements`)
 - **Team**: V433H655PN
 
-`CLAUDE.md` is a symlink to this file. Edit this one.
-
 ---
 
 ## Status
@@ -114,7 +112,7 @@ and its reveal is refused (`:456`); Escape only pulses the screen. The break run
 its clock. This is the one setting where a break genuinely cannot be skipped, so
 "unskippable" is true of Lock mode and not of the default. Say it that way.
 
-### Smart pauses (`shouldHoldBreak()`)
+### Pause while busy (`shouldHoldBreak()`)
 
 Under "Pause while busy": full-screen windows, microphone in use, and typing
 (waits for quiet keys, 30 s cap). Always: three minutes with no input and

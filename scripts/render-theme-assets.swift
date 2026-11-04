@@ -4,6 +4,9 @@ import SwiftUI
 import AppKit
 
 // MARK: - Color Palettes
+let spellCream = Color(red: 0.984, green: 0.953, blue: 0.906)
+let spellInk = Color(red: 0.118, green: 0.090, blue: 0.078)
+
 let violetColors: [Color] = [
     Color(red: 0.42, green: 0.36, blue: 1.00),  // Blue-violet
     Color(red: 0.58, green: 0.18, blue: 0.98),  // Violet
@@ -120,7 +123,7 @@ struct StandaloneAurora: View {
                 let gradient = Gradient(stops: [
                     .init(color: Color.clear, location: 0),
                     .init(color: colors[(ribbon + 1) % colors.count].opacity(0.42), location: 0.28),
-                    .init(color: Color.white.opacity(0.18), location: 0.5),
+                    .init(color: spellCream.opacity(0.18), location: 0.5),
                     .init(color: colors[(ribbon + 2) % colors.count].opacity(0.36), location: 0.72),
                     .init(color: Color.clear, location: 1)
                 ])
@@ -207,7 +210,7 @@ struct OverlayRenderer: View {
                 .opacity(0.95)
 
             Rectangle()
-                .fill(Color.black.opacity(0.12))
+                .fill(spellInk.opacity(0.12))
                 .ignoresSafeArea()
 
             StandaloneParticles(particleColors: particleColors, seed: seed)
@@ -217,15 +220,15 @@ struct OverlayRenderer: View {
                 .font(.system(size: 56 * scale, weight: .semibold, design: .rounded))
                 .foregroundStyle(
                     LinearGradient(
-                        colors: [Color(red: 0.99, green: 0.96, blue: 0.91), Color(red: 0.99, green: 0.96, blue: 0.91).opacity(0.92)],
+                        colors: [spellCream, spellCream.opacity(0.92)],
                         startPoint: .top,
                         endPoint: .bottom
                     )
                 )
-                .shadow(color: Color(red: 0.99, green: 0.96, blue: 0.91).opacity(0.32), radius: 20 * scale)
-                .shadow(color: Color(red: 0.99, green: 0.96, blue: 0.91).opacity(0.18), radius: 40 * scale)
+                .shadow(color: spellCream.opacity(0.32), radius: 20 * scale)
+                .shadow(color: spellCream.opacity(0.18), radius: 40 * scale)
                 .shadow(color: themeGlowColor.opacity(0.38), radius: 34 * scale)
-                .shadow(color: Color.black.opacity(0.3), radius: 6 * scale, x: 0, y: 3 * scale)
+                .shadow(color: spellInk.opacity(0.3), radius: 6 * scale, x: 0, y: 3 * scale)
 
             // Bottom controls
             VStack {
@@ -233,12 +236,12 @@ struct OverlayRenderer: View {
                 HStack {
                     Image(systemName: "speaker.wave.1.fill")
                         .font(.system(size: 16 * scale))
-                        .foregroundColor(Color.white.opacity(0.3))
+                        .foregroundColor(spellCream.opacity(0.3))
                         .padding(.leading, 32 * scale)
                     Spacer()
                     Text(countdown)
                         .font(.system(size: 18 * scale, weight: .medium, design: .rounded))
-                        .foregroundColor(Color.white.opacity(0.35))
+                        .foregroundColor(spellCream.opacity(0.35))
                         .padding(.trailing, 32 * scale)
                 }
                 .padding(.bottom, 28 * scale)

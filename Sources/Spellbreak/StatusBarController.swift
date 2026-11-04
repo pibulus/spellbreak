@@ -21,13 +21,11 @@ class StatusBarController: NSObject {
     override init() {
         super.init()
 
-        // Create status bar item
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
         if let statusButton = statusItem.button {
             updateIcon(force: true)
 
-            // Handle both left and right clicks
             statusButton.action = #selector(handleClick)
             statusButton.sendAction(on: [.leftMouseUp, .rightMouseUp])
             statusButton.target = self
@@ -40,7 +38,6 @@ class StatusBarController: NSObject {
         popover.animates = true
         popover.appearance = NSAppearance(named: .darkAqua)
 
-        // Setup context menu for right-click
         setupContextMenu()
     }
 

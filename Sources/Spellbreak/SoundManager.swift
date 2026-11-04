@@ -385,7 +385,6 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
         }
     }
 
-    /// Play break start chime
     func playBreakStartChime() {
         playCustomSound(named: "break-start", volume: 0.6)
     }
@@ -395,32 +394,26 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
         playCustomSound(named: "toggle-on", volume: 0.32)
     }
 
-    /// Play toggle on sound
     func playToggleOn() {
         playCustomSound(named: "toggle-on", volume: 0.4)
     }
 
-    /// Play toggle off sound
     func playToggleOff() {
         playCustomSound(named: "toggle-off", volume: 0.4)
     }
 
-    /// Play button press sound
     func playButtonPress() {
         playCustomSound(named: "button-press", volume: 0.5)
     }
 
-    /// Play slider grab sound
     func playSliderGrab() {
         playCustomSound(named: "slider-grab", volume: 0.35)
     }
 
-    /// Play slider movement tick
     func playSliderTick() {
         playCustomSound(named: "slider-tick", volume: 0.35)
     }
 
-    /// Play slider release sound
     func playSliderRelease() {
         playCustomSound(named: "slider-release", volume: 0.35)
     }
