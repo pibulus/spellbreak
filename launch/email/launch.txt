@@ -1,20 +1,16 @@
 Hey,
 
-I made Spellbreak because time disappears in a tunnel, corner banners lose to deep focus within days, and a break you can dismiss with a reflex never happens.
+I lose track of time pretty badly. Coding, gaming, down a rabbit hole, and suddenly it's dark outside and I haven't eaten.
 
-It is a desktop app for people who disappear into work — hyperfocus, coding tunnels, eyes that need the 20-20-20 rule.
+I needed something sweet but stern to break the spell, so I made Spellbreak for Mac: a small menu bar app that washes every screen in soft moving light for 20 seconds so I remember to drink my tea while it's hot, stretch my back, and feed the cat.
 
-What it does:
+A few small details I care about:
+- Hold the ring for 2-3 seconds to leave early, or turn on Lock mode so the break runs its full clock with no way to skip.
+- Automatically waits during calls (Zoom, Meet, Slack, Discord) without ever touching or recording audio.
+- Zero network access, no accounts, no streaks, no subscriptions. Sandboxed and notarized for macOS 13+ (Apple silicon & Intel).
 
-- Lock mode takes the skip ring away. The break runs its clock.
-- One purchase. No subscription, no account, no streak to keep.
-- The app has no network access at all — sandboxed, sealed, notarized.
-- Apple silicon and Intel, macOS 13 and later.
+It's live now at https://spellbreak.app (~US$20 / A$29 once), and you can test the break right in the browser on the home page.
 
-It is still small, but the core flow is working.
+If you give it a spin through a real afternoon of work, I'd love to hear how the timing and friction feel.
 
-I would be interested in feedback after one real batch: whether the controls made sense before reading anything.
-
-Buy on spellbreak.app — A$29 once
-
-Pablo
+Cheers! -P

@@ -1,10 +1,7 @@
-1/ I made Spellbreak, a desktop app for people who disappear into work — hyperfocus, coding tunnels, eyes that need the 20-20-20 rule.
+1/ I lose track of time. Coding, gaming, down a rabbit hole, and suddenly it's dark and I haven't eaten. I needed something sweet but stern to break the spell, so I built Spellbreak for Mac.
 
-2/ Time disappears in a tunnel, corner banners lose to deep focus within days, and a break you can dismiss with a reflex never happens. Spellbreak is a desktop app for people who disappear into work — hyperfocus, coding tunnels, eyes that need the 20-20-20 rule. Lock mode takes the skip ring away. The break runs its clock.
+2/ Every 20 minutes (or whatever cadence fits), every display melts into moving aurora light for 20 seconds. It's got me drinking tea while it's still hot, looking out the window, and remembering to feed the cat.
 
-3/ What it does:
-- Lock mode takes the skip ring away. The break runs its clock.
-- One purchase. No subscription, no account, no streak to keep.
-- The app has no network access at all — sandboxed, sealed, notarized.
+3/ A 2-3 second hold on the ring leaves early when a build is on fire. Flip Lock mode on and the ring disappears completely until the clock runs out. It waits automatically during calls, and has zero network access.
 
-4/ Buy on spellbreak.app — A$29 once
+4/ One-time purchase on https://spellbreak.app (~US$20 / A$29), notarized for macOS 13+ on Apple silicon and Intel.

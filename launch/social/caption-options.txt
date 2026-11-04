@@ -1,9 +1,9 @@
-1. I made Spellbreak, a desktop app for people who disappear into work — hyperfocus, coding tunnels, eyes that need the 20-20-20 rule.
+1. I lose whole afternoons to coding tunnels and hyperfocus, so I built Spellbreak for Mac: a quiet 20-second wash of moving aurora light across every screen so I remember to stretch, look out the window, and feed the cat. https://spellbreak.app
 
-2. The screen goes quiet. One purchase. No subscription, no account, no streak to keep.
+2. Sweet when a nudge works, stern when Lock mode is on. Spellbreak turns a chosen interval into a full-screen pause across every Mac display. Hold 2-3 seconds to leave early, or lock the ring away completely. https://spellbreak.app
 
-3. Spellbreak turns time disappears in a tunnel, corner banners lose to deep focus within days, and a break you can dismiss with a reflex never happens into the screen goes quiet and changes colour for the length of the break, then hands the screen back. No account, no streak to protect, nothing leaving the Mac.
+3. Everyone knows the 20-20-20 rule and nobody keeps it with a corner banner. Spellbreak dims every display into moving light for 20 seconds every 20 minutes, waits during calls, and stays 100% offline on the Mac. https://spellbreak.app
 
-4. Spellbreak: Lock mode takes the skip ring away. The break runs its clock. One purchase. No subscription, no account, no streak to keep.
+4. Shipped Spellbreak for Mac: full-screen aurora breaks for hyperfocus and long coding stretches. Pauses automatically on calls, zero network access, one-time purchase. https://spellbreak.app
 
-5. I would be interested in feedback after one real batch: whether the controls made sense before reading anything.
+5. Built for days where twenty minutes turns into four hours and suddenly it's dark outside. Spellbreak holds the screen in soft moving light for a moment, then hands the Mac right back. https://spellbreak.app

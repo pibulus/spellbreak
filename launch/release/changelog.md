@@ -1,13 +1,10 @@
-## Spellbreak — 2026-11-01
-Turn a chosen interval into a full-screen pause across every display. Hold briefly to leave — or lock it and the break cannot be skipped.
+## Spellbreak v1.2.0 · 2026-11-04
+Turn a chosen interval into a full-screen pause across every display. Hold 2-3 seconds to leave early, or turn on Lock mode so the break runs its full clock.
 
-Shipped this:
-- Lock mode takes the skip ring away. The break runs its clock.
-- One purchase. No subscription, no account, no streak to keep.
-- The app has no network access at all — sandboxed, sealed, notarized.
-- Apple silicon and Intel, macOS 13 and later.
+Shipped:
+- Full-screen Aurora, Ember, and Violet breaks across every connected display.
+- 2-3 second hold-to-skip ring by default, plus Lock mode when skipping needs to be off the table.
+- Smart pauses during calls (Zoom, Meet, Slack, Discord via Core Audio running-state check) and active typing.
+- Zero network access, no accounts, no analytics, no streaks. Sandboxed and Apple-notarized for macOS 13+ (Apple silicon & Intel).
 
-Built for time-blind workdays, ADHD hyperfocus, and long coding tunnels on a Mac.
-Why now: Time disappears in a tunnel, corner banners lose to deep focus within days, and a break you can dismiss with a reflex never happens.
-Honest bit: Mac only, macOS 13 and later.
-CTA: Buy on spellbreak.app — A$29 once
+Available at https://spellbreak.app (~US$20 / A$29 once).
