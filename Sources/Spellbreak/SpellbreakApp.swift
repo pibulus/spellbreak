@@ -278,7 +278,7 @@ class AppState: ObservableObject {
                 guard let self else { return }
                 // If StoreKit resolves to .notStarted / .trialEnded (e.g. after a launch
                 // restore or trial expiry or refund), halt scheduled timers cleanly.
-                if self.timerRunning && !self.scheduledBreaksAllowed {
+                if (self.timerRunning || self.timerPaused) && !self.scheduledBreaksAllowed {
                     self.stopTimer()
                 }
             }

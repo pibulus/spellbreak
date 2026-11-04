@@ -198,6 +198,7 @@ struct AuroraBackground: View {
     private func auroraCanvas(at time: Double) -> some View {
         let colors = paletteColors
         return Canvas { context, size in
+            guard size.width > 0, size.height > 0 else { return }
             for layer in 0..<4 {
                 let layerOffset = Double(layer) * 0.5
                 let speed = 0.2 + Double(layer) * 0.15

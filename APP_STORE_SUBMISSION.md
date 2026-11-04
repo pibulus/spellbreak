@@ -14,8 +14,8 @@
 >   An App Store Connect API key (`Automation`, App Manager) lives in
 >   `~/.appstoreconnect/private_keys/`. The key id is in the filename; the
 >   issuer id is in the portal under Integrations.
-> - `dist/Spellbreak-v1.2.0-mas.pkg` builds and is signed by the certificate the
->   profile names. Regenerate it if the version moves.
+> - `dist/Spellbreak-v1.2.2-mas.pkg` builds and is signed by the certificate the
+>   profile names (`./mas-check.sh` 19/19). Regenerate it if the version moves.
 > - The one thing no API can do: **create the app record** (Apps → + → New
 >   App). Apple returns 403 on `POST /v1/apps` even for an Admin key.
 > - Watch for a second session revoking certificates; it silently invalidates
@@ -54,7 +54,7 @@ rejections that actually happen, and where Spellbreak sits against each:
 | **2.1 App Completeness** | It crashes, a link is dead, a screen is placeholder | Low risk, *if* the sandbox build is walked first: mic deferral, full-screen deferral and multi-display all behave differently inside the sandbox |
 | **2.3.7 / 2.3.3 Accurate Metadata** | Screenshots that aren't the app, claims that aren't true, a name already taken | Screenshots are rendered from the real app at all four sizes. The likeliest failure here is the **name**: `Spellbreak` was a 2019 battle royale, so the plain name may be unavailable — have "Spellbreak – Break Reminder" ready |
 | **3.1.1 In-App Purchase** | Unlocking digital features outside the store, or a trial woven in a way Apple doesn't recognise | The trial is a free non-consumable named exactly **7-Day Trial**, the shape Apple documents for one-time unlocks. The review notes have to explain it, or a reviewer marks it 3.1.1 |
-| **4.2 Minimum Functionality** | "Too simple to deserve an app" — the usual trap for timers and menu-bar utilities | The real risk. The counter is on the tin: pointer-screen anchoring with mirror displays, deferral during calls, full-screen apps and typing, three palettes, the message engine, Lock mode. Say it in the description |
+| **4.2 Minimum Functionality** | "Too simple to deserve an app" — the usual trap for timers and menu-bar utilities | The real risk. The counter is on the tin: pointer-screen anchoring with mirror displays, deferral during calls, full-screen apps and typing, four palettes, the message engine, Lock mode. Say it in the description |
 | **5.1.1 Privacy** | Missing manifest, undeclared data | Nothing is collected, `PrivacyInfo.xcprivacy` declares exactly that, and there is no network access in the entitlements |
 
 **What a rejection actually costs:** a metadata rejection is a same-day fix and
@@ -134,20 +134,17 @@ take the nearest.
 (say US$6.99), stepping back up to $9.99 after. Watch trial starts versus
 unlocks in App Store Connect's Sales and Trends; that ratio is your conversion.
 
-### Website ☐
-The About tab links to spellbreak.app, and the README says the DMG downloads
-from there. If the site hands out the full website build (no trial, no lock),
-anyone can skip the App Store purchase, so the App Store sale only ever
-catches people who didn't look. Pick one:
-- **Point the site at the App Store** (recommended): an "Download on the Mac App
-  Store" badge, and the DMG retired. Simplest, and it keeps every sale in one place.
-- **Keep the DMG, but sell it** (Gumroad, Paddle): needs licence-key code in the
-  website build. Not in the app today.
+### Website ☑
+In `-DAPP_STORE` builds, the About tab links only to `spellbreak.app/privacy`
+and `mailto:pibulus@gmail.com` (`PreferencesView.swift`) — the direct-purchase
+homepage (`spellbreak.app`) and GitHub release links are compiled out of the MAS
+binary so the app never steers buyers off the App Store (Guideline 3.1.1).
 
-Either way, the site needs a support/contact route and `/privacy` (publish
-[`PRIVACY.md`](PRIVACY.md)) live before you submit; App Review opens both. And
-don't put a "buy outside the App Store" link on the page the app links to:
-steering buyers off the App Store is a guideline 3.1.1 problem.
+The direct DMG (`spellbreak.app`, A$29 via Square) and the Mac App Store build
+(`7-Day Trial` + `Unlock` IAP) can run side by side. Keep `/privacy` (publishing
+[`PRIVACY.md`](PRIVACY.md)) and support live on `spellbreak.app` before
+submitting — App Review opens `/privacy` directly — and never put an external
+checkout CTA on `/privacy` itself.
 
 The repo is public too, so anyone handy with Xcode can build Spellbreak
 unlocked. Most buyers won't bother, and plenty of indie apps sell fine that way;
@@ -329,7 +326,7 @@ screenshots on the version page.
 
 ## 7. Version page ☐
 
-On the **1.2.0** version page:
+On the **1.2.2** version page:
 - Screenshots, promotional text, description, keywords, support and marketing
   URLs, copyright: all from [`APP_STORE.md`](APP_STORE.md)
 - **Build:** pick the processed build

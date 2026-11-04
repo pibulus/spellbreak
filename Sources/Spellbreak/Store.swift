@@ -37,7 +37,7 @@ final class Store: ObservableObject {
 
     private var transactionUpdates: Task<Void, Never>?
     private var trialExpiryTask: Task<Void, Never>?
-    private var isLoadingProducts = false
+    @Published private(set) var isLoadingProducts = false
 
     /// Seven days. SPELLBREAK_TRIAL_SECONDS can shorten it to test the ending —
     /// only shorten: a debug lever must never become a way to stretch the trial.

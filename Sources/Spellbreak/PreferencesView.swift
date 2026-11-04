@@ -335,11 +335,12 @@ struct PreferencesView: View {
     private var unlockButton: some View {
         let startingTrial = store.currentAccess == .notStarted
         let productsReady = store.unlockProduct != nil && (!startingTrial || store.trialProduct != nil)
+        let isBusy = store.isWorking || store.isLoadingProducts
         let title: String
         let iconName: String
 
         if !productsReady {
-            title = store.isWorking ? "Connecting…" : "Load App Store"
+            title = isBusy ? "Connecting…" : "Load App Store"
             iconName = "arrow.clockwise"
         } else if startingTrial {
             title = "Try Free for 7 Days"
@@ -385,12 +386,12 @@ struct PreferencesView: View {
                     lineWidth: 2
                 )
             )
-            .scaleEffect(reduceMotion ? 1.0 : (isHovered && !store.isWorking ? 1.01 : 1.0))
+            .scaleEffect(reduceMotion ? 1.0 : (isHovered && !isBusy ? 1.01 : 1.0))
             .animation(.easeOut(duration: 0.15), value: isHovered)
         }
         .buttonStyle(.plain)
-        .disabled(store.isWorking)
-        .opacity(store.isWorking ? 0.55 : 1)
+        .disabled(isBusy)
+        .opacity(isBusy ? 0.55 : 1)
         .onHover { hovering in
             setHover("unlock-button", hovering)
         }

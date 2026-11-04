@@ -103,13 +103,14 @@ build-mas/            Mac App Store app bundle output (git-ignored)
 - **Hold-to-skip**: `actualBreakDuration / 60`, clamped to **2–15 s**. At the
   180 s maximum that is 3 s, so in practice it is 2–3 seconds. The 15 s ceiling
   is unreachable — never quote it.
-- **Displays**: the overlay frame unions every `NSScreen`. The interactive break
-  lands on the display holding the pointer; the others get quiet mirrors.
+- **Displays**: each connected `NSScreen` gets its own borderless overlay window.
+  The interactive break lands on the display holding the pointer; the others get
+  quiet 15 fps mirrors.
 
 ### Lock mode — the unskippable option
 
-Off by default. When on, the skip ring is never drawn (`OverlayWindow.swift:147`)
-and its reveal is refused (`:375`); Escape only pulses the screen. The break runs
+Off by default. When on, the skip ring is never drawn (`OverlayWindow.swift:142`)
+and its reveal is refused (`:456`); Escape only pulses the screen. The break runs
 its clock. This is the one setting where a break genuinely cannot be skipped, so
 "unskippable" is true of Lock mode and not of the default. Say it that way.
 
@@ -144,8 +145,8 @@ don't advertise one.
 Aurora (hour-aware), Ember (warm), Violet (cool), Surprise (rolls a fresh
 harmonious 4-stop jewel palette per break).
 Time-based palettes: dawn 5–10 am, day 10 am–5 pm, evening 5–9 pm, night 9 pm–5 am.
-Waves are Canvas + TimelineView with a 24 px blur; the message fades in over
-1.2 s with a soft glow.
+Waves are Canvas + TimelineView with progressive per-layer Metal blur inside a
+single drawing group; the message fades in over 1.2 s with a soft glow.
 
 ### Privacy
 

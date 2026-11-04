@@ -47,9 +47,10 @@ Primary: Productivity
 ## Price
 
 > **Live offer today: A$29 once, unlocked, from spellbreak.app.** The direct DMG
-> is built without `-DAPP_STORE`, so no trial and no lock. The App Store columns
-> below describe the MAS lane, which is deferred until the distribution
-> certificates and provisioning profile exist; they are not the current price.
+> is built without `-DAPP_STORE`, so no trial and no lock. Both MAS signing
+> certificates, `Spellbreak_MAS.provisionprofile`, and `dist/Spellbreak-v1.2.2-mas.pkg`
+> are built and verified locally; the App Store columns below describe the MAS
+> lane once the App Store Connect app record is created and submitted.
 
 For the App Store build, the app is **Free** and the price lives on the unlock
 in-app purchase: **US$9.99 · A$14.99**, one time, after a 7-day trial. Setup and
@@ -58,7 +59,7 @@ reasoning are in the
 
 ## In-App Purchases
 Two non-consumables: app → Monetization → In-App Purchases. A first IAP has to
-ship *with* an app version, so attach both to 1.2.0 before you submit. Product IDs
+ship *with* an app version, so attach both to 1.2.2 before you submit. Product IDs
 must match `Store.swift` exactly.
 
 | | Trial | Unlock |

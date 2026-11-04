@@ -206,7 +206,7 @@ def label_pill(card, box, title, caption):
     x0, y0, x1, y1 = box
     layer = Image.new("RGBA", card.size, (0, 0, 0, 0))
     d = ImageDraw.Draw(layer)
-    d.rounded_rectangle(box, 22, fill=(20, 10, 36, 224), outline=(255, 255, 255, 52), width=2)
+    d.rounded_rectangle(box, 22, fill=(20, 10, 36, 224), outline=CREAM + (52,), width=2)
     d.text((x0 + 30, y0 + 22), title, font=font("bold", 30), fill=CREAM + (242,))
     d.text((x0 + 30, y0 + 64), caption, font=font("medium", 24), fill=LILAC + (190,))
     card.alpha_composite(layer)
@@ -387,7 +387,7 @@ def card_settings():
     if capture is None:
         return None
     card = background()
-    header(card, "MAKE IT YOURS", "Your rhythm, your rules.",
+    header(card, "TUNED BY HAND", "Flexible cadence, quiet defaults.",
            "Every 15 minutes to 3 hours, for 10 seconds to 3 minutes. Four moods. Sound or silence.")
     l, t, r, b = CONTENT
     w, h = fit_size(capture, r - l, b - t)
@@ -401,8 +401,8 @@ def card_menubar():
     if capture is None:
         return None
     card = background()
-    header(card, "LIVES IN YOUR MENU BAR", "A heads-up before it lands.",
-           "Pause and pick up right where you left off, or take a break now.")
+    header(card, "LIVES IN THE MENU BAR", "A heads-up before it lands.",
+           "Pause and pick up right where things left off, or start a break on the spot.")
     l, t, r, b = CONTENT
     w, h = fit_size(capture, r - l, b - t, max_scale=2.0)   # small captures: don't blow them up into blur
     x, y = (W - w) // 2, t + ((b - t) - h) // 2
