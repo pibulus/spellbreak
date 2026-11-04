@@ -12,19 +12,101 @@ import SwiftUI
 /// The colour a break wears. Aurora's signature move is time-awareness — it
 /// dawns rose-gold, runs golden through the day, burns at sunset, and goes
 /// violet at night. Ember and Violet pin that spectrum to one end so a break
-/// can feel warm (or cool) at any hour.
-enum AuroraPalette: String, CaseIterable {
+/// can feel warm (or cool) at any hour, while Surprise rolls a fresh analogous
+/// jewel-tone harmony on every break.
+enum AuroraPalette: Equatable {
     case time
     case ember
     case violet
+    case harmonious(seedHue: Double, spread: Double)
 
-    /// Maps a stored `visualTheme` preference to a concrete palette.
+    /// Curated jewel-tone harmonic arcs (skipping muddy olive/chartreuse) so every
+    /// Surprise break rolls a distinct, lush 4-layer aurora across all displays.
+    static func rollHarmoniousDescriptor() -> String {
+        let families: [(hueRange: ClosedRange<Double>, spreadRange: ClosedRange<Double>)] = [
+            (0.90...0.98, -0.075 ... -0.055), // Rose-dusk → orchid → indigo
+            (0.49...0.56,  0.065 ...  0.085), // Sea-glass teal → sapphire → ultraviolet
+            (0.07...0.11, -0.045 ... -0.035), // Honey-apricot → sunset coral → wine-plum
+            (0.70...0.77,  0.080 ...  0.105), // Starlight periwinkle → orchid → warm rose
+            (0.43...0.48,  0.075 ...  0.095), // Northern borealis jade → cerulean → twilight
+            (0.95...1.02, -0.065 ... -0.050)  // Pomegranate → berry magenta → aubergine
+        ]
+        let pick = families.randomElement() ?? families[0]
+        let hue = Double.random(in: pick.hueRange)
+        let spread = Double.random(in: pick.spreadRange)
+        return String(format: "surprise:%.4f:%.4f", hue, spread)
+    }
+
+    /// Maps a stored or rolled `visualTheme` string to a concrete palette.
     static func from(theme: String) -> AuroraPalette {
+        if theme.hasPrefix("surprise:") {
+            let parts = theme.split(separator: ":")
+            if parts.count == 3,
+               let hue = Double(parts[1]),
+               let spread = Double(parts[2]),
+               hue.isFinite, spread.isFinite {
+                return .harmonious(seedHue: hue, spread: spread)
+            }
+        }
         switch theme {
         case "ember": return .ember
         case "violet": return .violet
+        case "random":
+            return from(theme: rollHarmoniousDescriptor())
         default: return .time
         }
+    }
+
+    private static func wrapHue(_ h: Double) -> Double {
+        let mod = h.truncatingRemainder(dividingBy: 1.0)
+        return mod < 0 ? mod + 1.0 : mod
+    }
+
+    var glowColor: Color {
+        switch self {
+        case .ember:
+            return Color(red: 1.0, green: 0.62, blue: 0.4)
+        case .violet:
+            return Color(red: 0.48, green: 0.30, blue: 1.0)
+        case .time:
+            return Color(red: 0.98, green: 0.46, blue: 0.78)
+        case let .harmonious(seedHue, spread):
+            return Color(hue: Self.wrapHue(seedHue + spread * 0.5), saturation: 0.72, brightness: 0.98)
+        }
+    }
+
+    var particleColors: [Color] {
+        switch self {
+        case .ember:
+            return [
+                Color(red: 1.0, green: 0.75, blue: 0.45),
+                Color(red: 1.0, green: 0.45, blue: 0.20)
+            ]
+        case .violet:
+            return [
+                Color(red: 0.60, green: 0.50, blue: 1.0),
+                Color(red: 0.42, green: 0.36, blue: 1.0)
+            ]
+        case .time:
+            return [
+                Color(red: 0.99, green: 0.96, blue: 0.92),
+                Color(red: 1.0, green: 0.6, blue: 0.4)
+            ]
+        case let .harmonious(seedHue, spread):
+            return [
+                Color(hue: Self.wrapHue(seedHue), saturation: 0.45, brightness: 1.0),
+                Color(hue: Self.wrapHue(seedHue + spread), saturation: 0.78, brightness: 0.95)
+            ]
+        }
+    }
+
+    static func harmoniousColors(seedHue: Double, spread: Double) -> [Color] {
+        [
+            Color(hue: wrapHue(seedHue), saturation: 0.78, brightness: 0.98),
+            Color(hue: wrapHue(seedHue + spread), saturation: 0.84, brightness: 0.92),
+            Color(hue: wrapHue(seedHue + spread * 2.0), saturation: 0.78, brightness: 0.78),
+            Color(hue: wrapHue(seedHue + spread * 2.7), saturation: 0.82, brightness: 0.46)
+        ]
     }
 }
 
@@ -93,6 +175,8 @@ struct AuroraBackground: View {
         case .ember: return emberColors
         case .violet: return violetColors
         case .time: return timeColors
+        case let .harmonious(seedHue, spread):
+            return AuroraPalette.harmoniousColors(seedHue: seedHue, spread: spread)
         }
     }
 

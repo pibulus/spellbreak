@@ -27,23 +27,7 @@ struct AmbientParticles: View {
     @State private var particles: [Particle] = []
 
     private var particleColors: [Color] {
-        switch palette {
-        case .ember:
-            return [
-                Color(red: 1.0, green: 0.75, blue: 0.45),
-                Color(red: 1.0, green: 0.45, blue: 0.20)
-            ]
-        case .violet:
-            return [
-                Color(red: 0.60, green: 0.50, blue: 1.0),
-                Color(red: 0.42, green: 0.36, blue: 1.0)
-            ]
-        case .time:
-            return [
-                Color.white,
-                Color(red: 1.0, green: 0.6, blue: 0.4)
-            ]
-        }
+        palette.particleColors
     }
 
     var body: some View {

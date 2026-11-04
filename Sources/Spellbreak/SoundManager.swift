@@ -25,7 +25,7 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
     private let logger = Logger(subsystem: "com.pabloalvarado.spellbreak", category: "SoundManager")
     
     // MARK: - Persisted Properties
-    @AppStorage("soundVolume") private var soundVolume: Double = 0.5
+    private let defaultVolumePreference: Double = 0.5
     @AppStorage("soundEffectsEnabled") private var soundEffectsEnabled: Bool = true
     
     // MARK: - Initialization
@@ -183,7 +183,7 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
     }
 
     private var ambientTargetVolume: Float {
-        Self.outputVolume(preference: soundVolume, scale: 0.6)
+        Self.outputVolume(preference: defaultVolumePreference, scale: 0.6)
     }
 
     /// A corrupt or out-of-range stored preference must never produce a blast
@@ -199,7 +199,7 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
     private func playCustomSound(named name: String, volume: Float = 0.5) {
         guard soundEffectsEnabled else { return }
 
-        guard Self.outputVolume(preference: soundVolume, scale: volume) > 0 else { return }
+        guard Self.outputVolume(preference: defaultVolumePreference, scale: volume) > 0 else { return }
 
         guard let soundURL = soundURL(named: name) else {
             logger.warning("Sound effect not found: \(name).mp3")
@@ -210,7 +210,7 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
             guard let self else { return }
             // Preference may have changed while playback was queued.
             guard self.soundEffectsEnabled else { return }
-            let adjustedVolume = Self.outputVolume(preference: self.soundVolume, scale: volume)
+            let adjustedVolume = Self.outputVolume(preference: self.defaultVolumePreference, scale: volume)
             guard adjustedVolume > 0 else { return }
             guard let sound = NSSound(contentsOf: soundURL, byReference: false) else {
                 self.logger.warning("Failed to load sound effect: \(name).mp3")

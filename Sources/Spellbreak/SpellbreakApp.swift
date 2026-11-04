@@ -8,7 +8,6 @@
 
 import SwiftUI
 import AppKit
-import UserNotifications
 import Combine
 
 // MARK: - Transparent Hosting View
@@ -138,7 +137,6 @@ class AppState: ObservableObject {
     private var testBreakObserver: NSObjectProtocol?
     private var wakeObserver: NSObjectProtocol?
     private var unlockObserver: NSObjectProtocol?
-    private var didShowBreakWarning = false
     private var currentBreakCountsTowardStats = true
     private let breakWarningLeadTime: TimeInterval = 15
     
@@ -161,7 +159,6 @@ class AppState: ObservableObject {
     @AppStorage("lastBreakDate") private var lastBreakDateString: String = ""
     @AppStorage("timerWasRunning") var timerWasRunning: Bool = false
     @AppStorage("lastBreakTimestamp") private var lastBreakTimestamp: Double = 0
-    @AppStorage("breakWarningEnabled") private var breakWarningEnabled: Bool = true
     @AppStorage("deferDuringFullscreen") private var deferDuringFullscreen: Bool = true
     /// Seconds banked by pauseTimer(), spent by resumeTimer().
     private var pausedRemaining: TimeInterval = 0
@@ -259,12 +256,10 @@ class AppState: ObservableObject {
         timerRunning = true
         lastBreakTime = Date()
         timeRemaining = breakInterval  // Initialize with full time
-        didShowBreakWarning = false
         
         // Save state for persistence
         timerWasRunning = true
         lastBreakTimestamp = lastBreakTime.timeIntervalSince1970
-        requestNotificationAuthorizationIfNeeded()
 
         // Ticks stop while the timer is off; don't mistake that gap for sleep or
         // absence, or a resume would "restart" the interval and lose its place
@@ -287,7 +282,6 @@ class AppState: ObservableObject {
         statusTimer = nil
         timerRunning = false
         timeRemaining = 0
-        didShowBreakWarning = false
         hideCountdownPill()
 
         // Clear persistence
@@ -342,7 +336,6 @@ class AppState: ObservableObject {
         guard timerRunning else { return false }
         lastBreakTime = Date()
         lastBreakTimestamp = lastBreakTime.timeIntervalSince1970
-        didShowBreakWarning = false
         scheduleRepeatingBreakTimer()
         return true
     }
@@ -443,7 +436,6 @@ class AppState: ObservableObject {
 
         lastBreakTime = now
         lastBreakTimestamp = now.timeIntervalSince1970
-        didShowBreakWarning = false
         scheduleRepeatingBreakTimer()
         return true
     }
@@ -461,7 +453,6 @@ class AppState: ObservableObject {
         if resetsTimerAnchor {
             lastBreakTime = Date()
             lastBreakTimestamp = lastBreakTime.timeIntervalSince1970
-            didShowBreakWarning = false
         }
 
         if timerRunning && resetTimerSchedule {
@@ -678,27 +669,6 @@ class AppState: ObservableObject {
         }
     }
     
-    private func showHeadsUpNotification(secondsAway: Int = 10) {
-        let content = UNMutableNotificationContent()
-        content.title = "Break incoming"
-        content.body = "Spellbreak lands in \(secondsAway) seconds."
-        content.sound = .default
-
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
-        UNUserNotificationCenter.current().add(request)
-    }
-
-    private func requestNotificationAuthorizationIfNeeded() {
-        guard breakWarningEnabled else { return }
-
-        UNUserNotificationCenter.current().getNotificationSettings { settings in
-            guard settings.authorizationStatus == .notDetermined else { return }
-            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in
-                // Notifications are optional; denied permission only disables heads-up alerts.
-            }
-        }
-    }
-
     private func startStatusTimer() {
         statusTimer?.invalidate()
         statusTimer = Timer.scheduledCommonTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
@@ -753,32 +723,18 @@ class AppState: ObservableObject {
 
         timeRemaining = remaining
         updateCountdownPill()
-
-        guard breakWarningEnabled,
-              scheduledBreaksAllowed,
-              !userIsAway,
-              !didShowBreakWarning,
-              !showingOverlay,
-              timeRemaining > 0,
-              timeRemaining <= breakWarningLeadTime,
-              breakInterval > breakWarningLeadTime else {
-            return
-        }
-
-        didShowBreakWarning = true
-        showHeadsUpNotification(secondsAway: Int(timeRemaining.rounded(.up)))
     }
 
     /// Show the floating countdown pill during the final seconds before a
     /// break; hide it the moment it no longer applies
     private func updateCountdownPill() {
-        let shouldShow = breakWarningEnabled
-            && scheduledBreaksAllowed
+        let shouldShow = scheduledBreaksAllowed
             && !userIsAway
             && timerRunning
             && !showingOverlay
             && timeRemaining > 0
             && timeRemaining <= breakWarningLeadTime
+            && breakInterval > breakWarningLeadTime
 
         guard shouldShow else {
             hideCountdownPill()
@@ -827,7 +783,6 @@ class AppState: ObservableObject {
         if elapsed < breakInterval {
             lastBreakTime = lastBreak
             timerRunning = true
-            requestNotificationAuthorizationIfNeeded()
             
             // Calculate remaining time until next break
             let remainingTime = breakInterval - elapsed
@@ -848,7 +803,6 @@ class AppState: ObservableObject {
                 // Only trigger if we're not too far past the scheduled time
                 timerRunning = true
                 timerWasRunning = true
-                requestNotificationAuthorizationIfNeeded()
 
                 // Land the break a few seconds out instead of mid-launch: a window
                 // ordered front before the app finishes launching can stay offscreen,

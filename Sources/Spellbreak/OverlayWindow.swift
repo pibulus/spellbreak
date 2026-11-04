@@ -62,23 +62,16 @@ struct OverlayWindow: View {
         return max(1, breakDuration)
     }
 
-    /// Every palette a break can actually wear. "random" is a preference, not a look.
+    /// Every named preset palette. "random" rolls a harmonious 4-stop descriptor per break.
     static let concreteThemes = ["aurora", "ember", "violet"]
 
     static func rollTheme(_ stored: String) -> String {
         guard stored == "random" else { return stored }
-        return concreteThemes.randomElement() ?? "aurora"
+        return AuroraPalette.rollHarmoniousDescriptor()
     }
 
     private var themeGlowColor: Color {
-        switch resolvedTheme {
-        case "ember":
-            return Color(red: 1.0, green: 0.62, blue: 0.4)
-        case "violet":
-            return Color(red: 0.48, green: 0.30, blue: 1.0)
-        default:
-            return Color(red: 0.98, green: 0.46, blue: 0.78)
-        }
+        AuroraPalette.from(theme: resolvedTheme).glowColor
     }
     
     var body: some View {

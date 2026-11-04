@@ -156,43 +156,63 @@ struct MenuViewSimple: View {
         .background(.regularMaterial)
     }
 
-    private var timerStatusCard: some View {
-        VStack(spacing: 4) {
-            // Paused keeps showing the time it stopped at — that number IS the promise
-            // that resuming picks up where you left off.
-            Text(appState.timerRunning || appState.timerPaused ? appState.timeRemaining.mmss : "Off")
-                .font(.system(size: appState.timerRunning ? 22 : 19, weight: .semibold, design: .rounded))
-                .foregroundColor(.primary)
-                .opacity(appState.timerPaused ? 0.55 : 1)
-
-            Text(appState.timerRunning ? "until break" : (appState.timerPaused ? "paused" : "no break scheduled"))
-                .font(.system(size: 10, weight: .medium))
-                .foregroundColor(.secondary)
-
-            if let summary = appState.todaySummary {
-                Text(summary)
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(.secondary)
-                    .padding(.top, 6)
-            }
+    private var statusSubtext: String {
+        if hoveredItem == "status-card" {
+            if appState.timerRunning { return "click to pause" }
+            return appState.timerPaused ? "click to resume" : "click to start"
         }
-        .padding(.vertical, 12)
-        .frame(maxWidth: .infinity)
-        .background(
-            LinearGradient(
-                colors: [
-                    Color.white.opacity(appState.timerRunning ? 0.06 : 0.035),
-                    Color.white.opacity(0.02)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
+        if appState.timerRunning { return "until break" }
+        return appState.timerPaused ? "paused" : "no break scheduled"
+    }
+
+    private var timerStatusCard: some View {
+        let isHovered = hoveredItem == "status-card"
+
+        return Button {
+            appState.toggleTimer()
+        } label: {
+            VStack(spacing: 4) {
+                // Paused keeps showing the time it stopped at — that number IS the promise
+                // that resuming picks up where you left off.
+                Text(appState.timerRunning || appState.timerPaused ? appState.timeRemaining.mmss : "Off")
+                    .font(.system(size: appState.timerRunning ? 22 : 19, weight: .semibold, design: .rounded))
+                    .foregroundColor(.primary)
+                    .opacity(appState.timerPaused ? 0.55 : 1)
+
+                Text(statusSubtext)
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(isHovered ? .primary.opacity(0.85) : .secondary)
+                    .animation(.easeInOut(duration: 0.14), value: isHovered)
+
+                if let summary = appState.todaySummary {
+                    Text(summary)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.secondary)
+                        .padding(.top, 6)
+                }
+            }
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity)
+            .background(
+                LinearGradient(
+                    colors: [
+                        Color.white.opacity(isHovered ? 0.10 : (appState.timerRunning ? 0.06 : 0.035)),
+                        Color.white.opacity(isHovered ? 0.05 : 0.02)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
             )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.white.opacity(appState.timerRunning ? 0.08 : 0.04), lineWidth: 1)
-        )
-        .cornerRadius(8)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.white.opacity(isHovered ? 0.16 : (appState.timerRunning ? 0.08 : 0.04)), lineWidth: 1)
+            )
+            .cornerRadius(8)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { hoveredItem = $0 ? "status-card" : (hoveredItem == "status-card" ? nil : hoveredItem) }
+        .accessibilityLabel(appState.timerRunning ? "Pause timer" : (appState.timerPaused ? "Resume timer" : "Start timer"))
         .padding(.horizontal, 10)
         .padding(.bottom, 6)
     }

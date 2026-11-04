@@ -38,9 +38,10 @@ struct PreferencesView: View {
     // MARK: - UI Constants
     private enum UI {
         static let sidePadding: CGFloat = 32
-        static let windowPaddingY: CGFloat = 28          // More breathing room top/bottom
-        static let sectionSpacing: CGFloat = 16           // Tighter between sections  
-        static let buttonSpacing: CGFloat = 18            // Reasonable gap for CTA button
+        static let windowPaddingTop: CGFloat = 22         // Clean air above the three tabs
+        static let windowPaddingBottom: CGFloat = 24
+        static let sectionSpacing: CGFloat = 16           // Calm rhythm between sections
+        static let buttonSpacing: CGFloat = 16            // Footer CTA / signature slot gap
         static let cardPadding: CGFloat = 16              // Unified card internal padding
     }
     
@@ -48,7 +49,6 @@ struct PreferencesView: View {
     @AppStorage("breakIntervalMin") private var breakIntervalMin: Double = 20
     @AppStorage("breakDurationSec") private var breakDurationSec: Double = 20
     @AppStorage("lockMode") private var lockMode: Bool = false
-    @AppStorage("breakWarningEnabled") private var breakWarningEnabled: Bool = true
     @AppStorage("deferDuringFullscreen") private var deferDuringFullscreen: Bool = true
     @AppStorage("launchAtLogin") private var launchAtLogin: Bool = false
     @AppStorage("fancyMenu") private var fancyMenu: Bool = true
@@ -56,135 +56,106 @@ struct PreferencesView: View {
     @AppStorage("showBreakMessage") private var showBreakMessage: Bool = true
     @AppStorage("musicEnabled") private var musicEnabled: Bool = false
     @AppStorage("soundEffectsEnabled") private var soundEffectsEnabled: Bool = true
-    @AppStorage("soundVolume") private var soundVolume: Double = 0.5
     
     // MARK: - UI State
     @State private var selectedTab = 0
     @State private var hoveredElement: String? = nil
     @State private var testButtonPressed = false
-    @State private var titleOffset: CGFloat = 0
-    @State private var sparkleRotation: Double = 0
     @State private var launchAtLoginStatus: SMAppService.Status = SMAppService.mainApp.status
     @State private var launchAtLoginError: String?
     @EnvironmentObject var soundManager: SoundManager
     @EnvironmentObject var store: Store
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    init(initialTab: Int = 0) {
+        _selectedTab = State(initialValue: initialTab)
+    }
     
     var body: some View {
         VStack(spacing: 0) {
             VStack(spacing: UI.sectionSpacing) {
-            // Header with app title
-            HStack(spacing: 12) {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [
-                                Color.spellPink,
-                                Color.spellCoral
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .rotationEffect(.degrees(sparkleRotation))
-                    .onAppear {
-                        guard !reduceMotion else { return }
-                        withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) {
-                            sparkleRotation = 8
+                // Tab selector leads cleanly beneath the window title bar ("Spellbreak Settings")
+                HStack(spacing: 16) {
+                    TabButton(
+                        icon: "clock",
+                        title: "Time",
+                        isSelected: selectedTab == 0,
+                        isHovered: hoveredElement == "timer-tab"
+                    ) {
+                        if selectedTab != 0 {
+                            soundManager.playToggleOn()
                         }
+                        selectedTab = 0
                     }
-                
-                Text("Spellbreak")
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color.spellCream)
-                    .offset(y: titleOffset)
-                    .onAppear {
-                        guard !reduceMotion else { return }
-                        withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) {
-                            titleOffset = -3
+                    .onHover { hovering in
+                        hoveredElement = hovering ? "timer-tab" : nil
+                    }
+                    
+                    TabButton(
+                        icon: "waveform",
+                        title: "Vibes",
+                        isSelected: selectedTab == 1,
+                        isHovered: hoveredElement == "vibes-tab"
+                    ) {
+                        if selectedTab != 1 {
+                            soundManager.playToggleOn()
                         }
+                        selectedTab = 1
                     }
-                
-                Spacer()
-            }
-            .padding(.horizontal, UI.sidePadding)
-            
-            // Tab selector with gradient
-            HStack(spacing: 16) {
-                TabButton(
-                    icon: "clock",
-                    title: "Time",
-                    isSelected: selectedTab == 0,
-                    isHovered: hoveredElement == "timer-tab"
-                ) {
-                    if selectedTab != 0 {
-                        soundManager.playToggleOn()
+                    .onHover { hovering in
+                        hoveredElement = hovering ? "vibes-tab" : nil
                     }
-                    selectedTab = 0
-                }
-                .onHover { hovering in
-                    hoveredElement = hovering ? "timer-tab" : nil
-                }
-                
-                TabButton(
-                    icon: "waveform",
-                    title: "Vibes",
-                    isSelected: selectedTab == 1,
-                    isHovered: hoveredElement == "vibes-tab"
-                ) {
-                    if selectedTab != 1 {
-                        soundManager.playToggleOn()
-                    }
-                    selectedTab = 1
-                }
-                .onHover { hovering in
-                    hoveredElement = hovering ? "vibes-tab" : nil
-                }
 
-                TabButton(
-                    icon: "info.circle",
-                    title: "About",
-                    isSelected: selectedTab == 2,
-                    isHovered: hoveredElement == "about-tab"
-                ) {
-                    if selectedTab != 2 {
-                        soundManager.playToggleOn()
+                    TabButton(
+                        icon: "info.circle",
+                        title: "About",
+                        isSelected: selectedTab == 2,
+                        isHovered: hoveredElement == "about-tab"
+                    ) {
+                        if selectedTab != 2 {
+                            soundManager.playToggleOn()
+                        }
+                        selectedTab = 2
                     }
-                    selectedTab = 2
+                    .onHover { hovering in
+                        hoveredElement = hovering ? "about-tab" : nil
+                    }
                 }
-                .onHover { hovering in
-                    hoveredElement = hovering ? "about-tab" : nil
+                .padding(.horizontal, UI.sidePadding)
+                
+                // Content area with consistent height so switching tabs never shifts the window
+                ZStack {
+                    if selectedTab == 0 {
+                        timerContent
+                            .frame(maxWidth: .infinity, alignment: .top)
+                            .transition(.opacity)
+                    } else if selectedTab == 1 {
+                        vibesContent
+                            .frame(maxWidth: .infinity, alignment: .top)
+                            .transition(.opacity)
+                    } else {
+                        aboutContent
+                            .frame(maxWidth: .infinity, alignment: .top)
+                            .transition(.opacity)
+                    }
                 }
-            }
-            .padding(.horizontal, UI.sidePadding)
-            
-            // Content area with consistent height
-            ZStack {
-                if selectedTab == 0 {
-                    timerContent
-                        .frame(maxWidth: .infinity, alignment: .top)
-                        .transition(.opacity)
-                } else if selectedTab == 1 {
-                    vibesContent
-                        .frame(maxWidth: .infinity, alignment: .top)
-                        .transition(.opacity)
-                } else {
-                    aboutContent
-                        .frame(maxWidth: .infinity, alignment: .top)
-                        .transition(.opacity)
-                }
-            }
-            .frame(height: 560, alignment: .top)  // Top-aligned: overflow can only grow down, never over the tabs
-            .animation(.easeInOut(duration: 0.2), value: selectedTab)
+                .frame(height: 452, alignment: .top)
+                .animation(.easeInOut(duration: 0.2), value: selectedTab)
             }
             
-            // Test break, and beside it the App Store unlock while one's still needed
+            // Bottom slot: Test Break on Time & Vibes; sleepy cat signature on About
+            // (App Store trial/unlock bar still appears whenever needed)
             VStack(spacing: 10) {
-                HStack(spacing: 12) {
-                    testBreakButton
-                    if needsUnlock {
-                        unlockButton
+                if selectedTab == 2 && !needsUnlock {
+                    aboutSignature
+                        .frame(height: 56)
+                } else {
+                    HStack(spacing: 12) {
+                        if selectedTab != 2 {
+                            testBreakButton
+                        }
+                        if needsUnlock {
+                            unlockButton
+                        }
                     }
                 }
                 if needsUnlock {
@@ -194,8 +165,8 @@ struct PreferencesView: View {
             .padding(.top, UI.buttonSpacing)
             .padding(.horizontal, UI.sidePadding)
         }
-        .padding(.top, UI.windowPaddingY)
-        .padding(.bottom, UI.windowPaddingY)
+        .padding(.top, UI.windowPaddingTop)
+        .padding(.bottom, UI.windowPaddingBottom)
         .frame(width: 560)
         .background(
             ZStack {
@@ -449,8 +420,8 @@ struct PreferencesView: View {
             }
             .padding(.horizontal, UI.sidePadding)
             
-            // One behaviour card instead of four scattered toggles — a single
-            // list reads calmer, and full-width rows give the subtitles room.
+            // Rule-of-three behaviour card: Lock mode, Pause while busy, Autostart.
+            // The 15-second corner countdown pill is baked in so nobody gets jump-scared.
             VStack(spacing: 0) {
                 ToggleRow(
                     title: "Lock mode",
@@ -458,15 +429,6 @@ struct PreferencesView: View {
                     isOn: lockMode,
                     soundManager: soundManager
                 ) { lockMode = $0 }
-
-                rowDivider
-
-                ToggleRow(
-                    title: "Heads-up",
-                    subtitle: "A notification before each break",
-                    isOn: breakWarningEnabled,
-                    soundManager: soundManager
-                ) { breakWarningEnabled = $0 }
 
                 rowDivider
 
@@ -576,15 +538,14 @@ struct PreferencesView: View {
                         hoveredElement = hovering ? "theme-violet" : nil
                     }
 
-                    // One colour borrowed from each of the three, so the chip reads
-                    // as "all of them" rather than as a fourth look of its own.
+                    // Rolls a fresh analogous jewel-tone harmony on every break.
                     ThemeChip(
                         title: "Surprise",
-                        subtitle: "A different palette each break",
+                        subtitle: "Harmonious colours rolled each break",
                         colors: [
                             Color(red: 0.94, green: 0.31, blue: 0.61),
-                            Color(red: 1.00, green: 0.45, blue: 0.10),
-                            Color(red: 0.42, green: 0.36, blue: 1.00)
+                            Color(red: 0.28, green: 0.76, blue: 0.84),
+                            Color(red: 0.56, green: 0.34, blue: 0.98)
                         ],
                         isSelected: visualTheme == "random",
                         isHovered: hoveredElement == "theme-random"
@@ -601,8 +562,7 @@ struct PreferencesView: View {
             .frostedCard()
             .padding(.horizontal, UI.sidePadding)
 
-            // One quiet list instead of four separate cards. Ambient is opt-in on
-            // fresh installs; saved choices still win, including during a break.
+            // Unified 4-row toggle card — audio is cleanly on or off at its mastered level.
             VStack(spacing: 0) {
                 ToggleRow(
                     title: "Messages",
@@ -631,30 +591,6 @@ struct PreferencesView: View {
 
                 rowDivider
 
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Text("Sound Volume")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.spellCream.opacity(0.9))
-                        Spacer()
-                        Text("\(Int(SoundManager.outputVolume(preference: soundVolume, scale: 1) * 100))%")
-                            .font(.system(size: 18, weight: .bold, design: .rounded))
-                            .foregroundColor(.spellPeach)
-                    }
-
-                    GradientSlider(
-                        value: $soundVolume,
-                        options: [0, 0.25, 0.5, 0.75, 1.0],
-                        accessibilityLabel: "Sound volume",
-                        accessibilityValueFormatter: { "\(Int(SoundManager.outputVolume(preference: $0, scale: 1) * 100)) percent" },
-                        soundManager: soundManager
-                    )
-                }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 12)
-
-                rowDivider
-
                 ToggleRow(
                     title: "Fancy Menu",
                     subtitle: "Mystical menu bar or clean text",
@@ -666,7 +602,6 @@ struct PreferencesView: View {
             .padding(.horizontal, UI.cardPadding)
             .frostedCard(cornerRadius: 20)
             .padding(.horizontal, UI.sidePadding)
-            .onChange(of: soundVolume) { _ in soundManager.updateAmbientVolume() }
 
             Spacer()  // Push content to top within fixed height
         }
@@ -674,13 +609,13 @@ struct PreferencesView: View {
 
     // MARK: - About Tab Content
     private var aboutContent: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 16) {
             Color.clear.frame(height: 4)
 
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 14) {
                 HStack(spacing: 12) {
                     Image(systemName: "moon.stars.fill")
-                        .font(.system(size: 30, weight: .medium))
+                        .font(.system(size: 28, weight: .medium))
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [Color.spellPink, Color.spellCoral],
@@ -701,49 +636,64 @@ struct PreferencesView: View {
 
                     Spacer()
                 }
+                .padding(.bottom, 2)
 
-                Text("A short break timer in the menu bar.")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.spellCream.opacity(0.82))
+                Text("Every break brings a quiet line of its own.")
+                    .font(.system(size: 14.5, weight: .medium))
+                    .foregroundColor(.spellCream.opacity(0.90))
                     .fixedSize(horizontal: false, vertical: true)
-                    .lineSpacing(3)
+                    .lineSpacing(4)
 
-                Text("Choose a break rhythm, set its length, and pick the colors and sound. Break messages are optional.")
-                    .font(.system(size: 13, weight: .regular))
-                    .foregroundColor(.spellCream.opacity(0.66))
+                Text("It knows the hour, and it knows the moon. Dawn comes in soft, 2am gets knowing, a full moon shows off a little. Skip a few and it notices, gently.")
+                    .font(.system(size: 14.5, weight: .regular))
+                    .foregroundColor(.spellCream.opacity(0.76))
                     .fixedSize(horizontal: false, vertical: true)
-                    .lineSpacing(3)
+                    .lineSpacing(4)
 
-                Text("Breaks last 10 seconds to 3 minutes, at intervals from 15 minutes to 3 hours.")
-                    .font(.system(size: 13, weight: .regular))
-                    .foregroundColor(.spellCream.opacity(0.66))
+                Text("Twenty minutes on, twenty seconds off. Or make it a tea timer, a stretch bell, a nudge to look out the window at something far away.")
+                    .font(.system(size: 14.5, weight: .regular))
+                    .foregroundColor(.spellCream.opacity(0.76))
                     .fixedSize(horizontal: false, vertical: true)
-                    .lineSpacing(3)
+                    .lineSpacing(4)
             }
-            .padding(UI.cardPadding)
+            .padding(20)
             .frostedCard()
             .padding(.horizontal, UI.sidePadding)
 
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 13) {
                 aboutLink(title: "spellbreak.app", icon: "globe", url: "https://spellbreak.app")
                 aboutLink(title: "madebypablo.app", icon: "square.grid.2x2", url: "https://madebypablo.app")
                 aboutLink(title: "Source on GitHub", icon: "chevron.left.forwardslash.chevron.right", url: "https://github.com/pibulus/spellbreak")
             }
-            .padding(UI.cardPadding)
+            .padding(.vertical, 16)
+            .padding(.horizontal, 20)
             .frostedCard()
             .padding(.horizontal, UI.sidePadding)
-
-            Text("Made by Pablo.")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(.spellCream.opacity(0.42))
-                .padding(.horizontal, UI.sidePadding + 4)
 
             Spacer()
         }
     }
 
+    private var aboutSignature: some View {
+        VStack(spacing: 6) {
+            Text("( - ω - ) zzz")
+                .font(.system(size: 13, weight: .medium, design: .monospaced))
+                .foregroundColor(.spellCream.opacity(0.56))
+
+            (
+                Text("made by pablo")
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundColor(.spellCream.opacity(0.78))
+                + Text(".")
+                    .font(.system(size: 15, weight: .heavy, design: .rounded))
+                    .foregroundColor(.spellPink)
+            )
+        }
+        .frame(maxWidth: .infinity)
+    }
+
     private var appVersion: String {
-        let short = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+        let short = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.2.1"
         return short
     }
 

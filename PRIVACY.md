@@ -1,6 +1,6 @@
 # Privacy Policy for Spellbreak
 
-*Last updated: October 4, 2026*
+*Last updated: November 4, 2026*
 
 ## Your Privacy Matters
 
@@ -55,9 +55,8 @@ These are stored in macOS's standard UserDefaults and never leave your Mac.
 
 **None required.** Spellbreak works without special permissions.
 
-Optional permissions you may grant:
-- **Notifications**: a heads-up a few seconds before a break (optional)
-- **Launch at Login**: to start automatically (optional, off until you turn it on)
+One optional setting starts off until turned on:
+- **Launch at Login**: to start automatically (optional, off by default)
 
 ## Purchases
 

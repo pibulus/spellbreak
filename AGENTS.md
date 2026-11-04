@@ -16,9 +16,9 @@ that hold away. Street-smart occult, never corporate wellness.
 
 ## Status
 
-**v1.2.0 shipped** — `dist/Spellbreak-v1.2.0.dmg` is Developer ID signed,
-notarized and dual-stapled, and published as GitHub release `v1.2.0` with both
-`Spellbreak-v1.2.0.dmg` and the stable `Spellbreak.dmg` the buy link downloads.
+**v1.2.1 shipped** — `dist/Spellbreak-v1.2.1.dmg` is Developer ID signed,
+notarized and dual-stapled, and published as GitHub release `v1.2.1` with both
+`Spellbreak-v1.2.1.dmg` and the stable `Spellbreak.dmg` the buy link downloads.
 
 Selling today: A$29 once, unlocked, from spellbreak.app (Square checkout).
 
@@ -136,7 +136,8 @@ don't advertise one.
 
 ### Visuals
 
-Aurora (hour-aware), Ember (warm), Violet (cool), Surprise (rolls per break).
+Aurora (hour-aware), Ember (warm), Violet (cool), Surprise (rolls a fresh
+harmonious 4-stop jewel palette per break).
 Time-based palettes: dawn 5–10 am, day 10 am–5 pm, evening 5–9 pm, night 9 pm–5 am.
 Waves are Canvas + TimelineView with a 24 px blur; the message fades in over
 1.2 s with a soft glow.
