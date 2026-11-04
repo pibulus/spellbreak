@@ -11,10 +11,10 @@ import AppKit
 import Combine
 
 // MARK: - Transparent Hosting View
-/// Fixes white background issue with NSHostingView
+/// Fixes opaque backing issue with NSHostingView over clear windows
 final class TransparentHostingView<Content: View>: NSHostingView<Content> {
     override var isOpaque: Bool { false }
-    
+
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
         wantsLayer = true
@@ -23,35 +23,52 @@ final class TransparentHostingView<Content: View>: NSHostingView<Content> {
     }
 }
 
+// MARK: - Keyable Borderless Overlay Window
+/// Borderless NSWindows refuse key status by default, which lets keyboard input
+/// fall through to windows underneath (like Settings). Primary break windows opt
+/// into key status; secondary mirror displays stay non-key.
+final class OverlayPanelWindow: NSWindow {
+    var allowsKeyStatus: Bool = false
+    override var canBecomeKey: Bool { allowsKeyStatus }
+    override var canBecomeMain: Bool { allowsKeyStatus }
+}
+
 // MARK: - Overlay Window Controller
 /// Controller for one display's full-screen break overlay. One per display: a
 /// single window stretched across them all only ever drew on one, because with
 /// "Displays have separate Spaces" on (macOS's default) windows can't span displays.
 final class OverlayWindowController: NSWindowController {
-    init(frame: NSRect?) {
-        let window = NSWindow(
+    init(frame: NSRect?, allowsKey: Bool) {
+        let window = OverlayPanelWindow(
             contentRect: frame ?? NSRect(x: 0, y: 0, width: 1280, height: 800),
             styleMask: [.borderless, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
+        window.allowsKeyStatus = allowsKey
         window.level = .screenSaver
         window.isOpaque = false
         window.backgroundColor = .clear
         window.hasShadow = false
         window.ignoresMouseEvents = false
         window.collectionBehavior = [.fullScreenAuxiliary, .canJoinAllSpaces, .stationary]
-        
+
         super.init(window: window)
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 }
 
 // MARK: - Preferences Window Controller
-/// Keeps AppState in sync with normal macOS window close behavior.
+/// Keeps AppState in sync with normal macOS window close behavior (including Escape).
+final class PreferencesWindow: NSWindow {
+    override func cancelOperation(_ sender: Any?) {
+        performClose(sender)
+    }
+}
+
 final class PreferencesWindowController: NSWindowController, NSWindowDelegate {
     private let onClose: () -> Void
 
@@ -72,16 +89,11 @@ final class PreferencesWindowController: NSWindowController, NSWindowDelegate {
 }
 
 // MARK: - Main App
-/// Spellbreak: Break the spell of screen hypnosis
-/// Mystical, unskippable breaks that set you free
 @main
 struct SpellbreakApp: App {
-    // MARK: - State
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    
-    // MARK: - Body
+
     var body: some Scene {
-        // Empty scene - we're using NSStatusItem directly now
         Settings {
             EmptyView()
         }
@@ -89,110 +101,96 @@ struct SpellbreakApp: App {
 }
 
 // MARK: - App State
-/// Main application state manager handling timers, windows, and statistics
-/// This is the central state object that coordinates all app functionality
+/// Central state coordinator handling timers, multi-display overlays, and StoreKit gating.
 class AppState: ObservableObject {
-    private enum NotificationName {
-        static let showTestBreak = NSNotification.Name("ShowTestBreak")
-        static let escapePressed = NSNotification.Name("EscapePressed")
-    }
+    static let showTestBreakNotification = Notification.Name("ShowTestBreak")
 
     // MARK: - Published Properties
-    @Published var timerRunning = false          // Whether the break timer is active
-    @Published var showingOverlay = false        // Whether the break overlay is visible
-    @Published var showingPreferences = false    // Whether preferences window is open
-    @Published var timeRemaining: TimeInterval = 0  // Seconds until next break
-    @Published var timerPaused = false            // Stopped, but holding its place
-    // Today's counts survive a relaunch; checkDailyReset() zeroes them at midnight
-    @Published var todayCompletedBreaks: Int = UserDefaults.standard.integer(forKey: "todayCompletedBreaks") {
-        didSet { UserDefaults.standard.set(todayCompletedBreaks, forKey: "todayCompletedBreaks") }
-    }
-    @Published var todaySkippedBreaks: Int = UserDefaults.standard.integer(forKey: "todaySkippedBreaks") {
-        didSet { UserDefaults.standard.set(todaySkippedBreaks, forKey: "todaySkippedBreaks") }
-    }
+    @Published var timerRunning = false
+    @Published var showingOverlay = false
+    @Published var showingPreferences = false
+    @Published var timeRemaining: TimeInterval = 0
+    @Published var timerPaused = false
 
-    /// "3 breaks today · 1 skipped" — the small honest scoreboard, nil before the first
-    var todaySummary: String? {
-        let taken = todayCompletedBreaks
-        let skipped = todaySkippedBreaks
-        guard taken + skipped > 0 else { return nil }
-        let breaks = "\(taken) \(taken == 1 ? "break" : "breaks") today"
-        return skipped > 0 ? "\(breaks) · \(skipped) skipped" : breaks
-    }
-    
-    // MARK: - Private Properties
-    weak var soundManager: SoundManager?         // Injected by AppDelegate at launch (NSApp.delegate is SwiftUI's wrapper during launch, so we can't reach it that way)
-    weak var store: Store?                       // Injected the same way; the App Store unlock
-    private var timer: Timer?                    // Main timer for break intervals
-    private var statusTimer: Timer?              // Timer for updating UI countdown
-    private var lastBreakTime: Date = Date()     // When the last break was triggered
-    private var overlayWindowController: OverlayWindowController?    // Break overlay window (the pointer's display)
-    private var mirrorWindowControllers: [OverlayWindowController] = []  // Every other display: the same aurora, quiet
-    private var preferencesWindowController: PreferencesWindowController?     // Preferences window
+    // MARK: - Dependencies & Controllers
+    weak var soundManager: SoundManager?
+    weak var store: Store?
+    private var timer: Timer?
+    private var statusTimer: Timer?
+    private var lastBreakTime: Date = Date()
+    private var overlayWindowController: OverlayWindowController?
+    private var mirrorWindowControllers: [OverlayWindowController] = []
+    private var activeOverlayTheme: String = "aurora"
+    private var preferencesWindowController: PreferencesWindowController?
+    private var preferencesSelectedTab: Int = 0
     private var overlayCancellable: AnyCancellable?
+    private var preferencesCancellable: AnyCancellable?
+    private var preferencesResizeCancellable: AnyCancellable?
+    private var storeAccessCancellable: AnyCancellable?
     private var overlayFailsafe: DispatchWorkItem?
     private var countdownWindowController: BreakCountdownWindowController?
-    private var preferencesCancellable: AnyCancellable?
-    private var escapeKeyMonitor: Any?          // Event monitor for escape key
+    private var overlayKeyMonitor: Any?
     private var testBreakObserver: NSObjectProtocol?
     private var wakeObserver: NSObjectProtocol?
+    private var willSleepObserver: NSObjectProtocol?
+    private var screenChangeObserver: NSObjectProtocol?
     private var unlockObserver: NSObjectProtocol?
     private var currentBreakCountsTowardStats = true
+    private var currentBreakResetTimerAnchor = true
     private let breakWarningLeadTime: TimeInterval = 15
-    
-    // MARK: - Break Statistics (for message generation)
-    private var sessionBreakCount: Int = 0       // Breaks taken this session
-    private var sessionSkippedCount: Int = 0     // Breaks skipped this session
-    private var lastBreakCompletedTime: Date?    // When last break was completed (not skipped)
-    
+
+    // MARK: - Session Context (for message generation)
+    private var sessionBreakCount: Int = 0
+    private var sessionSkippedCount: Int = 0
+    private var lastBreakCompletedTime: Date?
+
     // MARK: - Persisted Properties
     @AppStorage("breakIntervalMin") private var breakIntervalMinutes: Double = 20.0 {
         didSet {
-            // Restart timer if running to apply new interval
             if timerRunning {
                 restartTimer()
             }
         }
     }
-    @AppStorage("totalCompletedBreaks") var totalCompletedBreaks: Int = 0
-    @AppStorage("totalSkippedBreaks") var totalSkippedBreaks: Int = 0
-    @AppStorage("lastBreakDate") private var lastBreakDateString: String = ""
     @AppStorage("timerWasRunning") var timerWasRunning: Bool = false
     @AppStorage("lastBreakTimestamp") private var lastBreakTimestamp: Double = 0
     @AppStorage("deferDuringFullscreen") private var deferDuringFullscreen: Bool = true
-    /// Seconds banked by pauseTimer(), spent by resumeTimer().
+
     private var pausedRemaining: TimeInterval = 0
-    /// Wall clock and awake-time at the last tick. The gap between them is sleep.
     private var lastTickWallClock = Date()
     private var lastTickUptime = ProcessInfo.processInfo.systemUptime
-    /// Keyboard and mouse untouched for an away-length stretch — see restartIntervalIfUserCameBack()
+    private var lastAwayPollUptime: TimeInterval = 0
     private var userIsAway = false
-    /// When the current wait-for-a-pause-in-typing began, if one's running
     private var typingHoldStartedAt: Date?
 
     // MARK: - Computed Properties
     private var breakInterval: TimeInterval {
-        guard breakIntervalMinutes.isFinite else { return 20 * 60 }
-        return max(60, breakIntervalMinutes * 60)
+        SpellbreakLimits.clampInterval(breakIntervalMinutes) * 60
     }
-    
-    init() {
+
+    private var currentBreakDurationSec: TimeInterval {
+        let raw = UserDefaults.standard.object(forKey: "breakDurationSec") as? Double
+            ?? SpellbreakLimits.defaultDurationSec
+        return SpellbreakLimits.clampDuration(raw)
+    }
+
+    init(soundManager: SoundManager? = nil, store: Store? = nil) {
+        self.soundManager = soundManager
+        self.store = store
+
         setupCombineObservers()
-        checkDailyReset()
+        bindStoreAccess()
         restoreTimerState()
 
-        // Debug hook: SPELLBREAK_FIRE_NOW=1 fires a test break 3s after launch,
-        // bypassing prefs/timer state — the only reliable repro lever for
-        // headless overlay testing (prefs tricks fight cfprefsd + the sandbox)
+        // Debug hook: SPELLBREAK_FIRE_NOW=1 fires a test break 3s after launch
         if ProcessInfo.processInfo.environment["SPELLBREAK_FIRE_NOW"] != nil {
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
                 self?.triggerBreak(countsTowardStats: false, resetsTimerAnchor: false)
             }
         }
-        
-        // Listen for test break requests from preferences
+
         testBreakObserver = NotificationCenter.default.addObserver(
-            forName: NotificationName.showTestBreak,
+            forName: Self.showTestBreakNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
@@ -211,7 +209,26 @@ class AppState: ObservableObject {
             self?.handleSystemWake()
         }
 
-        // Starting the free week (or unlocking) is a decision to have breaks — so start them
+        willSleepObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.willSleepNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            self.soundManager?.stopAmbientImmediately()
+            if self.showingOverlay {
+                self.showingOverlay = false
+            }
+        }
+
+        screenChangeObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.handleScreenParametersChanged()
+        }
+
         unlockObserver = NotificationCenter.default.addObserver(
             forName: Store.didUnlockScheduledBreaks,
             object: nil,
@@ -221,9 +238,8 @@ class AppState: ObservableObject {
             self.resumeTimer()
         }
     }
-    
+
     deinit {
-        // Clean up timers
         timer?.invalidate()
         statusTimer?.invalidate()
         overlayFailsafe?.cancel()
@@ -232,47 +248,64 @@ class AppState: ObservableObject {
         if let observer = testBreakObserver {
             NotificationCenter.default.removeObserver(observer)
         }
-
         if let observer = wakeObserver {
             NSWorkspace.shared.notificationCenter.removeObserver(observer)
         }
-
+        if let observer = willSleepObserver {
+            NSWorkspace.shared.notificationCenter.removeObserver(observer)
+        }
+        if let observer = screenChangeObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
         if let observer = unlockObserver {
             NotificationCenter.default.removeObserver(observer)
         }
-
-        // Remove escape key monitor if present
-        if let monitor = escapeKeyMonitor {
+        if let monitor = overlayKeyMonitor {
             NSEvent.removeMonitor(monitor)
         }
 
-        // Cancel Combine subscriptions
         overlayCancellable?.cancel()
         preferencesCancellable?.cancel()
+        preferencesResizeCancellable?.cancel()
+        storeAccessCancellable?.cancel()
     }
-    
+
+    private func bindStoreAccess() {
+        guard let store else { return }
+        storeAccessCancellable = store.$access
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                // If StoreKit resolves to .notStarted / .trialEnded (e.g. after a launch
+                // restore or trial expiry or refund), halt scheduled timers cleanly.
+                if self.timerRunning && !self.scheduledBreaksAllowed {
+                    self.stopTimer()
+                }
+            }
+    }
+
     func startTimer() {
+        guard scheduledBreaksAllowed else {
+            showPreferences()
+            return
+        }
         stopTimer()
         timerRunning = true
         lastBreakTime = Date()
-        timeRemaining = breakInterval  // Initialize with full time
-        
-        // Save state for persistence
+        timeRemaining = breakInterval
+
         timerWasRunning = true
         lastBreakTimestamp = lastBreakTime.timeIntervalSince1970
 
-        // Ticks stop while the timer is off; don't mistake that gap for sleep or
-        // absence, or a resume would "restart" the interval and lose its place
         lastTickWallClock = Date()
         lastTickUptime = ProcessInfo.processInfo.systemUptime
         userIsAway = false
-        
+
         scheduleRepeatingBreakTimer()
-        
         startStatusTimer()
         updateTimeRemainingAndWarning()
     }
-    
+
     func stopTimer() {
         timerPaused = false
         pausedRemaining = 0
@@ -284,26 +317,15 @@ class AppState: ObservableObject {
         timeRemaining = 0
         hideCountdownPill()
 
-        // Clear persistence
         timerWasRunning = false
     }
-    
-    /// Hold an AUTOMATIC break while the user is plainly mid-something — a fullscreen
-    /// game, a film, a presentation, a call, a sentence. The anchor is left alone and
-    /// this is re-asked every second, so the break lands the moment they come back
-    /// out rather than being skipped. Being away from the Mac holds it too, but that
-    /// one ends with the interval starting over (restartIntervalIfUserCameBack).
-    /// "Break Now" from the menu ignores all of this: an explicitly requested break is
-    /// never second-guessed.
+
     private func shouldHoldBreak() -> Bool {
-        if userIsAway { return true }  // an empty chair needs no break; the interval restarts on return
+        if userIsAway { return true }
         guard deferDuringFullscreen else { return false }
         return ScreenBusy.isBusy() || isMidSentence()
     }
 
-    /// Typing or dragging when a break comes due? Let the sentence or drag land first:
-    /// wait for two quiet seconds and released mouse buttons, capped at 30 seconds so
-    /// a non-stop typist or stuck peripheral never wedges scheduled breaks.
     private func isMidSentence() -> Bool {
         let activelyTypingOrDragging = ScreenBusy.secondsSinceLastKeystroke() < 2
             || ScreenBusy.isMouseButtonDown()
@@ -316,22 +338,26 @@ class AppState: ObservableObject {
         return Date().timeIntervalSince(started) < 30
     }
 
-    /// A few minutes (or a break's length, if longer) without touching the keyboard
-    /// or mouse is a break by any measure, same as a closed lid. While you're away a
-    /// due break waits — no point showing it to an empty chair — and once you're
-    /// back the interval starts over, instead of landing a break as you sit down.
-    /// Whichever tick sees you return first restarts it. True when it restarted.
-    ///
-    /// Still hands with a video or call holding the display awake isn't away: that's
-    /// someone watching, the exact trance a break is for.
     @discardableResult
     private func restartIntervalIfUserCameBack() -> Bool {
-        let breakSeconds = UserDefaults.standard.object(forKey: "breakDurationSec") as? Double ?? 20
-        if ScreenBusy.secondsSinceLastInput() >= max(3 * 60, breakSeconds),
-           !ScreenBusy.displayIsHeldAwake() {
-            userIsAway = true
-            return false
+        let idleSeconds = ScreenBusy.secondsSinceLastInput()
+        let awayThreshold = max(3 * 60, currentBreakDurationSec)
+
+        if idleSeconds >= awayThreshold {
+            // Poll IOPMCopyAssertionsStatus at most once every 5s while idle so background
+            // powerd IPC stays negligible.
+            let nowUptime = ProcessInfo.processInfo.systemUptime
+            if !userIsAway && (nowUptime - lastAwayPollUptime >= 5) {
+                lastAwayPollUptime = nowUptime
+                if !ScreenBusy.displayIsHeldAwake() {
+                    userIsAway = true
+                }
+            }
+            if userIsAway {
+                return false
+            }
         }
+
         guard userIsAway else { return false }
         userIsAway = false
 
@@ -342,10 +368,6 @@ class AppState: ObservableObject {
         return true
     }
 
-    /// Freeze the countdown where it stands. Everything downstream derives the
-    /// remaining time from `lastBreakTime`, so pausing is really just remembering
-    /// how much was left — and resuming is putting the anchor back that far in the
-    /// past, so the count picks up mid-stride instead of starting the interval over.
     func pauseTimer() {
         guard timerRunning else { return }
 
@@ -353,11 +375,14 @@ class AppState: ObservableObject {
         stopTimer()
         pausedRemaining = remaining
         timerPaused = true
-        timeRemaining = remaining  // keep the frozen number on screen
+        timeRemaining = remaining
     }
 
     func resumeTimer() {
-        // A pause with nothing banked (or a resume out of nowhere) starts a fresh interval.
+        guard scheduledBreaksAllowed else {
+            showPreferences()
+            return
+        }
         let remaining = pausedRemaining > 0 ? pausedRemaining : breakInterval
 
         timerPaused = false
@@ -369,32 +394,25 @@ class AppState: ObservableObject {
         updateTimeRemainingAndWarning()
     }
 
-    /// One control, not two. "Pause" that silently means "reset to twenty minutes"
-    /// is the kind of small lie that makes an app feel untrustworthy.
     func toggleTimer() {
         if timerRunning {
             pauseTimer()
         } else if scheduledBreaksAllowed {
             resumeTimer()
         } else {
-            showPreferences()  // the free week / unlock lives at the bottom of Settings
+            showPreferences()
         }
     }
 
-    /// Test Break and Break Now always work; scheduled breaks are what the App Store
-    /// unlock pays for. No store means the website build: never locked.
     private var scheduledBreaksAllowed: Bool {
         store?.allowsScheduledBreaks ?? true
     }
 
-    /// The free week ran out: the break that was due becomes the unlock prompt,
-    /// once, instead of a break. The timer stops so it doesn't ask again.
     private func lockScheduledBreaks() {
         stopTimer()
         showPreferences()
     }
 
-    /// Restart the timer with the current break interval
     private func restartTimer() {
         stopTimer()
         startTimer()
@@ -402,7 +420,11 @@ class AppState: ObservableObject {
 
     private func scheduleRepeatingBreakTimer() {
         timer?.invalidate()
-        timer = Timer.scheduledCommonTimer(withTimeInterval: max(0.1, breakInterval), repeats: true) { [weak self] _ in
+        timer = Timer.scheduledCommonTimer(
+            withTimeInterval: max(0.1, breakInterval),
+            tolerance: 1.0,
+            repeats: true
+        ) { [weak self] _ in
             self?.checkAndTriggerBreak()
         }
     }
@@ -419,12 +441,6 @@ class AppState: ObservableObject {
         triggerBreak(resetTimerSchedule: false)
     }
 
-    /// Time with the lid shut is time away from the screen — a break by any measure.
-    /// Wall-clock time runs on through sleep and system uptime doesn't, so the gap
-    /// between them is how long the Mac slept. Long enough, and the interval starts
-    /// over: before this, every wake past the interval opened straight onto a break
-    /// (the overdue timer and the status tick both fire the moment the Mac wakes).
-    /// Whichever of them runs first after a wake absorbs it. True when it restarted.
     @discardableResult
     private func restartIntervalIfMacSlept() -> Bool {
         let now = Date()
@@ -433,8 +449,7 @@ class AppState: ObservableObject {
         lastTickWallClock = now
         lastTickUptime = uptime
 
-        let breakSeconds = UserDefaults.standard.object(forKey: "breakDurationSec") as? Double ?? 20
-        guard timerRunning, slept >= max(60, breakSeconds) else { return false }
+        guard timerRunning, slept >= max(60, currentBreakDurationSec) else { return false }
 
         lastBreakTime = now
         lastBreakTimestamp = now.timeIntervalSince1970
@@ -450,7 +465,8 @@ class AppState: ObservableObject {
         guard !showingOverlay else { return }
 
         currentBreakCountsTowardStats = countsTowardStats
-        typingHoldStartedAt = nil  // the next due break gets its own 30 seconds of patience
+        currentBreakResetTimerAnchor = resetsTimerAnchor
+        typingHoldStartedAt = nil
 
         if resetsTimerAnchor {
             lastBreakTime = Date()
@@ -467,8 +483,6 @@ class AppState: ObservableObject {
         armOverlayFailsafe()
     }
 
-    /// Last-resort unwedge: if the overlay never resolves (e.g. its window never
-    /// reached the screen), reset showingOverlay so future breaks can still fire
     private func armOverlayFailsafe() {
         overlayFailsafe?.cancel()
         let failsafe = DispatchWorkItem { [weak self] in
@@ -476,93 +490,99 @@ class AppState: ObservableObject {
             self.showingOverlay = false
         }
         overlayFailsafe = failsafe
-        let breakSeconds = UserDefaults.standard.object(forKey: "breakDurationSec") as? Double ?? 20
-        DispatchQueue.main.asyncAfter(deadline: .now() + breakSeconds + 30, execute: failsafe)
+        DispatchQueue.main.asyncAfter(deadline: .now() + currentBreakDurationSec + 30, execute: failsafe)
     }
-    
+
     func markBreakCompleted() {
         guard currentBreakCountsTowardStats else {
             currentBreakCountsTowardStats = true
             return
         }
 
-        checkDailyReset()
-        totalCompletedBreaks += 1
-        todayCompletedBreaks += 1
         sessionBreakCount += 1
         lastBreakCompletedTime = Date()
     }
-    
+
     func markBreakSkipped() {
         guard currentBreakCountsTowardStats else {
             currentBreakCountsTowardStats = true
             return
         }
 
-        checkDailyReset()
-        totalSkippedBreaks += 1
-        todaySkippedBreaks += 1
         sessionSkippedCount += 1
     }
-    
-    // Get break context for message generation
+
     func getBreakContext() -> (breakCount: Int, skippedCount: Int, lastBreakInterval: TimeInterval?) {
         let interval: TimeInterval? = lastBreakCompletedTime.map { Date().timeIntervalSince($0) }
         return (sessionBreakCount, sessionSkippedCount, interval)
     }
-    
+
     private func setupCombineObservers() {
-        // Watch for overlay state changes using Combine (no polling!)
         overlayCancellable = $showingOverlay
             .removeDuplicates()
             .sink { [weak self] showing in
+                guard let self else { return }
                 if !showing {
-                    self?.overlayFailsafe?.cancel()
-                    self?.overlayFailsafe = nil
-                    // Remove escape key monitor when closing overlay
-                    if let monitor = self?.escapeKeyMonitor {
+                    self.overlayFailsafe?.cancel()
+                    self.overlayFailsafe = nil
+                    if let monitor = self.overlayKeyMonitor {
                         NSEvent.removeMonitor(monitor)
-                        self?.escapeKeyMonitor = nil
+                        self.overlayKeyMonitor = nil
                     }
-                    self?.overlayWindowController?.close()
-                    self?.overlayWindowController = nil
-                    // Already faded out alongside the break (OverlayMirror.fadeOut)
-                    self?.mirrorWindowControllers.forEach { $0.close() }
-                    self?.mirrorWindowControllers = []
+                    self.overlayWindowController?.close()
+                    self.overlayWindowController = nil
+                    self.mirrorWindowControllers.forEach { $0.close() }
+                    self.mirrorWindowControllers = []
+
+                    // If a Test Break just ended right before a scheduled break was due,
+                    // grant a 60s cushion so a second break doesn't fire 1 second later.
+                    if !self.currentBreakResetTimerAnchor && self.timerRunning {
+                        let elapsed = max(0, Date().timeIntervalSince(self.lastBreakTime))
+                        let remaining = self.breakInterval - elapsed
+                        let postTestGrace: TimeInterval = 60
+                        if remaining < postTestGrace {
+                            self.lastBreakTime = Date().addingTimeInterval(postTestGrace - self.breakInterval)
+                            self.lastBreakTimestamp = self.lastBreakTime.timeIntervalSince1970
+                            self.scheduleRepeatingBreakTimer()
+                            self.updateTimeRemainingAndWarning()
+                        }
+                    }
+                    self.currentBreakResetTimerAnchor = true
                 }
             }
-        
+
         preferencesCancellable = $showingPreferences
             .removeDuplicates()
             .sink { [weak self] showing in
                 if !showing {
+                    self?.preferencesResizeCancellable?.cancel()
+                    self?.preferencesResizeCancellable = nil
                     guard let controller = self?.preferencesWindowController else { return }
                     self?.preferencesWindowController = nil
                     controller.close()
                 }
             }
     }
-    
-    func showPreferences() {
+
+    func showPreferences(selectingTab tab: Int? = nil) {
+        if let tab {
+            preferencesSelectedTab = tab
+        }
         showingPreferences = true
-        
+
         if preferencesWindowController == nil {
             guard let soundManager, let store else { return }
-            let preferences = PreferencesView()
+            let preferences = PreferencesView(initialTab: preferencesSelectedTab)
                 .environmentObject(soundManager)
                 .environmentObject(store)
 
-            // Settings is a fixed ~810pt tall and can't be resized. On a smaller
-            // display — a 13" Air at default scaling with the Dock showing, or any Mac
-            // set to "Larger Text" — that's taller than the screen, and the bottom of
-            // it (Test Break included) lands under the Dock. Fit it, and scroll.
             let styleMask: NSWindow.StyleMask = [.titled, .closable]
             let titleBarHeight = NSWindow.frameRect(forContentRect: .zero, styleMask: styleMask).height
             let fittingHeight = NSHostingView(rootView: preferences).fittingSize.height
-            let availableHeight = (NSScreen.main?.visibleFrame.height ?? .greatestFiniteMagnitude) - titleBarHeight
+            let availableHeight = max(480, (NSScreen.main?.visibleFrame.height ?? .greatestFiniteMagnitude) - titleBarHeight)
             let contentHeight = min(fittingHeight, availableHeight)
 
-            let window = NSWindow(
+            let window = PreferencesWindow(
                 contentRect: NSRect(x: 0, y: 0, width: 560, height: contentHeight),
                 styleMask: styleMask,
                 backing: .buffered,
@@ -572,93 +592,217 @@ class AppState: ObservableObject {
             window.titleVisibility = .hidden
             window.titlebarAppearsTransparent = true
             window.backgroundColor = NSColor(red: 0.16, green: 0.14, blue: 0.22, alpha: 1.0)
-            if fittingHeight > availableHeight {
-                window.contentView = NSHostingView(rootView: ScrollView { preferences }
-                    .frame(width: 560, height: contentHeight)
-                )
-            } else {
-                window.contentView = NSHostingView(rootView: preferences)
-            }
+            applyPreferencesContentView(to: window, rootView: preferences, fittingHeight: fittingHeight, availableHeight: availableHeight)
             window.center()
-            window.collectionBehavior = [.moveToActiveSpace]  // Always summon Settings onto the Space in focus
-            window.isMovableByWindowBackground = false  // Fixed: Don't allow dragging by background
-            window.styleMask.remove(.resizable)  // Prevent resizing to lock the size
-            
+            window.collectionBehavior = [.moveToActiveSpace]
+            window.isMovableByWindowBackground = false
+            window.styleMask.remove(.resizable)
+
             preferencesWindowController = PreferencesWindowController(window: window) { [weak self] in
                 self?.handlePreferencesWindowClosed()
             }
+
+            // Re-fit smoothly whenever StoreKit resolves trial/unlock state or products load
+            // so the unlock row & caption never clip at the bottom on first launch.
+            preferencesResizeCancellable = Publishers.CombineLatest3(
+                store.$access,
+                store.$unlockProduct,
+                store.$problem
+            )
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _, _, _ in
+                self?.refitPreferencesWindowIfNeeded()
+            }
+        } else if let tab {
+            NotificationCenter.default.post(
+                name: PreferencesView.selectTabNotification,
+                object: nil,
+                userInfo: ["tab": tab]
+            )
         }
-        
+
         preferencesWindowController?.showWindow(nil)
         preferencesWindowController?.window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
 
+    private func applyPreferencesContentView<V: View>(
+        to window: NSWindow,
+        rootView: V,
+        fittingHeight: CGFloat,
+        availableHeight: CGFloat
+    ) {
+        let contentHeight = min(fittingHeight, availableHeight)
+        if fittingHeight > availableHeight {
+            window.contentView = NSHostingView(
+                rootView: ScrollView { rootView }
+                    .frame(width: 560, height: contentHeight)
+            )
+        } else {
+            window.contentView = NSHostingView(rootView: rootView)
+        }
+    }
+
+    private func refitPreferencesWindowIfNeeded() {
+        guard let window = preferencesWindowController?.window,
+              let soundManager,
+              let store else { return }
+
+        let probe = PreferencesView(initialTab: preferencesSelectedTab)
+            .environmentObject(soundManager)
+            .environmentObject(store)
+        let styleMask: NSWindow.StyleMask = [.titled, .closable]
+        let titleBarHeight = NSWindow.frameRect(forContentRect: .zero, styleMask: styleMask).height
+        let screen = window.screen ?? NSScreen.main
+        let availableHeight = max(480, (screen?.visibleFrame.height ?? .greatestFiniteMagnitude) - titleBarHeight)
+        let fittingHeight = NSHostingView(rootView: probe).fittingSize.height
+        let targetContentHeight = min(fittingHeight, availableHeight)
+        let currentContentHeight = window.contentLayoutRect.height
+
+        guard abs(targetContentHeight - currentContentHeight) > 2 else { return }
+
+        // Keep top-left corner anchored while growing/shrinking downward, clamped onto visibleFrame
+        let oldFrame = window.frame
+        var newFrame = window.frameRect(forContentRect: NSRect(x: 0, y: 0, width: 560, height: targetContentHeight))
+        newFrame.origin.x = oldFrame.origin.x
+        newFrame.origin.y = oldFrame.maxY - newFrame.height
+        if let visible = screen?.visibleFrame, newFrame.minY < visible.minY {
+            newFrame.origin.y = visible.minY
+        }
+        window.setFrame(newFrame, display: true, animate: false)
+    }
+
     private func handlePreferencesWindowClosed() {
+        preferencesResizeCancellable?.cancel()
+        preferencesResizeCancellable = nil
         preferencesWindowController = nil
         if showingPreferences {
             showingPreferences = false
         }
     }
-    
+
     private func showOverlayWindow() {
-        // The break itself — line, ring, sound — goes on the display with the
-        // pointer, where the hand already is. Every other display gets the same
-        // aurora, quiet (mirrorWindowControllers below).
         let screens = NSScreen.screens
+        guard !screens.isEmpty else {
+            showingOverlay = false
+            return
+        }
         let pointer = NSEvent.mouseLocation
         let primaryScreen = screens.first { NSMouseInRect(pointer, $0.frame, false) }
             ?? NSScreen.main
             ?? screens.first
 
-        overlayWindowController = OverlayWindowController(frame: primaryScreen?.frame)
-        guard let window = overlayWindowController?.window else { return }
+        overlayWindowController = OverlayWindowController(frame: primaryScreen?.frame, allowsKey: true)
+        guard let window = overlayWindowController?.window,
+              let soundManager else {
+            showingOverlay = false
+            return
+        }
 
-        // Use the good SwiftUI overlay with animated effects
-        // (soundManager comes via the injected reference — NSApp.delegate is
-        // SwiftUI's own wrapper object, not our AppDelegate, so casting it fails)
-        guard let soundManager else { return }
-        // Rolled once here, not per view, so Surprise wears one palette on every display
         let theme = OverlayWindow.rollTheme(UserDefaults.standard.string(forKey: "visualTheme") ?? "aurora")
+        activeOverlayTheme = theme
         let overlayView = OverlayWindow(theme: theme)
             .environmentObject(self)
             .environmentObject(soundManager)
-        
+
         window.contentView = TransparentHostingView(rootView: overlayView)
         window.isOpaque = false
         window.backgroundColor = NSColor.clear
         window.isReleasedWhenClosed = false
-        
-        // Intercept escape key to prevent system error sound
-        // But don't actually do anything - breaks are unskippable!
-        escapeKeyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-            if event.keyCode == 53 { // Escape key
-                // Consume the event to prevent error sound
-                // Could trigger a visual feedback here if wanted
-                NotificationCenter.default.post(name: NotificationName.escapePressed, object: nil)
-                return nil // Consume the event
-            }
-            return event
-        }
-        
-        mirrorWindowControllers = screens
-            .filter { $0.frame != primaryScreen?.frame }
-            .map { screen in
-                let mirror = OverlayWindowController(frame: screen.frame)
-                mirror.window?.contentView = TransparentHostingView(rootView: OverlayMirror(theme: theme))
-                mirror.window?.isReleasedWhenClosed = false
-                return mirror
-            }
 
-        // Bring it all the way front
+        installOverlayKeyMonitor()
+        rebuildMirrorWindows(screens: screens, excluding: primaryScreen, theme: theme)
+
         mirrorWindowControllers.forEach { $0.window?.orderFrontRegardless() }
         window.orderFrontRegardless()
         window.makeKeyAndOrderFront(self)
         NSApp.activate(ignoringOtherApps: true)
 
-        // The window server can drop an order-front issued while the app is
-        // still settling (launch, wake) — re-assert until it's actually visible
         reassertOverlayVisibility(attempt: 1)
+    }
+
+    private func installOverlayKeyMonitor() {
+        if let existing = overlayKeyMonitor {
+            NSEvent.removeMonitor(existing)
+            overlayKeyMonitor = nil
+        }
+
+        overlayKeyMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .keyUp]) { [weak self] event in
+            guard let self, self.showingOverlay else { return event }
+
+            // Allow standard Command shortcuts (e.g. Command-Q) through untouched
+            if event.modifierFlags.intersection(.deviceIndependentFlagsMask).contains(.command) {
+                return event
+            }
+
+            switch event.keyCode {
+            case 53: // Escape — gentle pulse, never system beep
+                if event.type == .keyDown && !event.isARepeat {
+                    NotificationCenter.default.post(name: OverlayWindow.escapePressed, object: nil)
+                }
+                return nil
+            case 49: // Space — hold to skip (accessibility & keyboard parity with pointer hold)
+                if event.type == .keyDown && !event.isARepeat {
+                    NotificationCenter.default.post(
+                        name: OverlayWindow.holdSkipChanged,
+                        object: nil,
+                        userInfo: ["pressing": true]
+                    )
+                } else if event.type == .keyUp {
+                    NotificationCenter.default.post(
+                        name: OverlayWindow.holdSkipChanged,
+                        object: nil,
+                        userInfo: ["pressing": false]
+                    )
+                }
+                return nil
+            case 46: // M — mute/unmute ambient audio during a break
+                if event.type == .keyDown && !event.isARepeat {
+                    NotificationCenter.default.post(name: OverlayWindow.toggleMute, object: nil)
+                }
+                return nil
+            default:
+                // Swallow stray keys during a break so they neither leak into Settings
+                // behind the overlay nor trigger NSBeep().
+                return nil
+            }
+        }
+    }
+
+    private func rebuildMirrorWindows(screens: [NSScreen], excluding primaryScreen: NSScreen?, theme: String) {
+        mirrorWindowControllers.forEach { $0.close() }
+        mirrorWindowControllers = screens
+            .filter { $0.frame != primaryScreen?.frame }
+            .map { screen in
+                let mirror = OverlayWindowController(frame: screen.frame, allowsKey: false)
+                mirror.window?.contentView = TransparentHostingView(rootView: OverlayMirror(theme: theme))
+                mirror.window?.isReleasedWhenClosed = false
+                return mirror
+            }
+    }
+
+    /// Keep the interactive primary break window on a live display if monitors
+    /// connect, disconnect, or enter clamshell mode mid-break.
+    private func handleScreenParametersChanged() {
+        if showingPreferences {
+            refitPreferencesWindowIfNeeded()
+        }
+        guard showingOverlay else { return }
+
+        let screens = NSScreen.screens
+        guard let targetScreen = screens.first(where: { NSMouseInRect(NSEvent.mouseLocation, $0.frame, false) })
+            ?? NSScreen.main
+            ?? screens.first,
+              let primaryWindow = overlayWindowController?.window else {
+            showingOverlay = false
+            return
+        }
+
+        primaryWindow.setFrame(targetScreen.frame, display: true)
+        rebuildMirrorWindows(screens: screens, excluding: targetScreen, theme: activeOverlayTheme)
+        mirrorWindowControllers.forEach { $0.window?.orderFrontRegardless() }
+        primaryWindow.orderFrontRegardless()
+        primaryWindow.makeKeyAndOrderFront(self)
     }
 
     private func reassertOverlayVisibility(attempt: Int) {
@@ -673,18 +817,20 @@ class AppState: ObservableObject {
             self.reassertOverlayVisibility(attempt: attempt + 1)
         }
     }
-    
+
     private func startStatusTimer() {
         statusTimer?.invalidate()
-        statusTimer = Timer.scheduledCommonTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+        statusTimer = Timer.scheduledCommonTimer(
+            withTimeInterval: 1.0,
+            tolerance: 0.25,
+            repeats: true
+        ) { [weak self] _ in
             self?.updateTimeRemainingAndWarning()
         }
     }
 
     private func handleSystemWake() {
         guard timerRunning else { return }
-        // If the Mac slept ≥ 1 min, restartIntervalIfMacSlept() resets to a full fresh interval.
-        // If it only catnapped (< 1 min) right before a due break, still grant 3 min of breathing room.
         if !restartIntervalIfMacSlept() {
             let elapsed = max(0, Date().timeIntervalSince(lastBreakTime))
             let remaining = breakInterval - elapsed
@@ -699,10 +845,7 @@ class AppState: ObservableObject {
     }
 
     private func updateTimeRemainingAndWarning() {
-        checkDailyReset()
-
         guard timerRunning else {
-            // Paused keeps its frozen number (a wake used to zero it on screen)
             timeRemaining = timerPaused ? pausedRemaining : 0
             hideCountdownPill()
             return
@@ -733,7 +876,7 @@ class AppState: ObservableObject {
     }
 
     /// Show the floating countdown pill during the final seconds before a
-    /// break; hide it the moment it no longer applies
+    /// break; hide it when busy or away so it never photobombs fullscreen apps or calls.
     private func updateCountdownPill() {
         let shouldShow = scheduledBreaksAllowed
             && !userIsAway
@@ -742,6 +885,7 @@ class AppState: ObservableObject {
             && timeRemaining > 0
             && timeRemaining <= breakWarningLeadTime
             && breakInterval > breakWarningLeadTime
+            && !shouldHoldBreak()
 
         guard shouldShow else {
             hideCountdownPill()
@@ -771,72 +915,52 @@ class AppState: ObservableObject {
             controller.close()
         })
     }
-    
-    private func checkDailyReset() {
-        let today = DateFormatter.dateOnlyFormatter.string(from: Date())
-        if lastBreakDateString != today {
-            todayCompletedBreaks = 0
-            todaySkippedBreaks = 0
-            lastBreakDateString = today
-        }
-    }
-    
-    /// Restore timer state after app restart
+
     private func restoreTimerState() {
         guard timerWasRunning && lastBreakTimestamp > 0 else { return }
+        guard scheduledBreaksAllowed else {
+            timerWasRunning = false
+            return
+        }
 
         let lastBreak = Date(timeIntervalSince1970: lastBreakTimestamp)
         let elapsed = max(0, Date().timeIntervalSince(lastBreak))
-        
-        // If we're still within the break interval, restore the timer
+
         if elapsed < breakInterval {
             lastBreakTime = lastBreak
             timerRunning = true
-            
-            // Calculate remaining time until next break
+
             let remainingTime = breakInterval - elapsed
-            
-            // Set up timer for the remaining time
-            timer = Timer.scheduledCommonTimer(withTimeInterval: max(0.1, remainingTime), repeats: false) { [weak self] _ in
+            timer = Timer.scheduledCommonTimer(
+                withTimeInterval: max(0.1, remainingTime),
+                tolerance: 0.5,
+                repeats: false
+            ) { [weak self] _ in
                 self?.checkAndTriggerBreak()
-                // After this break, continue with regular intervals
-                guard let self = self else { return }
+                guard let self = self, self.timerRunning else { return }
                 self.scheduleRepeatingBreakTimer()
             }
-            
+
+            startStatusTimer()
+            updateTimeRemainingAndWarning()
+        } else if elapsed < breakInterval * 2 {
+            timerRunning = true
+            timerWasRunning = true
+
+            let grace: TimeInterval = 5
+            lastBreakTime = Date().addingTimeInterval(grace - breakInterval)
+            timer = Timer.scheduledCommonTimer(withTimeInterval: grace, repeats: false) { [weak self] _ in
+                guard let self = self else { return }
+                self.checkAndTriggerBreak()
+                if self.timerRunning {
+                    self.scheduleRepeatingBreakTimer()
+                }
+            }
+
             startStatusTimer()
             updateTimeRemainingAndWarning()
         } else {
-            // Timer expired while app was closed, trigger break shortly if appropriate
-            if elapsed < breakInterval * 2 {
-                // Only trigger if we're not too far past the scheduled time
-                timerRunning = true
-                timerWasRunning = true
-
-                // Land the break a few seconds out instead of mid-launch: a window
-                // ordered front before the app finishes launching can stay offscreen,
-                // leaving showingOverlay wedged true and blocking all future breaks
-                let grace: TimeInterval = 5
-                lastBreakTime = Date().addingTimeInterval(grace - breakInterval)
-                timer = Timer.scheduledCommonTimer(withTimeInterval: grace, repeats: false) { [weak self] _ in
-                    guard let self = self else { return }
-                    self.checkAndTriggerBreak()
-                    self.scheduleRepeatingBreakTimer()
-                }
-
-                startStatusTimer()
-                updateTimeRemainingAndWarning()
-            } else {
-                timerWasRunning = false
-            }
+            timerWasRunning = false
         }
     }
-}
-
-extension DateFormatter {
-    static let dateOnlyFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter
-    }()
 }

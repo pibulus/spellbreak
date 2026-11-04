@@ -10,9 +10,9 @@ import SwiftUI
 import AppKit
 
 // MARK: - Countdown Window Controller
-/// Small click-through panel pinned comfortably top-center of the main screen.
+/// Small click-through panel pinned comfortably top-center of the active screen.
 final class BreakCountdownWindowController: NSWindowController {
-    private static let pillSize = NSSize(width: 360, height: 104)
+    private static let pillSize = NSSize(width: 372, height: 104)
 
     private static func targetOrigin() -> NSPoint {
         let mouseLoc = NSEvent.mouseLocation
@@ -42,6 +42,7 @@ final class BreakCountdownWindowController: NSWindowController {
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
         window.isReleasedWhenClosed = false
         window.contentView = NSHostingView(rootView: BreakCountdownView().environmentObject(appState))
+        window.contentView?.setAccessibilityElement(false)
 
         super.init(window: window)
     }
@@ -64,17 +65,19 @@ final class BreakCountdownWindowController: NSWindowController {
 struct BreakCountdownView: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @State private var pulse = false
     @State private var appeared = false
 
     private var secondsLeft: Int {
-        max(0, Int(appState.timeRemaining.rounded(.up)))
+        guard appState.timeRemaining.isFinite else { return 0 }
+        return max(0, Int(appState.timeRemaining.rounded(.up)))
     }
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(alignment: .firstTextBaseline, spacing: 11) {
             Image(systemName: "moon.stars.fill")
-                .font(.system(size: 18, weight: .semibold))
+                .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [Color.spellPink, Color.spellCoral],
@@ -82,7 +85,9 @@ struct BreakCountdownView: View {
                         endPoint: .bottomTrailing
                     )
                 )
-                .scaleEffect(pulse ? 1.15 : 1.0)
+                .scaleEffect(pulse ? 1.14 : 1.0)
+                .alignmentGuide(.firstTextBaseline) { d in d[VerticalAlignment.center] + 5 }
+                .accessibilityHidden(true)
 
             Text("Spell breaks in")
                 .font(.system(size: 16, weight: .medium, design: .serif))
@@ -93,7 +98,7 @@ struct BreakCountdownView: View {
                 .font(.system(size: 24, weight: .bold, design: .rounded))
                 .monospacedDigit()
                 .contentTransition(.numericText())
-                .animation(.easeOut(duration: 0.3), value: secondsLeft)
+                .animation(reduceMotion ? nil : .easeOut(duration: 0.25), value: secondsLeft)
                 .foregroundStyle(
                     LinearGradient(
                         colors: [Color.spellPink, Color.spellPeach],
@@ -101,13 +106,13 @@ struct BreakCountdownView: View {
                         endPoint: .bottom
                     )
                 )
-                .frame(minWidth: 36)
+                .frame(minWidth: 46, alignment: .trailing)
         }
         .padding(.horizontal, 24)
-        .padding(.vertical, 15)
+        .padding(.vertical, 14)
         .background(
             Capsule()
-                .fill(Color(red: 0.078, green: 0.062, blue: 0.058).opacity(0.92))
+                .fill(Color(red: 0.078, green: 0.062, blue: 0.058).opacity(reduceTransparency ? 1.0 : 0.93))
                 .overlay(
                     Capsule().stroke(
                         LinearGradient(
@@ -119,14 +124,14 @@ struct BreakCountdownView: View {
                     )
                 )
         )
-        .shadow(color: Color.spellPink.opacity(pulse ? 0.45 : 0.25), radius: 20, y: 3)
-        .shadow(color: .black.opacity(0.45), radius: 12, y: 5)
+        .shadow(color: Color.spellPink.opacity(pulse ? 0.42 : 0.24), radius: 18, y: 3)
+        .shadow(color: Color.spellInk.opacity(0.65), radius: 12, y: 5)
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared || reduceMotion ? 0 : -14)
         .scaleEffect(appeared || reduceMotion ? 1 : 0.96)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear {
-            withAnimation(.easeOut(duration: reduceMotion ? 0.25 : 0.6)) {
+            withAnimation(.easeOut(duration: reduceMotion ? 0.2 : 0.55)) {
                 appeared = true
             }
             guard !reduceMotion else { return }
@@ -134,7 +139,6 @@ struct BreakCountdownView: View {
                 pulse = true
             }
         }
-        .accessibilityElement()
-        .accessibilityLabel("Break starts in \(secondsLeft) seconds")
+        .accessibilityHidden(true)
     }
 }

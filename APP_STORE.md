@@ -22,15 +22,15 @@ A menu bar break timer for macOS. Set a rhythm, choose a short pause, and let an
 
 ## Description
 
-Spellbreak is a break timer for your Mac's menu bar. Choose how often breaks arrive and how long they last. When one begins, a full screen color field fills your displays for a short pause.
+Spellbreak is a break timer for the Mac menu bar. Choose how often breaks arrive and how long they last. When one begins, a full screen color field fills every display for a short pause.
 
-Choose a look: Aurora shifts with the time of day, Ember stays warm, Violet stays cool, and Surprise picks one of the three for each break. Turn the optional message on or off, and adjust the sound to suit the room.
+Choose a look: Aurora shifts with the time of day, Ember stays warm, Violet stays cool, and Surprise rolls a fresh harmonious palette for each break. Turn the optional message on or off, and adjust the sound to suit the room.
 
-Set a heads up notification, start Spellbreak at login, or let it defer breaks while a full screen app is open, microphone input is active, or you're mid-sentence. Time away from your Mac counts as a break. Lock mode hides the hold to skip control.
+A floating 15-second heads-up appears before each break. Start Spellbreak at login, or let it defer breaks while a full screen app is open, microphone input is active, or typing is underway. Time away from the Mac counts as a break. Lock mode hides the hold to skip control.
 
 Breaks last 10 seconds to 3 minutes, at intervals from 15 minutes to 3 hours. Spellbreak runs on macOS 13 or later.
 
-Your settings and break counts stay on your Mac. Spellbreak has no accounts, ads, or analytics, and makes no network requests of its own. Try it for 7 days, then unlock it with a single purchase. No subscription.
+Settings stay on the Mac. Spellbreak has no accounts, ads, or analytics, and makes no network requests of its own. Try it for 7 days, then unlock it with a single purchase. No subscription.
 
 ## Keywords
 
@@ -92,9 +92,10 @@ go (expect **4+**):
 ## App Privacy ("nutrition label")
 **Data Not Collected.** Nothing leaves the Mac: no analytics, no crash
 reporting, no network calls. Matches `PrivacyInfo.xcprivacy` (no tracking, no
-collected data types; UserDefaults declared with reason CA92.1). The trial and
-unlock go through the App Store; Spellbreak sees only whether they're owned,
-never payment details, so the answer stays the same.
+collected data types; UserDefaults declared with reason CA92.1 and system boot
+time declared with reason 35F9.1). The trial and unlock go through the App Store;
+Spellbreak sees only whether they're owned, never payment details, so the answer
+stays the same.
 
 ## Export Compliance
 Handled by `ITSAppUsesNonExemptEncryption = false` in Info.plist — App Store
@@ -120,8 +121,10 @@ Sign-in required: **No**. Contact: your name, phone, email.
 > click the menu bar icon and choose "Break Now".
 >
 > During a break:
-> • Press and hold the small "skip" ring at the bottom centre for about 2 seconds
->   to skip. The ring appears 2 seconds into the break.
+> • Press and hold the small "skip" ring at the bottom centre (or hold Space) for
+>   about 2 seconds to skip. The ring appears 2 seconds into the break.
+> • Press M or click the speaker icon in the bottom-left corner to mute or play
+>   ambient sound. Command-Q quits Spellbreak at any time.
 > • The break also ends on its own after the set duration (20 seconds by default).
 > • "Lock mode" (in Settings) hides the skip ring and is off by default. Even when
 >   on, a break lasts at most 3 minutes.
@@ -143,8 +146,8 @@ Sign-in required: **No**. Contact: your name, phone, email.
 > bottom of Settings. When the trial ends, scheduled breaks stop until unlocked;
 > "Restore Purchase" sits beside the price.
 >
-> The only permission requested is notifications (optional), for a heads-up 15
-> seconds before a break. No account or sign-in.
+> Spellbreak requests no system permissions (the 15-second heads-up is an in-app
+> floating pill, not a system notification). No account or sign-in.
 
 ## Screenshots
 
@@ -156,7 +159,7 @@ adding real captures.
 2. **02-street-smart-wisdom** — Short generated phrases; messages are optional.
 3. **03-hold-to-skip** — Hold briefly to skip, or enable Lock mode to hide skip controls.
 4. **04-living-shaders** — Breaks from 10 seconds to 3 minutes, every 15 minutes to 3 hours.
-5. **05-no-subscriptions** — Local preferences and counts; no account, tracking, ads, or subscription.
+5. **05-no-subscriptions** — Local preferences; no account, tracking, ads, or subscription.
 
 ## URLs
 
@@ -170,11 +173,10 @@ adding real captures.
 ## What's New
 The first App Store version has no "What's New" field. For later updates:
 
-**1.2.0** (also the website release notes)
-• Breaks cover every display, landing on the one with your pointer.
-• Time away from your Mac counts as a break, and so does sleep. No more breaks the moment you sit down.
-• A break that comes due mid-sentence waits for a pause in your typing.
-• Today's break count in the menu bar.
-• Break messages notice when you've skipped a few, and won't repeat for days.
+**1.2.2**
+• Breaks cover every display, landing on the one with the pointer.
+• Time away from the Mac counts as a break, and so does sleep.
+• A break that comes due mid-sentence waits for a pause in typing.
+• Break messages notice when several have been skipped, and won't repeat for days.
 • Choose Aurora, Ember, Violet, or Surprise. Hide the message for a word-free break.
-• Settings fits smaller screens.
+• Full VoiceOver, Reduce Motion, Reduce Transparency, and keyboard support.

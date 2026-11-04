@@ -3,14 +3,15 @@
 set -euo pipefail
 
 APP_NAME="Spellbreak"
-BUILD_ROOT="build"
+BUILD_ROOT="${BUILD_ROOT:-build}"
 APP_BUNDLE="${BUILD_ROOT}/${APP_NAME}.app"
 CONTENTS_DIR="${APP_BUNDLE}/Contents"
 MACOS_DIR="${CONTENTS_DIR}/MacOS"
 RESOURCES_DIR="${CONTENTS_DIR}/Resources"
 INFO_PLIST="Sources/Spellbreak/Resources/Info.plist"
 SOUNDS_DIR="Sources/Spellbreak/Resources/Sounds"
-ICONSET_SOURCE="Sources/Spellbreak/Resources/Assets.xcassets/AppIcon.appiconset"
+ASSETS_CATALOG="Sources/Spellbreak/Resources/Assets.xcassets"
+ICONSET_SOURCE="${ASSETS_CATALOG}/AppIcon.appiconset"
 # SPELLBREAK_APP_STORE=1 (set by build-mas.sh) compiles in the App Store unlock
 # (Store.swift, -DAPP_STORE). Website builds leave it out and are never locked.
 # Separate scratch dirs so the two never reuse each other's objects.
@@ -113,13 +114,31 @@ fi
 chmod +x "${MACOS_DIR}/${APP_NAME}"
 cp "$INFO_PLIST" "${CONTENTS_DIR}/Info.plist"
 
-AUTO_BUILD_VERSION=$(date +%Y%m%d%H%M)
+AUTO_BUILD_VERSION=$(date +%Y%m%d%H%M%S)
 /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${AUTO_BUILD_VERSION}" "${CONTENTS_DIR}/Info.plist" 2>/dev/null \
     || /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string ${AUTO_BUILD_VERSION}" "${CONTENTS_DIR}/Info.plist"
 cp -R "$SOUNDS_DIR" "${RESOURCES_DIR}/"
 cp "Sources/Spellbreak/Resources/PrivacyInfo.xcprivacy" "${RESOURCES_DIR}/"
 
-echo "🎨 Creating app icon..."
+echo "🎨 Compiling asset catalog and app icon..."
+if xcrun --find actool >/dev/null 2>&1 && [[ -d "$ASSETS_CATALOG" ]]; then
+    ASSET_PLIST="$(mktemp)"
+    xcrun actool --compile "$RESOURCES_DIR" \
+        --platform macosx \
+        --minimum-deployment-target 13.0 \
+        --app-icon AppIcon \
+        --output-partial-info-plist "$ASSET_PLIST" \
+        "$ASSETS_CATALOG" >/dev/null
+    /usr/libexec/PlistBuddy -x -c "Merge ${ASSET_PLIST}" "${CONTENTS_DIR}/Info.plist" >/dev/null 2>&1 || true
+    rm -f "$ASSET_PLIST"
+else
+    echo "❌ xcrun actool unavailable — cannot compile Assets.car" >&2
+    exit 1
+fi
+
+# actool puts all high-res reps into Assets.car and writes only 4 fallback sizes
+# into AppIcon.icns. Rebuild AppIcon.icns directly via iconutil afterwards so
+# both Assets.car AND a complete 10-representation AppIcon.icns ship together.
 if command -v iconutil >/dev/null 2>&1 && [[ -d "$ICONSET_SOURCE" ]]; then
     ICONSET_DIR="$(mktemp -d)/AppIcon.iconset"
     mkdir -p "$ICONSET_DIR"

@@ -15,7 +15,6 @@ enum AudioError: LocalizedError {
     case fileNotFound(String)
     case loadFailed(Error)
     case playbackFailed
-    case volumeUpdateFailed
     
     var errorDescription: String? {
         switch self {
@@ -25,8 +24,6 @@ enum AudioError: LocalizedError {
             return "Failed to load audio: \(error.localizedDescription)"
         case .playbackFailed:
             return "Audio playback failed"
-        case .volumeUpdateFailed:
-            return "Failed to update audio volume"
         }
     }
     
@@ -38,8 +35,6 @@ enum AudioError: LocalizedError {
             return "The audio file may be corrupted or in an unsupported format"
         case .playbackFailed:
             return "Check audio output device settings"
-        case .volumeUpdateFailed:
-            return "Try adjusting the volume in preferences"
         }
     }
 }

@@ -23,7 +23,9 @@ for arg in "$@"; do
 done
 
 APP_NAME="Spellbreak"
-BUILD_ROOT="build"
+# Stage the MAS bundle in build-mas/ so building a Mac App Store .pkg never
+# overwrites the notarized Developer ID bundle at build/Spellbreak.app.
+BUILD_ROOT="${BUILD_ROOT:-build-mas}"
 APP_BUNDLE="${BUILD_ROOT}/${APP_NAME}.app"
 CONTENTS_DIR="${APP_BUNDLE}/Contents"
 APP_INFO_PLIST="${CONTENTS_DIR}/Info.plist"
@@ -104,24 +106,54 @@ fi
 # Captured, not piped into grep -q: under pipefail an early-exiting grep can
 # SIGPIPE the writer and fail the check even on a match.
 INSTALLED_IDENTITIES=$(security find-identity -v)
-for identity in "$APP_SIGN_IDENTITY" "$INSTALLER_SIGN_IDENTITY"; do
-    if [[ "$INSTALLED_IDENTITIES" != *"$identity"* ]]; then
-        echo "❌ Signing identity not in your keychain: ${identity}"
-        echo "   security find-identity -v   lists what's installed"
-        exit 1
+
+# Extract the exact SHA-1 certificate fingerprints embedded in the provisioning
+# profile and verify at least one matching private-key identity is installed in
+# the login keychain (checking by name alone passes on stale/revoked certs).
+PROFILE_CERT_HASHES=$(python3 - "$PROFILE_PLIST" <<'PY'
+import hashlib, plistlib, sys
+with open(sys.argv[1], "rb") as fh:
+    data = plistlib.load(fh)
+print(" ".join(hashlib.sha1(c).hexdigest().upper() for c in data.get("DeveloperCertificates", [])))
+PY
+)
+if [[ -z "$PROFILE_CERT_HASHES" ]]; then
+    echo "❌ ${PROVISION_PROFILE} contains no DeveloperCertificates"
+    exit 1
+fi
+
+INSTALLED_UPPER=$(echo "$INSTALLED_IDENTITIES" | tr '[:lower:]' '[:upper:]')
+MATCHED_APP_HASH=""
+for sha in $PROFILE_CERT_HASHES; do
+    if [[ "$INSTALLED_UPPER" == *"$sha"* ]]; then
+        MATCHED_APP_HASH="$sha"
+        break
     fi
 done
+if [[ -z "$MATCHED_APP_HASH" ]]; then
+    echo "❌ None of the distribution certificates inside ${PROVISION_PROFILE} (${PROFILE_CERT_HASHES}) are installed with a private key in your keychain."
+    echo "   security find-identity -v   lists what's installed"
+    echo "   If .asc-work/ holds the matching cert + key, import .asc-work/distribution.cer or re-run scripts/asc-provision.ts."
+    exit 1
+fi
+APP_SIGN_TARGET="$MATCHED_APP_HASH"
+
+if ! echo "$INSTALLED_IDENTITIES" | grep -Fq "$INSTALLER_SIGN_TARGET"; then
+    echo "❌ Installer signing identity not in your keychain: ${INSTALLER_SIGN_TARGET}"
+    echo "   security find-identity -v   lists what's installed"
+    exit 1
+fi
 
 if [[ "$CHECK_ONLY" == "1" ]]; then
-    echo "✅ Preflight passed — certificates, profile and Xcode are all in place."
+    echo "✅ Preflight passed — Xcode, profile (${MATCHED_APP_HASH}), and installer (${INSTALLER_SIGN_TARGET}) verified."
     echo "   Run ./build-mas.sh without --check-only to build dist/${APP_NAME}-v${VERSION}-mas.pkg"
     exit 0
 fi
 
 # --- Build ---
 
-echo "📦 Building unsigned app via build-app.sh (with the App Store unlock)..."
-SPELLBREAK_APP_STORE=1 ./build-app.sh
+echo "📦 Building unsigned app via build-app.sh into ${BUILD_ROOT}/ (with the App Store unlock)..."
+BUILD_ROOT="$BUILD_ROOT" SPELLBREAK_APP_STORE=1 ./build-app.sh
 
 # The Mac App Store lists Spellbreak for Intel and Apple silicon. Keep an
 # explicit architecture gate here even though build-app.sh already rejects

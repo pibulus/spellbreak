@@ -1,6 +1,7 @@
 # Xcode
 .DS_Store
 build/
+build-mas/
 *.pbxuser
 !default.pbxuser
 *.mode1v3
@@ -40,6 +41,7 @@ Package.resolved
 # Distribution builds
 dist/
 *.dmg
+*.pkg
 *.zip
 
 # Backup files

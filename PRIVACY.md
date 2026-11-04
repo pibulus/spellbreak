@@ -1,6 +1,6 @@
 # Privacy Policy for Spellbreak
 
-*Last updated: November 4, 2026*
+*Last updated: November 5, 2026*
 
 ## Your Privacy Matters
 
@@ -44,14 +44,13 @@ just a number of seconds and a yes or a no.
 
 ## What Stays on Your Device
 
-All your preferences stay local:
+All preferences stay local:
 - Break interval and duration
 - Sound, theme, and message choices
-- Timer state, so a restart picks up where you left off
-- Completed and skipped break counts
+- Timer state, so a restart picks up where it left off
 - The last few dozen break messages shown, so lines don't repeat
 
-These are stored in macOS's standard UserDefaults and never leave your Mac.
+These are stored in macOS's standard UserDefaults and never leave the Mac.
 
 ## Permissions We Request
 
@@ -62,30 +61,24 @@ One optional setting starts off until turned on:
 
 ## Purchases
 
-The free trial and the unlock are App Store in-app purchases. Apple handles
-them. Spellbreak only learns whether you own them, never your payment details
-or your Apple Account.
+In the Mac App Store version, the free trial and the unlock are App Store in-app
+purchases handled by Apple. Spellbreak only learns whether they are owned, never
+payment details or Apple Account credentials.
 
-Buying from [spellbreak.app](https://spellbreak.app) is different: Square takes
-the card on Square's own checkout page, and what arrives is the notarized app
-itself. There is no licence check inside it, it never contacts the site, and
-nothing about the purchase is stored on the Mac.
+In the direct notarized version, there is no licence check inside the app, it
+never contacts any server, and nothing about payment is stored on the Mac.
 
 ## Third-Party Services
 
 Spellbreak uses no third-party services. No data is sent anywhere, ever.
 
-The website is a separate thing, and worth saying plainly: spellbreak.app counts
-page views on hardware of ours, without cookies and without a profile of who is
-reading. The app itself sends nothing.
-
-## Learn More
-
-Find out more about Spellbreak at [spellbreak.app](https://spellbreak.app)
+The website is a separate thing, and worth saying plainly: it counts page views
+on hardware of ours, without cookies and without a profile of who is reading.
+The app itself sends nothing.
 
 ## Contact
 
-Questions about privacy? Email pibulus@gmail.com
+Questions about privacy: pibulus@gmail.com
 
 ## Changes
 

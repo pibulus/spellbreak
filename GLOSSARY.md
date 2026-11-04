@@ -17,7 +17,7 @@ Source of truth for numbers, behaviours and the repo map is
 `Sources/Spellbreak/PreferencesView.swift` - Break interval, duration, theme, behaviour rows
 
 **MenuViewSimple** - Menu bar popover
-`Sources/Spellbreak/MenuViewSimple.swift` - Timer status, stats, quick actions
+`Sources/Spellbreak/MenuViewSimple.swift` - Timer status and quick actions
 
 ## Background Components
 
@@ -25,7 +25,7 @@ Source of truth for numbers, behaviours and the repo map is
 `Sources/Spellbreak/AuroraBackground.swift` - Canvas + TimelineView animation, palette-driven
 
 **AuroraPalette** - The colour a break wears
-`Sources/Spellbreak/AuroraBackground.swift` - `.time` (hour-aware), `.ember` (warm), `.violet` (cool)
+`Sources/Spellbreak/AuroraBackground.swift` - `.time` (hour-aware), `.ember` (warm), `.violet` (cool), `.harmonious` (rolled Surprise harmony)
 
 **AmbientParticles** - Floating orbs overlay
 `Sources/Spellbreak/AmbientParticles.swift` - Subtle particle system, palette-matched
@@ -33,13 +33,13 @@ Source of truth for numbers, behaviours and the repo map is
 ## App Structure
 
 **SpellbreakApp** - Main app entry (@main)
-`Sources/Spellbreak/SpellbreakApp.swift` - Settings scene only
+`Sources/Spellbreak/SpellbreakApp.swift` - Settings scene stub
 
-**AppDelegate** - Menu bar management
-`Sources/Spellbreak/SpellbreakApp.swift` - Status item, break coordination
+**AppDelegate** - Menu bar & main menu setup
+`Sources/Spellbreak/AppDelegate.swift` - Status item, `⌘,` / `⌘W` / `⌘Q` wiring
 
 **AppState** - Main state manager (ObservableObject)
-`Sources/Spellbreak/SpellbreakApp.swift` - Timer, stats, overlay control
+`Sources/Spellbreak/SpellbreakApp.swift` - Timer, session context, overlay & preferences windows
 
 **StatusBarController** - Menu bar item controller
 `Sources/Spellbreak/StatusBarController.swift` - Icon, popover coordination
@@ -105,11 +105,10 @@ Source of truth for numbers, behaviours and the repo map is
 - Aurora: hour-aware, shifts with the clock
 - Ember: always-warm dusk colours
 - Violet: always-cool night colours
-- Surprise: rolls one of the three each break
+- Surprise: rolls a fresh harmonious 4-stop jewel palette each break
 
 **Smart Pauses** - `shouldHoldBreak()` in `SpellbreakApp.swift`
-- Under "Pause while busy": full-screen windows, mic in use, typing (waits for 2s
-  of quiet keys, 30s max)
+- Under "Pause while busy": full-screen windows (including notched MacBook Full Screen Spaces), mic in use, screen capture / watched video, typing or dragging (waits for 2s of quiet keys, 30s max)
 - Always: away (3+ min with no input, and nothing holding the display awake)
   holds the break and restarts the interval on return; sleep does the same. A
   video or call keeps the display awake, so still hands in front of YouTube are
@@ -119,16 +118,13 @@ Source of truth for numbers, behaviours and the repo map is
 
 **Multi-display** - `showOverlayWindow()` + `OverlayMirror`
 - One overlay window per display; the interactive break goes on the pointer's
-  display, quiet aurora mirrors elsewhere, one palette rolled per break
+  display, quiet 15fps aurora mirrors elsewhere, one palette rolled per break
 
-**Break Statistics** - Tracked per session + lifetime
-- Completed breaks (today + total)
-- Skipped breaks (today + total)
-- Daily reset at midnight
-- Persisted in UserDefaults (today's counts too, so a relaunch keeps them)
-- Shown as "3 breaks today · 1 skipped" in the menu bar popover and right-click menu
+**Session Break Context** - Tracked in memory per session (`AppState`)
+- Completed and skipped break counts for the current session plus time since last completed break
+- Feeds `SpellTextGenerator` noticing lines; never sent over a network
 
 **Privacy Boundary** - Local-only behavior
 - No network requests, accounts, analytics, or telemetry
-- No camera or microphone probing
-- Manual pause and heads-up notifications cover awkward timing
+- No camera or microphone capture (CoreAudio checks only whether an input device is running)
+- Floating in-app countdown pill warns 15s before scheduled breaks with zero system permissions

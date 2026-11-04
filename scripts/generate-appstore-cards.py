@@ -215,12 +215,12 @@ def label_pill(card, box, title, caption):
 # MARK: - The skip ring, as OverlayWindow draws it
 
 def draw_skip_ring(img, progress, pt):
-    """Mid-hold skip ring: 64pt, centred 92pt above the bottom edge (60pt padding
-    + half the ring), scaled 1.15 while held, percentage in SF Rounded. `pt` is
+    """Mid-hold skip ring: 64pt, centred 90pt above the bottom edge (58pt padding
+    + half the ring), scaled 1.14 while held, percentage in SF Rounded. `pt` is
     pixels per point in `img`. Returns the ring's centre."""
     ss = 4
-    s = 1.15 * pt
-    cx, cy = img.width / 2, img.height - 92 * pt
+    s = 1.14 * pt
+    cx, cy = img.width / 2, img.height - 90 * pt
     radius = 32 * s
     box = int(radius * 2 + 40 * pt)
     layer = Image.new("RGBA", (box * ss, box * ss), (0, 0, 0, 0))
@@ -366,7 +366,7 @@ def card_skip():
 
 def card_rhythm():
     card = background()
-    header(card, "SET YOUR OWN RHYTHM", "Short breaks, your way.",
+    header(card, "FOUR PALETTES", "Short breaks, set to suit.",
            "10 seconds to 3 minutes, every 15 minutes to 3 hours.")
     l, t, r, b = CONTENT
     gap = 48
@@ -421,9 +421,9 @@ def card_private():
     y = t + 20
     framed(card, fill_crop(img, w, h), (l, y, l + w, y + h))
 
-    pillars = [("Preferences stay local", "Settings and counts stay on your Mac."),
-               ("Four colorways", "Surprise picks one of three palettes."),
-               ("Break on your terms", "Set the interval, length, and skip control."),
+    pillars = [("Preferences stay local", "Settings stay on this Mac."),
+               ("Four moods", "Surprise rolls a fresh palette each break."),
+               ("Flexible cadence", "Set the interval, length, and skip control."),
                ("One purchase", "Try it for a week, then unlock it once.")]
     draw = ImageDraw.Draw(card)
     col_x = l + w + 110

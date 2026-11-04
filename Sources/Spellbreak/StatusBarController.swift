@@ -15,97 +15,93 @@ class StatusBarController: NSObject {
     private var contextMenu: NSMenu!
     weak var appState: AppState?
     private var cancellables = Set<AnyCancellable>()
+    private var lastRenderedTooltip: String = ""
+    private var lastRenderedDisabled: Bool?
 
     override init() {
         super.init()
 
         // Create status bar item
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        
+
         if let statusButton = statusItem.button {
-            // Set icon
-            updateIcon()
-            
+            updateIcon(force: true)
+
             // Handle both left and right clicks
             statusButton.action = #selector(handleClick)
             statusButton.sendAction(on: [.leftMouseUp, .rightMouseUp])
             statusButton.target = self
         }
-        
+
         // Setup popover for left-click menu — pin darkAqua so macOS Light Mode
         // never turns the popover chrome white behind warm cream text
         popover = NSPopover()
         popover.behavior = .transient
         popover.animates = true
         popover.appearance = NSAppearance(named: .darkAqua)
-        
+
         // Setup context menu for right-click
         setupContextMenu()
     }
-    
+
     deinit {
-        // Cancel all Combine subscriptions
         cancellables.forEach { $0.cancel() }
     }
-    
+
     func configure(with appState: AppState) {
         self.appState = appState
-        
-        // Configure popover content
+
         let menuView = MenuViewSimple(onRequestClose: { [weak self] in
             self?.closePopover()
         })
             .environmentObject(appState)
-        
+
         popover.contentViewController = NSHostingController(rootView: menuView)
         popover.contentSize = NSSize(width: 208, height: NSSize.zero.height)
-        
-        // Observe timer changes to update tooltip
+
         appState.$timerRunning
+            .Merge(with: appState.$timerPaused)
             .sink { [weak self] _ in
-                self?.updateIcon()
+                self?.updateIcon(force: true)
             }
             .store(in: &cancellables)
-        
+
         appState.$timeRemaining
             .sink { [weak self] _ in
                 self?.updateIcon()
             }
             .store(in: &cancellables)
     }
-    
+
     @objc private func handleClick() {
         guard let event = NSApp.currentEvent else { return }
-        
+
         if event.type == .rightMouseUp {
-            // Close popover first if open
             if popover.isShown {
                 popover.performClose(nil)
             }
-            // Show context menu on right-click
             showContextMenu()
         } else {
-            // Left-click always opens the signature dark popover
             togglePopover()
         }
     }
-    
+
     private func setupContextMenu() {
         contextMenu = NSMenu()
         contextMenu.autoenablesItems = false
-        
+
         if appState?.timerRunning == true {
             let item = NSMenuItem(title: "\((appState?.timeRemaining ?? 0).mmss) until break", action: nil, keyEquivalent: "")
             item.isEnabled = false
             contextMenu.addItem(item)
             contextMenu.addItem(NSMenuItem.separator())
         }
-        
+
         // Break Now
         let breakItem = NSMenuItem(title: "Break Now", action: #selector(triggerBreak), keyEquivalent: "")
         breakItem.target = self
         contextMenu.addItem(breakItem)
-        
+
         // Timer toggle
         let timerTitle: String
         if appState?.timerRunning == true {
@@ -116,75 +112,73 @@ class StatusBarController: NSObject {
         let timerItem = NSMenuItem(title: timerTitle, action: #selector(toggleTimer), keyEquivalent: "")
         timerItem.target = self
         contextMenu.addItem(timerItem)
-        
+
         contextMenu.addItem(NSMenuItem.separator())
 
-        // Settings
-        let prefsItem = NSMenuItem(title: "Settings", action: #selector(showPreferences), keyEquivalent: "")
+        // Settings…
+        let prefsItem = NSMenuItem(title: "Settings…", action: #selector(showPreferences), keyEquivalent: ",")
+        prefsItem.keyEquivalentModifierMask = [.command]
         prefsItem.target = self
         contextMenu.addItem(prefsItem)
-        
-        // Quit
-        let quitItem = NSMenuItem(title: "Quit", action: #selector(quitApp), keyEquivalent: "")
+
+        contextMenu.addItem(NSMenuItem.separator())
+
+        // Quit Spellbreak
+        let quitItem = NSMenuItem(title: "Quit Spellbreak", action: #selector(quitApp), keyEquivalent: "q")
+        quitItem.keyEquivalentModifierMask = [.command]
         quitItem.target = self
         contextMenu.addItem(quitItem)
     }
-    
+
     private func showContextMenu() {
-        // Rebuild context menu to get fresh timer values
         setupContextMenu()
-        
-        // Show the context menu
+
         statusItem.menu = contextMenu
         statusItem.button?.performClick(nil)
-        
-        // Clean up after showing
+
         DispatchQueue.main.async { [weak self] in
             self?.statusItem.menu = nil
         }
     }
-    
+
     @objc private func togglePopover() {
         guard let button = statusItem.button else { return }
-        
+
         if popover.isShown {
             popover.performClose(nil)
         } else {
-            // Calculate the rect to center the popover arrow on the button
             let buttonWidth = button.bounds.width
-            // Create a 1px wide rect in the center of the button
             let centerRect = NSRect(x: buttonWidth / 2, y: 0, width: 1, height: button.bounds.height)
-            
-            // Show popover centered
+
             popover.show(relativeTo: centerRect, of: button, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
         }
     }
-    
+
     func closePopover() {
         popover.performClose(nil)
     }
-    
+
     @objc private func triggerBreak() {
         closePopover()
         appState?.triggerBreak()
     }
-    
+
     @objc private func toggleTimer() {
         appState?.toggleTimer()
-        updateIcon()
+        updateIcon(force: true)
     }
-    
+
     @objc private func showPreferences() {
         closePopover()
         appState?.showPreferences()
     }
-    
+
     @objc private func quitApp() {
         NSApplication.shared.terminate(nil)
     }
-    
-    func updateIcon() {
+
+    func updateIcon(force: Bool = false) {
         guard let button = statusItem.button else { return }
         let timerRunning = appState?.timerRunning == true
 
@@ -192,20 +186,25 @@ class StatusBarController: NSObject {
             let config = NSImage.SymbolConfiguration(pointSize: 15, weight: .medium)
             let image = NSImage(systemSymbolName: "moon.stars", accessibilityDescription: "Spellbreak")?
                 .withSymbolConfiguration(config)
-            image?.isTemplate = true  // System tints for light/dark menu bars
+            image?.isTemplate = true
             button.image = image
         }
 
-        button.appearsDisabled = !timerRunning  // Native dim when paused
+        let nextDisabled = !timerRunning
+        let nextTooltip = iconTooltipText
+        guard force || nextDisabled != lastRenderedDisabled || nextTooltip != lastRenderedTooltip else {
+            return
+        }
 
-        // Update tooltip based on timer state
-        let statusText = iconStatusText
-        button.toolTip = statusText
+        lastRenderedDisabled = nextDisabled
+        lastRenderedTooltip = nextTooltip
+        button.appearsDisabled = nextDisabled
+        button.toolTip = nextTooltip
         button.setAccessibilityLabel("Spellbreak")
-        button.setAccessibilityValue(statusText)
+        button.setAccessibilityValue(iconAccessibilityValue)
     }
-    
-    private var iconStatusText: String {
+
+    private var iconTooltipText: String {
         guard let appState = appState else { return "Spellbreak" }
 
         if appState.timerRunning {
@@ -217,4 +216,21 @@ class StatusBarController: NSObject {
         }
     }
 
+    private var iconAccessibilityValue: String {
+        guard let appState = appState else { return "Timer off" }
+
+        if appState.timerRunning {
+            return "\(appState.timeRemaining.spokenDuration) until break"
+        } else if appState.timerPaused {
+            return "Paused at \(appState.timeRemaining.spokenDuration)"
+        } else {
+            return "Timer off"
+        }
+    }
+}
+
+private extension Publisher where Failure == Never {
+    func Merge<P: Publisher>(with other: P) -> Publishers.Merge<Self, P> where P.Output == Output, P.Failure == Never {
+        Publishers.Merge(self, other)
+    }
 }

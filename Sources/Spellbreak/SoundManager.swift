@@ -6,35 +6,42 @@
 //
 
 import AVFoundation
+import CoreAudio
 import SwiftUI
 import AppKit
 import os.log
 
 // MARK: - Sound Manager
-/// Manages audio playback with error handling and smooth fade effects
+/// Manages audio playback with error handling, route awareness, and smooth fade effects
 class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
     // MARK: - Published Properties
     @Published var isPlaying = false
     @Published var lastError: Error?
-    
+    /// Fired when headphones disconnect during ambient playback so UI state stays synced.
+    var onOutputDisconnectedToSpeaker: (() -> Void)?
+
     // MARK: - Private Properties
     private var audioPlayer: AVAudioPlayer?
     private var fadeInTimer: Timer?
     private var fadeOutTimer: Timer?
     private var activeSounds: [NSSound] = []
+    private var lastOutputDeviceID: AudioDeviceID = SoundManager.currentDefaultOutputDevice()
+    private var outputRouteListenerBlock: AudioObjectPropertyListenerBlock?
     private let logger = Logger(subsystem: "com.pabloalvarado.spellbreak", category: "SoundManager")
-    
+
     // MARK: - Persisted Properties
     private let defaultVolumePreference: Double = 0.5
     @AppStorage("soundEffectsEnabled") private var soundEffectsEnabled: Bool = true
-    
+
     // MARK: - Initialization
     override init() {
         super.init()
         loadAmbientSound()
+        installOutputRouteObserver()
     }
-    
+
     deinit {
+        removeOutputRouteObserver()
         fadeInTimer?.invalidate()
         fadeOutTimer?.invalidate()
         audioPlayer?.stop()
@@ -44,8 +51,122 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
         }
         activeSounds.removeAll()
     }
-    
-    // MARK: - Private Methods
+
+    // MARK: - Output Route Awareness
+    private static var defaultOutputAddress = AudioObjectPropertyAddress(
+        mSelector: kAudioHardwarePropertyDefaultOutputDevice,
+        mScope: kAudioObjectPropertyScopeGlobal,
+        mElement: kAudioObjectPropertyElementMain
+    )
+
+    private static func currentDefaultOutputDevice() -> AudioDeviceID {
+        var deviceID = AudioDeviceID(kAudioObjectUnknown)
+        var size = UInt32(MemoryLayout<AudioDeviceID>.size)
+        var address = defaultOutputAddress
+        let status = AudioObjectGetPropertyData(
+            AudioObjectID(kAudioObjectSystemObject),
+            &address,
+            0,
+            nil,
+            &size,
+            &deviceID
+        )
+        return status == noErr ? deviceID : AudioDeviceID(kAudioObjectUnknown)
+    }
+
+    /// Returns true when the given CoreAudio device is an internal/built-in speaker
+    /// (as opposed to headphones, Bluetooth audio, USB DAC, or AirPlay).
+    static func isBuiltInSpeaker(_ deviceID: AudioDeviceID) -> Bool {
+        guard deviceID != AudioDeviceID(kAudioObjectUnknown) else { return false }
+
+        var transportType: UInt32 = 0
+        var transportSize = UInt32(MemoryLayout<UInt32>.size)
+        var transportAddr = AudioObjectPropertyAddress(
+            mSelector: kAudioDevicePropertyTransportType,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        let transportErr = AudioObjectGetPropertyData(deviceID, &transportAddr, 0, nil, &transportSize, &transportType)
+        guard transportErr == noErr, transportType == kAudioDeviceTransportTypeBuiltIn else {
+            return false
+        }
+
+        // Check active output data source (e.g. 'ispk' internal speaker vs 'hdpn' headphone jack on older Macs)
+        var sourceID: UInt32 = 0
+        var sourceSize = UInt32(MemoryLayout<UInt32>.size)
+        var sourceAddr = AudioObjectPropertyAddress(
+            mSelector: kAudioDevicePropertyDataSource,
+            mScope: kAudioDevicePropertyScopeOutput,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        if AudioObjectGetPropertyData(deviceID, &sourceAddr, 0, nil, &sourceSize, &sourceID) == noErr {
+            // 'hdpn' == 0x6864706e (External Headphones)
+            if sourceID == 0x6864706e {
+                return false
+            }
+        }
+
+        // Fallback to CoreAudio device name check (Apple Silicon names separate BuiltIn devices)
+        var nameRef: Unmanaged<CFString>?
+        var nameSize = UInt32(MemoryLayout<Unmanaged<CFString>?>.size)
+        var nameAddr = AudioObjectPropertyAddress(
+            mSelector: kAudioObjectPropertyName,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        if AudioObjectGetPropertyData(deviceID, &nameAddr, 0, nil, &nameSize, &nameRef) == noErr,
+           let cfName = nameRef?.takeUnretainedValue() as String? {
+            let lower = cfName.lowercased()
+            if lower.contains("headphone") {
+                return false
+            }
+        }
+        return true
+    }
+
+    private func installOutputRouteObserver() {
+        var address = Self.defaultOutputAddress
+        let block: AudioObjectPropertyListenerBlock = { [weak self] _, _ in
+            guard let self else { return }
+            let newDevice = Self.currentDefaultOutputDevice()
+            let previousDevice = self.lastOutputDeviceID
+            self.lastOutputDeviceID = newDevice
+            guard newDevice != previousDevice else { return }
+
+            // Unplugging headphones / disconnecting AirPods mid-break falls back to
+            // built-in speakers. Silence ambient immediately rather than spilling out loud.
+            if self.isPlaying && !Self.isBuiltInSpeaker(previousDevice) && Self.isBuiltInSpeaker(newDevice) {
+                self.stopAmbientImmediately()
+                self.onOutputDisconnectedToSpeaker?()
+            } else if self.isPlaying, let player = self.audioPlayer, !player.isPlaying {
+                // Recover cleanly if a Bluetooth/USB route switch stalled AVAudioPlayer
+                self.loadAmbientSound()
+                self.audioPlayer?.volume = self.ambientTargetVolume
+                _ = self.audioPlayer?.play()
+            }
+        }
+        outputRouteListenerBlock = block
+        AudioObjectAddPropertyListenerBlock(
+            AudioObjectID(kAudioObjectSystemObject),
+            &address,
+            DispatchQueue.main,
+            block
+        )
+    }
+
+    private func removeOutputRouteObserver() {
+        guard let block = outputRouteListenerBlock else { return }
+        var address = Self.defaultOutputAddress
+        AudioObjectRemovePropertyListenerBlock(
+            AudioObjectID(kAudioObjectSystemObject),
+            &address,
+            DispatchQueue.main,
+            block
+        )
+        outputRouteListenerBlock = nil
+    }
+
+    // MARK: - Ambient Audio
     private func loadAmbientSound() {
         if let soundURL = ambientSoundURL() {
             loadAudioFromURL(soundURL)
@@ -70,13 +191,14 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
 
         return nil
     }
-    
+
     private func loadAudioFromURL(_ url: URL) {
         do {
-            audioPlayer = try AVAudioPlayer(contentsOf: url)
-            audioPlayer?.numberOfLoops = -1  // Loop indefinitely
-            audioPlayer?.volume = ambientTargetVolume
-            audioPlayer?.prepareToPlay()
+            let player = try AVAudioPlayer(contentsOf: url)
+            player.numberOfLoops = -1
+            player.volume = ambientTargetVolume
+            player.prepareToPlay()
+            audioPlayer = player
             lastError = nil
             logger.info("Successfully loaded audio from: \(url.lastPathComponent)")
         } catch {
@@ -85,9 +207,12 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
             lastError = audioError
         }
     }
-    
+
     func playAmbient() {
-        guard let player = audioPlayer else {
+        if audioPlayer == nil {
+            loadAmbientSound()
+        }
+        guard var player = audioPlayer else {
             logger.warning("Audio player not available")
             return
         }
@@ -100,22 +225,34 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
         fadeOutTimer = nil
 
         // A second tap during fade-out resumes from its current level, rather
-        // than restarting the loop from silence. Leave output routing to macOS
-        // rather than pinning a device (especially when headphones change).
+        // than restarting the loop from silence.
         if !player.isPlaying {
             player.volume = 0
-            guard player.play() else {
-                logger.error("Failed to start audio playback")
-                isPlaying = false
-                return
+            if !player.play() {
+                // Reload once in case CoreAudio reset the underlying output unit
+                loadAmbientSound()
+                guard let reloaded = audioPlayer else {
+                    lastError = AudioError.playbackFailed
+                    isPlaying = false
+                    return
+                }
+                player = reloaded
+                player.volume = 0
+                guard player.play() else {
+                    logger.error("Failed to start audio playback")
+                    lastError = AudioError.playbackFailed
+                    isPlaying = false
+                    return
+                }
             }
         }
 
+        lastError = nil
         isPlaying = true
 
         // Gradually increase volume over about 2 seconds. Read the target each
         // tick so changing the volume cannot leave a stale fade running.
-        fadeInTimer = Timer.scheduledCommonTimer(withTimeInterval: 0.05, repeats: true) { [weak self] timer in
+        fadeInTimer = Timer.scheduledCommonTimer(withTimeInterval: 0.05, tolerance: 0.01, repeats: true) { [weak self] timer in
             guard let self = self, let player = self.audioPlayer else {
                 timer.invalidate()
                 return
@@ -123,6 +260,7 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
             let targetVolume = self.ambientTargetVolume
             if targetVolume == 0 {
                 player.stop()
+                player.currentTime = 0
                 self.isPlaying = false
                 timer.invalidate()
                 self.fadeInTimer = nil
@@ -137,19 +275,22 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
             }
         }
     }
-    
+
     func stopAmbient() {
-        guard let player = audioPlayer, player.isPlaying else { return }
+        // Idempotent: if a fade-out is already underway, let it finish at its
+        // original rate instead of halving fadeStep on duplicate calls.
+        if fadeOutTimer != nil { return }
+        guard let player = audioPlayer, player.isPlaying else {
+            isPlaying = false
+            return
+        }
 
-        // Cancel any existing fade timers
         fadeInTimer?.invalidate()
-        fadeOutTimer?.invalidate()
         fadeInTimer = nil
-        fadeOutTimer = nil
 
-        // Fade out over 1 second
-        let fadeStep = max(player.volume / 20, 0.001)
-        fadeOutTimer = Timer.scheduledCommonTimer(withTimeInterval: 0.05, repeats: true) { [weak self] timer in
+        // Fade out over ~1 second
+        let fadeStep = max(player.volume / 20, 0.005)
+        fadeOutTimer = Timer.scheduledCommonTimer(withTimeInterval: 0.05, tolerance: 0.01, repeats: true) { [weak self] timer in
             guard let self = self, let player = self.audioPlayer else {
                 timer.invalidate()
                 return
@@ -158,7 +299,9 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
                 player.volume -= fadeStep
             } else {
                 player.stop()
-                player.volume = self.ambientTargetVolume  // Reset for next time
+                player.currentTime = 0
+                player.volume = self.ambientTargetVolume
+                player.prepareToPlay()
                 self.isPlaying = false
                 timer.invalidate()
                 self.fadeOutTimer = nil
@@ -166,20 +309,19 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
         }
     }
 
-    /// Apply a changed preference to an already-playing loop. A running fade
-    /// owns the volume until it finishes; the next tick reads the new target.
-    func updateAmbientVolume() {
-        guard let player = audioPlayer, player.isPlaying else { return }
-        if ambientTargetVolume == 0 {
-            fadeInTimer?.invalidate()
-            fadeOutTimer?.invalidate()
-            fadeInTimer = nil
-            fadeOutTimer = nil
+    /// Stops ambient playback immediately without waiting for the 1s fade (used on
+    /// sleep and when headphones unplug so audio never spills out of speakers).
+    func stopAmbientImmediately() {
+        fadeInTimer?.invalidate()
+        fadeOutTimer?.invalidate()
+        fadeInTimer = nil
+        fadeOutTimer = nil
+        if let player = audioPlayer {
             player.stop()
-            isPlaying = false
-        } else if fadeInTimer == nil && fadeOutTimer == nil {
+            player.currentTime = 0
             player.volume = ambientTargetVolume
         }
+        isPlaying = false
     }
 
     private var ambientTargetVolume: Float {
@@ -192,9 +334,9 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
         guard preference.isFinite, scale.isFinite else { return 0 }
         return Float(min(max(preference, 0), 1)) * min(max(scale, 0), 1)
     }
-    
+
     // MARK: - Sound Effects
-    
+
     /// Helper to play custom bundled sounds
     private func playCustomSound(named name: String, volume: Float = 0.5) {
         guard soundEffectsEnabled else { return }
@@ -242,22 +384,27 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
             }
         }
     }
-    
+
     /// Play break start chime
     func playBreakStartChime() {
         playCustomSound(named: "break-start", volume: 0.6)
     }
-    
+
+    /// Play soft completion chime when a break finishes naturally
+    func playBreakCompleteChime() {
+        playCustomSound(named: "toggle-on", volume: 0.32)
+    }
+
     /// Play toggle on sound
     func playToggleOn() {
         playCustomSound(named: "toggle-on", volume: 0.4)
     }
-    
+
     /// Play toggle off sound
     func playToggleOff() {
         playCustomSound(named: "toggle-off", volume: 0.4)
     }
-    
+
     /// Play button press sound
     func playButtonPress() {
         playCustomSound(named: "button-press", volume: 0.5)
@@ -270,14 +417,14 @@ class SoundManager: NSObject, ObservableObject, NSSoundDelegate {
 
     /// Play slider movement tick
     func playSliderTick() {
-        playCustomSound(named: "slider-tick", volume: 0.25)
+        playCustomSound(named: "slider-tick", volume: 0.35)
     }
 
     /// Play slider release sound
     func playSliderRelease() {
         playCustomSound(named: "slider-release", volume: 0.35)
     }
-    
+
     /// Play skip complete sound (using slider release)
     func playSkipComplete() {
         playCustomSound(named: "slider-release", volume: 0.5)

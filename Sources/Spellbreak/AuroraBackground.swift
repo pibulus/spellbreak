@@ -111,12 +111,13 @@ enum AuroraPalette: Equatable {
 }
 
 // MARK: - Aurora Background
-/// Animated gradient background with flowing wave effect
-/// Uses Canvas + TimelineView for smooth 60fps animation
+/// Animated gradient background with flowing wave effect.
+/// Renders a serene static aurora when Reduce Motion is enabled.
 struct AuroraBackground: View {
     var palette: AuroraPalette = .time
+    var frameInterval: TimeInterval = 1.0 / 30.0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    // Get time-based palette
     private var timeColors: [Color] {
         let hour = Calendar.current.component(.hour, from: Date())
 
@@ -142,7 +143,7 @@ struct AuroraBackground: View {
                 Color(red: 0.68, green: 0.18, blue: 0.66), // Deep magenta
                 Color(red: 0.28, green: 0.09, blue: 0.48)  // Twilight purple
             ]
-        default: // Night - hexbloop jewel tones
+        default: // Night - jewel tones
             return [
                 Color(red: 0.66, green: 0.30, blue: 0.98), // Electric purple
                 Color(red: 0.94, green: 0.31, blue: 0.61), // Hot magenta-pink
@@ -181,69 +182,72 @@ struct AuroraBackground: View {
     }
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1/30)) { timeline in
-            Canvas { context, size in
-                // Use time for smooth continuous animation
-                let time = timeline.date.timeIntervalSinceReferenceDate * 0.3 // Slower, more hypnotic
-
-                // Get current palette
-                let colors = paletteColors
-                
-                // Draw multiple wave layers with varying dynamics
-                for layer in 0..<4 {
-                    let layerOffset = Double(layer) * 0.5
-                    let speed = 0.2 + Double(layer) * 0.15
-                    let opacity = 0.68 - Double(layer) * 0.12
-                    
-                    // More dramatic wave parameters for flowing effect
-                    let waveAmplitude = size.height * (0.25 + Double(layer) * 0.05)
-                    let waveFrequency = 1.2 + Double(layer) * 0.4
-                    
-                    var path = Path()
-                    path.move(to: CGPoint(x: 0, y: size.height))
-                    
-                    // Create complex flowing wave path
-                    for x in stride(from: 0, through: size.width, by: 4) {
-                        let relativeX = x / size.width
-                        
-                        // Multiple sine waves for organic flow (simplified)
-                        let wave1 = sin((relativeX * waveFrequency + time * speed + layerOffset) * .pi * 2) * waveAmplitude
-                        let wave2 = sin((relativeX * 3.7 + time * speed * 0.8) * .pi) * waveAmplitude * 0.4
-                        let wave3 = cos((relativeX * 5.3 + time * speed * 0.4) * .pi) * waveAmplitude * 0.2
-                        
-                        let y = size.height * 0.5 + wave1 + wave2 + wave3
-                        
-                        path.addLine(to: CGPoint(x: x, y: y))
-                    }
-                    
-                    path.addLine(to: CGPoint(x: size.width, y: size.height))
-                    path.closeSubpath()
-                    
-                    let gradient = Gradient(stops: [
-                        .init(color: colors[layer % 4].opacity(opacity), location: 0),
-                        .init(color: colors[(layer + 1) % 4].opacity(opacity * 0.8), location: 0.4),
-                        .init(color: colors[(layer + 2) % 4].opacity(opacity * 0.5), location: 0.7),
-                        .init(color: colors[(layer + 3) % 4].opacity(opacity * 0.2), location: 1)
-                    ])
-                    
-                    context.drawLayer { layerContext in
-                        layerContext.addFilter(.blur(radius: 12 + CGFloat(layer) * 14))
-                        layerContext.fill(
-                            path,
-                            with: .linearGradient(
-                                gradient,
-                                startPoint: CGPoint(x: size.width * 0.3, y: 0),
-                                endPoint: CGPoint(x: size.width * 0.7, y: size.height)
-                            )
-                        )
-                    }
+        Group {
+            if reduceMotion {
+                auroraCanvas(at: 42.0)
+            } else {
+                TimelineView(.animation(minimumInterval: frameInterval)) { timeline in
+                    auroraCanvas(at: timeline.date.timeIntervalSinceReferenceDate * 0.3)
                 }
-
-                drawLightRibbons(context: context, size: size, time: time, colors: colors)
             }
-            .drawingGroup()
         }
         .ignoresSafeArea()
+        .accessibilityHidden(true)
+    }
+
+    private func auroraCanvas(at time: Double) -> some View {
+        let colors = paletteColors
+        return Canvas { context, size in
+            for layer in 0..<4 {
+                let layerOffset = Double(layer) * 0.5
+                let speed = 0.2 + Double(layer) * 0.15
+                let opacity = 0.68 - Double(layer) * 0.12
+
+                let waveAmplitude = size.height * (0.25 + Double(layer) * 0.05)
+                let waveFrequency = 1.2 + Double(layer) * 0.4
+
+                var path = Path()
+                path.move(to: CGPoint(x: 0, y: size.height))
+
+                for x in stride(from: 0, through: size.width, by: 6) {
+                    let relativeX = x / size.width
+
+                    let wave1 = sin((relativeX * waveFrequency + time * speed + layerOffset) * .pi * 2) * waveAmplitude
+                    let wave2 = sin((relativeX * 3.7 + time * speed * 0.8) * .pi) * waveAmplitude * 0.4
+                    let wave3 = cos((relativeX * 5.3 + time * speed * 0.4) * .pi) * waveAmplitude * 0.2
+
+                    let y = size.height * 0.5 + wave1 + wave2 + wave3
+                    path.addLine(to: CGPoint(x: x, y: y))
+                }
+
+                path.addLine(to: CGPoint(x: size.width, y: size.height))
+                path.closeSubpath()
+
+                let gradient = Gradient(stops: [
+                    .init(color: colors[layer % 4].opacity(opacity), location: 0),
+                    .init(color: colors[(layer + 1) % 4].opacity(opacity * 0.8), location: 0.4),
+                    .init(color: colors[(layer + 2) % 4].opacity(opacity * 0.5), location: 0.7),
+                    .init(color: colors[(layer + 3) % 4].opacity(opacity * 0.2), location: 1)
+                ])
+
+                // Fold outer blur radius directly into the layer blur so OverlayWindow
+                // needs only one Metal offscreen pass instead of two full-screen blurs.
+                context.drawLayer { layerContext in
+                    layerContext.addFilter(.blur(radius: 18 + CGFloat(layer) * 14))
+                    layerContext.fill(
+                        path,
+                        with: .linearGradient(
+                            gradient,
+                            startPoint: CGPoint(x: size.width * 0.3, y: 0),
+                            endPoint: CGPoint(x: size.width * 0.7, y: size.height)
+                        )
+                    )
+                }
+            }
+
+            drawLightRibbons(context: context, size: size, time: time, colors: colors)
+        }
+        .drawingGroup()
     }
 
     private func drawLightRibbons(context: GraphicsContext, size: CGSize, time: Double, colors: [Color]) {
@@ -273,13 +277,13 @@ struct AuroraBackground: View {
             let gradient = Gradient(stops: [
                 .init(color: Color.clear, location: 0),
                 .init(color: colors[(ribbon + 1) % colors.count].opacity(0.42), location: 0.28),
-                .init(color: Color.white.opacity(0.18), location: 0.5),
+                .init(color: Color.spellCream.opacity(0.20), location: 0.5),
                 .init(color: colors[(ribbon + 2) % colors.count].opacity(0.36), location: 0.72),
                 .init(color: Color.clear, location: 1)
             ])
 
             context.drawLayer { layerContext in
-                layerContext.addFilter(.blur(radius: 7 + CGFloat(ribbon) * 3))
+                layerContext.addFilter(.blur(radius: 10 + CGFloat(ribbon) * 3))
                 layerContext.stroke(
                     path,
                     with: .linearGradient(

@@ -7,7 +7,8 @@ skipping conscious, never punitive.
 ## Features
 
 - **Aurora in four moods** — time-aware (shifts dawn → day → dusk → night),
-  always-warm Ember, always-cool Violet, or Surprise Me (rolls one each break)
+  always-warm Ember, always-cool Violet, or Surprise (rolls a fresh harmonious
+  palette each break)
 - **Observational messages** — hundreds of lines, rarely the same one twice,
   tuned to the hour and moon, and they notice when you skip a few. They hint
   instead of ordering, and can be switched off entirely
@@ -32,8 +33,9 @@ skipping conscious, never punitive.
 Download from [spellbreak.app](https://spellbreak.app), move it to Applications,
 and launch. A$29 once, unlocked — no account, no trial timer, no subscription.
 
-The Mac App Store build (free download, 7-day trial, one-time unlock) is built
-and ready, but not submitted yet; it needs Apple distribution certificates.
+The Mac App Store build (free download, 7-day trial, one-time unlock) builds via
+`./build-mas.sh` into `dist/Spellbreak-v<version>-mas.pkg` and is verified by
+`./mas-check.sh`.
 
 ## Build
 
@@ -42,12 +44,13 @@ and ready, but not submitted yet; it needs Apple distribution certificates.
 open build/Spellbreak.app
 ```
 
-For a signed / notarized release, see [`SIGNING_GUIDE.md`](SIGNING_GUIDE.md).
+For a signed / notarized release or Mac App Store `.pkg`, see [`SIGNING_GUIDE.md`](SIGNING_GUIDE.md) and [`APP_STORE_SUBMISSION.md`](APP_STORE_SUBMISSION.md).
 
 ## Project layout
 
 ```
 Sources/Spellbreak/
+├── AppDelegate.swift        # launch setup, status item & standard menu shortcuts
 ├── SpellbreakApp.swift      # entry point, AppState, window controllers
 ├── OverlayWindow.swift      # full-screen break overlay
 ├── AuroraBackground.swift   # animated waves + AuroraPalette

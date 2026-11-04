@@ -12,14 +12,13 @@ import SwiftUI
 struct MenuViewSimple: View {
     @EnvironmentObject var appState: AppState
     @State private var hoveredItem: String? = nil
-    @AppStorage("breakIntervalMin") private var breakInterval: Double = 20
     var onRequestClose: () -> Void = {}
-    
+
     var body: some View {
         VStack(spacing: 0) {
             timerStatusCard
                 .padding(.top, 10)
-            
+
             VStack(spacing: 2) {
                 // Break Now
                 SimpleMenuItem(
@@ -31,8 +30,8 @@ struct MenuViewSimple: View {
                     onRequestClose()
                     appState.triggerBreak()
                 }
-                .onHover { hoveredItem = $0 ? "break" : nil }
-                
+                .onHover { hoveredItem = $0 ? "break" : (hoveredItem == "break" ? nil : hoveredItem) }
+
                 // Pause/Resume — one control, and "Resume" really does resume.
                 SimpleMenuItem(
                     icon: appState.timerRunning ? "pause.fill" : "play.fill",
@@ -42,33 +41,35 @@ struct MenuViewSimple: View {
                     onRequestClose()
                     appState.toggleTimer()
                 }
-                .onHover { hoveredItem = $0 ? "timer" : nil }
-                
-                Divider()
-                    .background(Color.white.opacity(0.08))
-                    .padding(.vertical, 4)
-                
-                // Settings
+                .onHover { hoveredItem = $0 ? "timer" : (hoveredItem == "timer" ? nil : hoveredItem) }
+
+                menuDivider
+
+                // Settings…
                 SimpleMenuItem(
                     icon: "gearshape",
-                    title: "Settings",
+                    title: "Settings…",
+                    shortcutHint: "⌘,",
                     isHovered: hoveredItem == "settings"
                 ) {
                     onRequestClose()
                     appState.showPreferences()
                 }
-                .onHover { hoveredItem = $0 ? "settings" : nil }
-                
-                // Quit
+                .onHover { hoveredItem = $0 ? "settings" : (hoveredItem == "settings" ? nil : hoveredItem) }
+
+                menuDivider
+
+                // Quit Spellbreak
                 SimpleMenuItem(
                     icon: "xmark",
-                    title: "Quit",
+                    title: "Quit Spellbreak",
+                    shortcutHint: "⌘Q",
                     isHovered: hoveredItem == "quit"
                 ) {
                     onRequestClose()
                     NSApplication.shared.terminate(nil)
                 }
-                .onHover { hoveredItem = $0 ? "quit" : nil }
+                .onHover { hoveredItem = $0 ? "quit" : (hoveredItem == "quit" ? nil : hoveredItem) }
             }
             .padding(.horizontal, 8)
             .padding(.bottom, 9)
@@ -84,9 +85,15 @@ struct MenuViewSimple: View {
                     startPoint: .top,
                     endPoint: .bottom
                 )
-                Color.white.opacity(0.02)
+                Color.spellCream.opacity(0.02)
             }
         )
+    }
+
+    private var menuDivider: some View {
+        Divider()
+            .overlay(Color.spellCream.opacity(0.08))
+            .padding(.vertical, 4)
     }
 
     private var statusSubtext: String {
@@ -98,6 +105,16 @@ struct MenuViewSimple: View {
         return appState.timerPaused ? "paused" : "no break scheduled"
     }
 
+    private var statusAccessibilityValue: String {
+        if appState.timerRunning {
+            return "\(appState.timeRemaining.spokenDuration) until break"
+        } else if appState.timerPaused {
+            return "Paused at \(appState.timeRemaining.spokenDuration)"
+        } else {
+            return "No break scheduled"
+        }
+    }
+
     private var timerStatusCard: some View {
         let isHovered = hoveredItem == "status-card"
         let isActive = appState.timerRunning || appState.timerPaused
@@ -106,36 +123,38 @@ struct MenuViewSimple: View {
             appState.toggleTimer()
         } label: {
             VStack(spacing: 4) {
-                // Paused keeps showing the time it stopped at — that number IS the promise
-                // that resuming picks up where it left off.
-                if isActive {
-                    Text(appState.timeRemaining.mmss)
-                        .font(.system(size: 26, weight: .bold, design: .rounded))
-                        .monospacedDigit()
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [
-                                    Color.spellPink,
-                                    Color.spellCoral,
-                                    Color(red: 1.0, green: 0.78, blue: 0.44)
-                                ],
-                                startPoint: .leading,
-                                endPoint: .trailing
+                // Fixed 32pt headline box prevents a 6pt vertical jump between "20:00" and "Off"
+                ZStack {
+                    if isActive {
+                        Text(appState.timeRemaining.mmss)
+                            .font(.system(size: 26, weight: .bold, design: .rounded))
+                            .monospacedDigit()
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [
+                                        Color.spellPink,
+                                        Color.spellCoral,
+                                        Color(red: 1.0, green: 0.78, blue: 0.44)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
                             )
-                        )
-                        .opacity(appState.timerPaused ? 0.55 : 1)
-                } else {
-                    Text("Off")
-                        .font(.system(size: 21, weight: .semibold, design: .rounded))
-                        .foregroundColor(.spellCream.opacity(0.85))
+                            .opacity(appState.timerPaused ? 0.58 : 1)
+                    } else {
+                        Text("Off")
+                            .font(.system(size: 22, weight: .semibold, design: .rounded))
+                            .foregroundColor(.spellCream.opacity(0.85))
+                    }
                 }
+                .frame(height: 32)
 
                 Text(statusSubtext)
                     .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundColor(isHovered ? .spellCream.opacity(0.92) : .spellCream.opacity(0.58))
+                    .foregroundColor(isHovered ? .spellCream.opacity(0.92) : .spellCream.opacity(0.60))
                     .animation(.easeInOut(duration: 0.14), value: isHovered)
             }
-            .padding(.vertical, 14)
+            .padding(.vertical, 13)
             .frame(maxWidth: .infinity)
             .background(
                 LinearGradient(
@@ -167,6 +186,7 @@ struct MenuViewSimple: View {
         .buttonStyle(.plain)
         .onHover { hoveredItem = $0 ? "status-card" : (hoveredItem == "status-card" ? nil : hoveredItem) }
         .accessibilityLabel(appState.timerRunning ? "Pause timer" : (appState.timerPaused ? "Resume timer" : "Start timer"))
+        .accessibilityValue(statusAccessibilityValue)
         .padding(.horizontal, 10)
         .padding(.bottom, 6)
     }
@@ -176,36 +196,48 @@ struct MenuViewSimple: View {
 struct SimpleMenuItem: View {
     let icon: String
     let title: String
+    var shortcutHint: String? = nil
     var accent: Bool = false
     let isHovered: Bool
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 12) {
+            HStack(spacing: 11) {
                 Image(systemName: icon)
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(
                         accent
                             ? LinearGradient(colors: [Color.spellPink, Color.spellCoral], startPoint: .topLeading, endPoint: .bottomTrailing)
-                            : LinearGradient(colors: [Color.spellCream.opacity(isHovered ? 0.85 : 0.55)], startPoint: .top, endPoint: .bottom)
+                            : LinearGradient(colors: [Color.spellCream.opacity(isHovered ? 0.88 : 0.58)], startPoint: .top, endPoint: .bottom)
                     )
-                    .frame(width: 20)
-                
+                    .frame(width: 18)
+                    .accessibilityHidden(true)
+
                 Text(title)
-                    .font(.system(size: 14, weight: accent ? .semibold : .medium, design: .rounded))
-                    .foregroundColor(accent ? .spellCream : Color.spellCream.opacity(isHovered ? 0.96 : 0.82))
-                
-                Spacer()
+                    .font(.system(size: 13.5, weight: accent ? .semibold : .medium, design: .rounded))
+                    .foregroundColor(accent ? .spellCream : Color.spellCream.opacity(isHovered ? 0.96 : 0.84))
+                    .lineLimit(1)
+
+                Spacer(minLength: 4)
+
+                if let shortcutHint {
+                    Text(shortcutHint)
+                        .font(.system(size: 11.5, weight: .medium, design: .rounded))
+                        .foregroundColor(.spellCream.opacity(isHovered ? 0.55 : 0.36))
+                        .accessibilityHidden(true)
+                }
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 9)
             .background(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(isHovered ? Color.spellPink.opacity(0.11) : Color.clear)
+                    .fill(isHovered ? Color.spellPink.opacity(0.12) : Color.clear)
             )
+            .animation(.easeOut(duration: 0.12), value: isHovered)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(title)
     }
 }

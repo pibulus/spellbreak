@@ -1,6 +1,7 @@
 // Compiles the shipping SoundManager without changing the package manifest:
 // swiftc Sources/Spellbreak/Utilities.swift Sources/Spellbreak/SoundManager.swift Sources/Spellbreak/Errors/AppErrors.swift Tests/SoundManagerCheck.swift -o "$TMPDIR/spellbreak-sound-check" && "$TMPDIR/spellbreak-sound-check"
 
+import CoreAudio
 import Foundation
 
 @main
@@ -14,7 +15,20 @@ struct SoundManagerCheck {
         check(.nan, 0.6, expected: 0)
         check(.infinity, 0.6, expected: 0)
         check(0.5, .nan, expected: 0)
-        print("SoundManager volume check passed")
+        check(0.5, .infinity, expected: 0)
+        check(0.5, -0.5, expected: 0)
+
+        // Unknown CoreAudio device ID must never claim to be a built-in speaker.
+        precondition(!SoundManager.isBuiltInSpeaker(AudioDeviceID(kAudioObjectUnknown)))
+
+        // Lifecycle & idempotent stop checks when unbundled.
+        let manager = SoundManager()
+        manager.stopAmbient()
+        manager.stopAmbient()
+        manager.stopAmbientImmediately()
+        precondition(!manager.isPlaying, "unbundled manager must not report playing")
+
+        print("SoundManager volume & lifecycle check passed")
     }
 
     private static func check(_ preference: Double, _ scale: Float, expected: Float) {

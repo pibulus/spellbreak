@@ -259,15 +259,25 @@ async function importKeychain(
   installer: { cerPath: string },
   keyFile: string,
 ) {
+  const distPem = `${WORK_DIR}/distribution.pem`;
   const p12 = `${WORK_DIR}/spellbreak-mas.p12`;
   const p12pass = crypto.randomUUID();
+  await sh("openssl", [
+    "x509",
+    "-inform",
+    "der",
+    "-in",
+    dist.cerPath,
+    "-out",
+    distPem,
+  ]);
   await sh("openssl", [
     "pkcs12",
     "-export",
     "-inkey",
     keyFile,
     "-in",
-    dist.cerPath,
+    distPem,
     "-name",
     "Spellbreak MAS",
     "-out",
@@ -294,6 +304,16 @@ async function importKeychain(
     "/usr/bin/codesign",
     "-T",
     "/usr/bin/productbuild",
+    "-T",
+    "/usr/bin/productsign",
+  ]);
+  await sh("security", [
+    "import",
+    dist.cerPath,
+    "-k",
+    KEYCHAIN,
+    "-T",
+    "/usr/bin/codesign",
   ]);
   await sh("security", [
     "import",
@@ -302,6 +322,8 @@ async function importKeychain(
     KEYCHAIN,
     "-T",
     "/usr/bin/productbuild",
+    "-T",
+    "/usr/bin/productsign",
   ]);
 }
 
@@ -466,28 +488,31 @@ async function main() {
   // Match our certificate by hash, not by name: a team can hold several
   // "Apple Distribution" identities, and the ones in the keychain may be the
   // revoked ones from an earlier attempt. Signing with those fails at upload.
-  const oursHash = (await sh("openssl", [
-    "x509",
-    "-inform",
-    "der",
-    "-in",
-    dist.cerPath,
-    "-fingerprint",
-    "-sha1",
-    "-noout",
-  ])).replace(/.*=/, "").replace(/:/g, "").trim().toUpperCase();
-  const identities = await sh("security", ["find-identity", "-v"])
-    .catch(() => "");
+  const certSha1 = async (cerPath: string) =>
+    (await sh("openssl", [
+      "x509",
+      "-inform",
+      "der",
+      "-in",
+      cerPath,
+      "-fingerprint",
+      "-sha1",
+      "-noout",
+    ])).replace(/.*=/, "").replace(/:/g, "").trim().toUpperCase();
+  const oursHash = await certSha1(dist.cerPath);
+  const installerHash = await certSha1(installer.cerPath);
+  const identities = (await sh("security", ["find-identity", "-v"])
+    .catch(() => "")).toUpperCase();
   if (
     !args.has("--force-certs") &&
-    identities.toUpperCase().includes(oursHash)
+    identities.includes(oursHash) &&
+    identities.includes(installerHash)
   ) {
     ok("Both identities are already in the login keychain — nothing to import");
   } else {
     await importKeychain(dist, installer, keyFile);
+    ok("Imported both certificates into the login keychain");
   }
-
-  ok("Imported both certificates into the login keychain");
 
   // 5. The profile, pointed at the certificate ID we just made — never a name.
   const existingProfiles = await api(

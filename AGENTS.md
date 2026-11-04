@@ -7,7 +7,7 @@ that hold away. Street-smart occult, never corporate wellness.
 - **Domain**: spellbreak.app
 - **Site**: `~/Projects/active/mac/spellbreak-site` (Fresh + Deno Deploy)
 - **Stack**: Swift 5.9+, SwiftUI, macOS 13+, Swift Package Manager
-- **Bundle ID**: `com.pabloalvarado.spellbreak` (MAS: `.SpellbreakMAS`)
+- **Bundle ID**: `com.pabloalvarado.spellbreak` (both Direct and MAS; MAS adds `-DAPP_STORE` + `Spellbreak.mas.entitlements`)
 - **Team**: V433H655PN
 
 `CLAUDE.md` is a symlink to this file. Edit this one.
@@ -16,22 +16,25 @@ that hold away. Street-smart occult, never corporate wellness.
 
 ## Status
 
-**v1.2.1 shipped** — `dist/Spellbreak-v1.2.1.dmg` is Developer ID signed,
-notarized and dual-stapled, and published as GitHub release `v1.2.1` with both
-`Spellbreak-v1.2.1.dmg` and the stable `Spellbreak.dmg` the buy link downloads.
+**v1.2.1 live on GitHub · v1.2.2 built & verified locally on both lanes** —
+`dist/Spellbreak-v1.2.2.dmg` (Developer ID signed, notarized, dual-stapled) and
+`dist/Spellbreak-v1.2.2-mas.pkg` (Mac App Store distribution signed with compiled
+`Assets.car`, `CFBundleIconName`, `PrivacyInfo.xcprivacy` `CA92.1` + `35F9.1`, and
+MAS-safe About links) both verify cleanly alongside each other.
 
 Selling today: A$29 once, unlocked, from spellbreak.app (Square checkout).
 
-Open: the Mac App Store lane (needs Apple Distribution + Mac Installer
-Distribution identities and `Spellbreak_MAS.provisionprofile`), a real-device
-audio pass, and the icon identity, which is Pablo's call.
+Open for MAS launch: creating the App Store Connect app record (`POST /v1/apps`
+is web-UI only), uploading `dist/Spellbreak-v1.2.2-mas.pkg` via Transporter, and
+walking TestFlight (`APP_STORE_SUBMISSION.md` §3–§9).
 
 ### Verify before repeating any of this
 
 ```bash
-./release-check.sh                          # 19 gates over the DMG in dist/
-dmg-doctor dist/Spellbreak-v1.2.0.dmg       # mount/sign/notarize/spctl, on any copy
-spctl -a -vvv -t open --context context:primary-signature dist/Spellbreak-v1.2.0.dmg
+./release-check.sh                          # 19 gates over build/Spellbreak.app + dist/*.dmg
+./mas-check.sh                              # 19 gates over build-mas/Spellbreak.app + dist/*-mas.pkg
+dmg-doctor dist/Spellbreak-v1.2.2.dmg       # mount/sign/notarize/spctl, on any copy
+spctl -a -vvv -t open --context context:primary-signature dist/Spellbreak-v1.2.2.dmg
 gh release list -R pibulus/spellbreak --limit 3
 bash scripts/screen-busy-check.sh           # ScreenBusy heuristic, no app needed
 ```
@@ -65,6 +68,7 @@ fix this file.
 
 ```
 Sources/Spellbreak/
+├── AppDelegate.swift          menu bar launch setup, mainMenu shortcuts (⌘, / ⌘W / ⌘Q)
 ├── SpellbreakApp.swift        entry, AppState, overlay + mirror controllers, pause logic
 ├── OverlayWindow.swift        the break itself: waves, message, hold-to-skip ring
 ├── BreakCountdownWindow.swift floating heads-up pill before a break lands
@@ -74,16 +78,17 @@ Sources/Spellbreak/
 ├── PreferencesView.swift      Time / Vibes / About tabs
 ├── MenuViewSimple.swift       menu bar popover
 ├── StatusBarController.swift  menu bar item
-├── SoundManager.swift         chimes + ambient, fades, follows output routing
+├── SoundManager.swift         chimes + ambient, fades, CoreAudio route awareness
 ├── Store.swift                App Store trial + unlock (App Store builds only)
-├── Utilities.swift            Color/Timer extensions, ScreenBusy heuristic
+├── Utilities.swift            SpellbreakLimits, Color/Timer extensions, ScreenBusy heuristic
 └── Errors/AppErrors.swift
 
 Tests/                ScreenBusyCheck, SoundManagerCheck (run by scripts/, not XCTest)
-scripts/              render-theme-assets.swift, generate-appstore-cards.py, screen-busy-check.sh
+scripts/              asc-provision.ts, render-theme-assets.swift, generate-appstore-cards.py, screen-busy-check.sh
 screenshots/          rendered marketing art + App Store cards (not screencaptures)
-dist/                 release DMGs (git-ignored)
-build/                build output (git-ignored)
+dist/                 release DMGs + MAS .pkg (git-ignored)
+build/                Developer ID app bundle output (git-ignored)
+build-mas/            Mac App Store app bundle output (git-ignored)
 ```
 
 ---
@@ -159,7 +164,8 @@ swift package clean && swift build -c release
 
 ./build-dmg.sh           # signed + notarized + stapled → dist/Spellbreak-v<version>.dmg
 ./release-check.sh       # 19 gates; run before any release
-./build-mas.sh           # App Store variant (needs the MAS certs + profile)
+./build-mas.sh           # App Store variant → build-mas/Spellbreak.app + dist/Spellbreak-v<version>-mas.pkg
+./mas-check.sh           # 19 gates over the MAS bundle + signed .pkg
 ```
 
 Release order: `release-check.sh` green → `gh release create vX.Y.Z dist/…` with
@@ -189,12 +195,16 @@ everything to the display's backing scale.
 
 ## App Store lane
 
-Done: privacy policy, listing copy, sandbox entitlements, icon assets, Developer
-ID signing, notarization, store cards at all four sizes.
+Done: privacy policy (`CA92.1` + `35F9.1`), listing copy, sandbox entitlements,
+compiled `Assets.car` + 10-rep `AppIcon.icns`, MAS-safe `#if APP_STORE` About
+links, Apple Distribution + Mac Installer Distribution signing identities,
+`Spellbreak_MAS.provisionprofile`, `./build-mas.sh` + `./mas-check.sh`, and
+store cards.
 
-Needed: Apple Distribution + Mac Installer Distribution identities,
-`Spellbreak_MAS.provisionprofile`, then `./build-mas.sh` → Transporter →
-TestFlight, then the sandbox checklist in `APP_STORE_SUBMISSION.md` §8.
+Needed when launching on the Store: create the App Store Connect app record in
+the web UI, deliver `dist/Spellbreak-v<version>-mas.pkg` via Transporter, create
+and attach the two IAPs (`7-Day Trial` + `Unlock`), and walk TestFlight
+(`APP_STORE_SUBMISSION.md` §3–§9).
 
 The App Store build carries the trial and the lock (`Store.swift`); the website
 build does not. One listing, two builds, one truth about the price — see

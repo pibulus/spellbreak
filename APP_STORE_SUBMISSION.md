@@ -28,20 +28,19 @@ The whole path, in order. Copy for every field lives in
 [`APP_STORE.md`](APP_STORE.md); signing details in
 [`SIGNING_GUIDE.md`](SIGNING_GUIDE.md).
 
-**Local preflight (1 Nov 2026):** the full Xcode 26.6 toolchain is installed,
-and the Developer ID signing identity and `AC_PASSWORD` notary profile work.
-GitHub Actions built both the website and `-DAPP_STORE` variants successfully
-at `417ff80` (verify with `gh run list --repo pibulus/spellbreak --workflow build.yml`).
-The current local v1.2.0 DMG was freshly rebuilt, Developer ID signed, notarized,
-and stapled alongside its inner app; `./release-check.sh` reports **19 pass,
-0 warn, 0 fail**. It has not been uploaded as a release.
-The Mac App Store profile and the Apple Distribution / Mac Installer Distribution
-identities are **not installed**; `./build-mas.sh` stops at its preflight before
-building. `Desktop/SpellbreakCerts` contains a CSR and private key, not those
-distribution identities. Real-device audio and sandbox/TestFlight checks remain.
-Verify state again with `./release-check.sh`, `./build-mas.sh`, and
-`security find-identity -v -p codesigning` before submitting; the ☐ items
-below remain open until checked against App Store Connect.
+**Local preflight (5 Nov 2026):** full Xcode is installed, both the Developer ID
+and Mac App Store signing chains (`Apple Distribution` + `3rd Party Mac Developer
+Installer` + `Spellbreak_MAS.provisionprofile`) are verified in the login
+keychain, `Assets.car` + `CFBundleIconName` compile via `actool`,
+`PrivacyInfo.xcprivacy` declares `CA92.1` + `35F9.1`, and external direct-sale
+links are compiled out of `-DAPP_STORE` builds.
+- `./build-dmg.sh` + `./release-check.sh`: verifies the Developer ID `v1.2.2` DMG
+  and `build/Spellbreak.app` (19/19 gates).
+- `./build-mas.sh` + `./mas-check.sh`: builds `build-mas/Spellbreak.app` and
+  `dist/Spellbreak-v1.2.2-mas.pkg` without overwriting `build/Spellbreak.app`.
+The live GitHub release remains `v1.2.1` until a new public release is cut; the
+App Store Connect app record + TestFlight walk (§3–§9) remain the portal steps
+when submitting.
 
 ---
 
@@ -287,7 +286,8 @@ From [`APP_STORE.md`](APP_STORE.md):
 
 ```bash
 sudo xcode-select -s /Applications/Xcode.app   # full Xcode, current release
-./build-mas.sh                                   # → dist/Spellbreak-v1.2.0-mas.pkg, unlock included
+./build-mas.sh                                   # → dist/Spellbreak-v1.2.2-mas.pkg, unlock included
+./mas-check.sh                                   # verifies pkg, Assets.car, profile cert match, entitlements
 ```
 
 Then **Transporter.app** → sign in → drag in the `.pkg` → **Deliver**.
@@ -296,7 +296,7 @@ minutes, and you'll get an email when the build appears under the version's
 **Build** section.
 
 Each upload needs a new build number. `build-app.sh` stamps one from the clock
-(`YYYYMMDDHHMM`), so a rebuild is all it takes.
+(`YYYYMMDDHHMMSS`), so a rebuild is all it takes.
 
 ## 6. Screenshots ☐
 
@@ -344,11 +344,9 @@ builds, so a few things only show up there. Add yourself as an internal
 tester, install from TestFlight, and run through this:
 
 - [ ] First launch opens Settings; moon icon visible on light **and** dark menu bars
-- [ ] Test Break; Break Now; hold-to-skip; Lock mode; mute button on the break screen
-- [ ] Start the timer: the notification permission prompt appears; the heads-up
-      pill and notification arrive 15 s before a break
-- [ ] **Pause while busy, full screen:** a full-screen video holds the break; it lands
-      when you leave full screen
+- [ ] Test Break; Break Now; hold-to-skip (pointer hold + Space); Lock mode; mute button (`M`) on the break screen
+- [ ] Start the timer: no permission prompts appear; the floating heads-up pill arrives 15 s before a break
+- [ ] **Pause while busy, full screen:** a full-screen video or app (including notched MacBook Full Screen Spaces) holds the break; it lands when leaving full screen
 - [ ] **Pause while busy, calls:** during a FaceTime/Zoom/Meet call, the break holds.
       *This is the one to watch:* the mic check hasn't been run inside the
       sandbox. If it doesn't hold, tell me and I'll swap the approach, or drop
@@ -368,28 +366,25 @@ tester, install from TestFlight, and run through this:
       display with the pointer. Every other display shows the same aurora, fades
       out with it, and swallows clicks. Try "Displays have separate Spaces" on
       (the default) and off, and Surprise to check every display matches
-- [ ] **Today's tally:** after a break the menu reads "1 break today"; it survives
-      a quit and relaunch, and resets after midnight
 - [ ] Settings on a small display, or System Settings → Displays → "Larger Text":
-      the window fits and scrolls, and Test Break is reachable
-- [ ] VoiceOver: on the break screen, the skip ring offers a "Skip break" action
+      the window fits and scrolls, and Test Break + Unlock caption are reachable
+- [ ] VoiceOver: break start announces automatically; on the break screen, the skip ring offers a default "Skip break" action
 - [ ] **Trial, fresh install** (TestFlight purchases are free sandbox ones): the
       bottom of Settings shows "Try Free for 7 Days", and the caption names the
-      unlock price in your storefront's currency. The menu bar's Start opens
+      unlock price in the storefront's currency. The menu bar's Start opens
       Settings instead of starting. Start the trial: a $0 purchase sheet, then the
       timer starts and the caption shows days left
 - [ ] **Trial ending:** quit, then relaunch from Terminal with
       `SPELLBREAK_TRIAL_SECONDS=120 /Applications/Spellbreak.app/Contents/MacOS/Spellbreak`
       (the trial can only be shortened this way, never stretched). After two
-      minutes, the next due break opens Settings with "Your free week is up"
-      instead, and the timer stops. Test Break still works
+      minutes, the timer stops cleanly and the caption reads "The free week has ended."
+      Test Break still works
 - [ ] **Unlock:** the purchase sheet shows the local price; afterwards the row
       collapses back to just Test Break and the timer resumes
 - [ ] **Restore Purchase** after a reinstall, or on a second Mac, brings the
       unlock back
-- [ ] About links open in your browser; sounds play
-- [ ] ⌘Q during a break. If it quits, add "⌘Q quits Spellbreak at any time,
-      including during a break" to the review notes
+- [ ] About links (`Privacy Policy` and `Support` in MAS builds) open cleanly; sounds play
+- [ ] ⌘Q during a break quits Spellbreak cleanly (documented in review notes)
 
 ## 9. Submit ☐
 

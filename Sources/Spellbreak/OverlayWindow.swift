@@ -12,8 +12,15 @@ import AppKit
 // MARK: - Overlay Window
 /// Full-screen break overlay with mystical animated effects
 struct OverlayWindow: View {
+    static let escapePressed = Notification.Name("EscapePressed")
+    static let holdSkipChanged = Notification.Name("SpellbreakOverlayHoldSkipChanged")
+    static let toggleMute = Notification.Name("SpellbreakOverlayToggleMute")
+
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var soundManager: SoundManager
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
     @State private var opacity: Double = 0
     @State private var messageOpacity: Double = 0
     @State private var textScale: Double = 1.0
@@ -32,7 +39,8 @@ struct OverlayWindow: View {
     @State private var isHoveringRing = false
     @State private var escapePulse: Double = 0
     @State private var breakMessage: String = ""
-    @State private var escapeObserver: NSObjectProtocol?
+    @State private var notificationObservers: [NSObjectProtocol] = []
+
     @AppStorage("lockMode") private var lockMode: Bool = false
     @State private var isHoveringMute = false
     @AppStorage("breakDurationSec") private var breakDuration: Double = 20
@@ -40,26 +48,21 @@ struct OverlayWindow: View {
     @AppStorage("visualTheme") private var visualTheme: String = "aurora"
     @AppStorage("showBreakMessage") private var showBreakMessage: Bool = true
     /// The palette THIS break is wearing. Rolled once per break by AppState and
-    /// handed in at init — never read straight from the preference in the body,
-    /// where a random value would re-roll on every redraw and strobe between
-    /// palettes, and not in onAppear, which fires AFTER the first frame (a Surprise
-    /// user would see one frame of the wrong palette). Rolling outside the view is
-    /// also what lets every other display's mirror wear the same one.
+    /// handed in at init so every display's mirror wears the exact same one.
     @State private var resolvedTheme: String
 
     init(theme: String) {
         _resolvedTheme = State(initialValue: theme)
     }
 
-    // Calculate required hold duration from break length, clamped 2-15s.
+    // Calculate required hold duration from break length, clamped 2-15s (2-3s in practice).
     private var requiredHoldDuration: Double {
         let duration = actualBreakDuration / 60.0
         return min(max(duration, 2.0), 15.0)
     }
 
     private var actualBreakDuration: TimeInterval {
-        guard breakDuration.isFinite else { return 20 }
-        return max(1, breakDuration)
+        SpellbreakLimits.clampDuration(breakDuration)
     }
 
     /// Every named preset palette. "random" rolls a harmonious 4-stop descriptor per break.
@@ -73,44 +76,41 @@ struct OverlayWindow: View {
     private var themeGlowColor: Color {
         AuroraPalette.from(theme: resolvedTheme).glowColor
     }
-    
+
+    /// True when ambient sound is actively enabled and playing (stays truthful if
+    /// headphones disconnect mid-break and SoundManager silences speaker spill).
+    private var isAmbientAudible: Bool {
+        musicEnabled && soundManager.isPlaying
+    }
+
     var body: some View {
         ZStack {
-            // Warm near-black grounding so the themed colors read as jewel tones —
-            // without it everything composites on the material's grey haze.
-            // Warm, not neutral: this single value sits under all three themes, and
-            // at 0.04/0.04/0.05 it was faintly BLUE, which is what made every palette
-            // go muddy toward the edges and read colder than its own colours.
+            // Warm near-black grounding so the themed colors read as jewel tones.
             Rectangle()
                 .fill(Color(red: 0.078, green: 0.062, blue: 0.058))
                 .ignoresSafeArea()
 
-            // Desktop blur kept for the frosted-glass depth, dialed back so it
-            // frosts without greying the palette
-            Rectangle()
-                .fill(.ultraThickMaterial)
-                .opacity(0.35)
-                .ignoresSafeArea()
-            
-            // Theme-based animated background. Lighter blur + near-full opacity so
-            // the palette reads as colour, not a grey wash — this is what made the
-            // three moods collapse into one soft pink before.
-            AuroraBackground(palette: AuroraPalette.from(theme: resolvedTheme))
-                .blur(radius: 12)
-                .opacity(0.95)
+            if !reduceTransparency {
+                Rectangle()
+                    .fill(.ultraThickMaterial)
+                    .opacity(0.35)
+                    .ignoresSafeArea()
+            }
 
-            // Dark tint for contrast + escape pulse effect
+            // Single-pass blurred aurora (outer .blur removed; folded into AuroraBackground).
+            AuroraBackground(palette: AuroraPalette.from(theme: resolvedTheme))
+                .opacity(reduceTransparency ? 0.88 : 0.95)
+
+            // Warm ink tint for legibility + subtle Escape feedback
             Rectangle()
-                .fill(.black.opacity(0.12 + escapePulse * 0.1))
+                .fill(Color.spellInk.opacity(0.18 + (reduceMotion ? 0 : escapePulse * 0.12)))
                 .ignoresSafeArea()
-                .animation(.easeOut(duration: 0.8), value: escapePulse)
-            
-            // Ambient floating particles on top
+                .animation(reduceMotion ? nil : .easeOut(duration: 0.8), value: escapePulse)
+
             AmbientParticles(palette: AuroraPalette.from(theme: resolvedTheme))
                 .opacity(0.7)
-            
-            // Centered message - strictly centered on screen. Optional: a quiet break
-            // can be just colour and light, no line of words at all.
+
+            // Centered message
             if showBreakMessage {
                 Text(breakMessage)
                     .font(.system(size: 56, weight: .semibold, design: .rounded))
@@ -121,217 +121,302 @@ struct OverlayWindow: View {
                             endPoint: .bottom
                         )
                     )
-                    // Soft cream glow. Dialled back from the old pure-white bloom,
-                    // which lit the message up harder than a thing you are meant to
-                    // rest your eyes on should be.
-                    .shadow(color: .spellCream.opacity(0.32), radius: 20)
-                    .shadow(color: .spellCream.opacity(0.18), radius: 40)
-                    .shadow(color: themeGlowColor.opacity(0.38), radius: 34)
-                    .shadow(color: .black.opacity(0.3), radius: 6, x: 0, y: 3)
-                    .opacity(messageOpacity * 0.92)
-                    .scaleEffect(textScale)
+                    .shadow(color: .spellCream.opacity(0.30), radius: 20)
+                    .shadow(color: .spellCream.opacity(0.16), radius: 40)
+                    .shadow(color: themeGlowColor.opacity(0.36), radius: 34)
+                    .shadow(color: Color.spellInk.opacity(0.45), radius: 8, x: 0, y: 3)
+                    .opacity(messageOpacity * 0.94)
+                    .scaleEffect(reduceMotion ? 1.0 : textScale)
                     .padding(.horizontal, 60)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                     .accessibilityLabel(breakMessage)
             }
 
-            // Hold-to-skip ring pinned to bottom (isolated layer so it never displaces center text)
-            if !lockMode {
-                VStack {
-                    Spacer()
-
-                    ZStack {
-                        // Background ring
-                        Circle()
-                            .stroke(Color.spellCream.opacity(isHoveringRing ? 0.25 : 0.15), lineWidth: 3)
-                            .frame(width: 64, height: 64)
-                        
-                        // Progress ring
-                        Circle()
-                            .trim(from: 0, to: holdProgress)
-                            .stroke(
-                                Color.spellCream.opacity(0.8),
-                                style: StrokeStyle(lineWidth: 4, lineCap: .round)
-                            )
-                            .frame(width: 64, height: 64)
-                            .rotationEffect(.degrees(-90))
-                            .animation(.linear(duration: 0.05), value: holdProgress)
-                        
-                        // Center content
-                        if isHoldingToSkip && holdProgress > 0 {
-                            // Show progress when holding
-                            Text("\(Int(holdProgress * 100))")
-                                .font(.system(size: 16, weight: .medium, design: .rounded))
-                                .foregroundColor(.spellCream.opacity(0.9))
-                        } else {
-                            // Show "skip" text when idle
-                            Text("skip")
-                                .font(.system(size: 14, weight: .regular, design: .rounded))
-                                .foregroundColor(.spellCream.opacity(isHoveringRing ? 0.7 : 0.4))
-                                .animation(.easeInOut(duration: 0.2), value: isHoveringRing)
-                        }
-                    }
-                    .scaleEffect(isHoldingToSkip ? 1.15 : (isHoveringRing ? 1.05 : 1.0))
-                    .animation(.spring(duration: 0.3, bounce: 0.3), value: isHoldingToSkip)
-                    .animation(.easeOut(duration: 0.2), value: isHoveringRing)
-                    .opacity(showSkipRing ? 1 : 0)
-                    .animation(.easeOut(duration: 0.5), value: showSkipRing)
-                    .onHover { hovering in
-                        isHoveringRing = hovering
-                    }
-                    .onLongPressGesture(minimumDuration: requiredHoldDuration, maximumDistance: .infinity) {
-                        if showSkipRing && !lockMode {
-                            skipBreak()
-                        }
-                    } onPressingChanged: { pressing in
-                        if showSkipRing && !lockMode {
-                            isHoldingToSkip = pressing
-                            if pressing {
-                                startHoldTimer()
-                            } else {
-                                holdTimer?.invalidate()
-                                if holdProgress < 1.0 {
-                                    withAnimation(.spring(duration: 0.3, bounce: 0.4)) {
-                                        holdProgress = 0
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    .accessibilityElement(children: .combine)
-                    .accessibilityLabel("Hold to skip")
-                    .accessibilityValue(isHoldingToSkip ? "\(Int(holdProgress * 100)) percent" : "idle")
-                    .accessibilityAddTraits(.allowsDirectInteraction)
-                    // VoiceOver can't press-and-hold a ring; give it the skip as an action
-                    .accessibilityAction(named: "Skip break") {
-                        if showSkipRing && !lockMode {
-                            skipBreak()
-                        }
-                    }
-                    .padding(.bottom, 60)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-            
-            // Mute, bottom left. The break screen is the ONLY place this control can
-            // live: while the overlay is up, Preferences is unreachable, so "the music
-            // is playing over mine" would otherwise have no answer but to sit through
-            // it. Present even in lock mode — silencing a break is not skipping one.
+            // Unified bottom horizon (mute left, skip ring center, timer right — aligned on one centerline)
             VStack {
                 Spacer()
-                HStack {
-                    Button {
-                        musicEnabled.toggle()
-                        if musicEnabled {
-                            soundManager.playAmbient()
-                        } else {
-                            soundManager.stopAmbient()
+
+                ZStack {
+                    // Center: Hold-to-skip ring
+                    if !lockMode {
+                        skipRingControl
+                    }
+
+                    // Left & right controls pinned to matching horizontal insets
+                    HStack(alignment: .center) {
+                        muteControl
+                        Spacer()
+                        if timeRemaining > 0 {
+                            countdownReadout
                         }
-                    } label: {
-                        Image(systemName: musicEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
-                            .font(.system(size: 17, weight: .medium))
-                            .foregroundStyle(Color.spellCream.opacity(isHoveringMute ? 0.75 : 0.35))
-                            .frame(width: 44, height: 44)
-                            .contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain)
-                    .scaleEffect(isHoveringMute ? 1.1 : 1.0)
-                    .animation(.spring(duration: 0.3, bounce: 0.3), value: isHoveringMute)
-                    .animation(.easeOut(duration: 0.2), value: musicEnabled)
-                    .onHover { isHoveringMute = $0 }
-                    .opacity(messageOpacity * 0.9)
-                    .padding(.leading, 46)
-                    .padding(.bottom, 66)
-                    .accessibilityLabel(musicEnabled ? "Mute ambient" : "Play ambient")
-                    .help(musicEnabled ? "Mute ambient" : "Play ambient")
-
-                    Spacer()
+                    .padding(.horizontal, 48)
                 }
+                .frame(height: 64)
+                .padding(.bottom, 58)
             }
-
-            // Timer in bottom right - aligned with skip ring
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    if timeRemaining > 0 {
-                        Text(formatTimeShort(timeRemaining))
-                            .font(.system(size: 26, weight: .medium, design: .rounded))
-                            .monospacedDigit()
-                            .foregroundStyle(Color.spellCream.opacity(0.45))
-                            .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
-                            .opacity(messageOpacity * 0.8)
-                            .padding(.trailing, 50)
-                            .padding(.bottom, 68)
-                            .accessibilityLabel("\(timeRemaining / 60) minutes \(timeRemaining % 60) seconds remaining")
-                    }
-                }
-            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .opacity(opacity)
         .onAppear {
-            // Generate contextual break message
-            let context = appState.getBreakContext()
-            breakMessage = SpellTextGenerator.generateMessage(
-                breakCount: context.breakCount,
-                skippedCount: context.skippedCount,
-                lastBreakInterval: context.lastBreakInterval
-            )
-            
-            // Play break start chime
-            soundManager.playBreakStartChime()
-            
-            // Listen for escape key presses
-            escapeObserver = NotificationCenter.default.addObserver(
-                forName: NSNotification.Name("EscapePressed"),
-                object: nil,
-                queue: .main
-            ) { _ in
-                // Subtle pulse effect when escape is pressed
-                escapePulse = 1
-                escapePulseResetWorkItem?.cancel()
-                let resetWork = DispatchWorkItem {
-                    escapePulse = 0
-                }
-                escapePulseResetWorkItem = resetWork
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: resetWork)
+            startBreakPresentation()
+        }
+        .onChange(of: lockMode) { locked in
+            if locked {
+                cancelHoldToSkip()
+                skipRingWorkItem?.cancel()
+                showSkipRing = false
+            } else if !hasResolvedBreak && !showSkipRing {
+                scheduleSkipRingReveal()
             }
-            
-            // Slower, more gentle fade in
-            withAnimation(.easeOut(duration: 1.2)) {
-                opacity = 1
-            }
-            
-            withAnimation(.easeOut(duration: 1.0).delay(0.3)) {
-                messageOpacity = 1
-            }
-            
-            // Gentle breathing animation (90bpm feel from old version)
-            withAnimation(.easeInOut(duration: 1.334).repeatForever(autoreverses: true).delay(1.5)) {
-                textScale = 1.05
-            }
-            
-            // Start ambient sound if enabled
-            if musicEnabled {
-                soundManager.playAmbient()
-            }
-            
-            hasResolvedBreak = false
-            breakEndsAt = Date().addingTimeInterval(actualBreakDuration)
-            updateCountdown()
-            startCountdownTimer()
-            scheduleSkipRingReveal()
-            scheduleAutoCompletion()
         }
         .onDisappear {
             cleanupScheduledWork()
             soundManager.stopAmbient()
-            // Remove notification observer
-            if let observer = escapeObserver {
-                NotificationCenter.default.removeObserver(observer)
-                escapeObserver = nil
+            notificationObservers.forEach { NotificationCenter.default.removeObserver($0) }
+            notificationObservers.removeAll()
+        }
+    }
+
+    // MARK: - Bottom Controls
+
+    private var skipRingControl: some View {
+        ZStack {
+            // Subtle warm-ink scrim so the ring stays legible over bright dawn/day gold waves
+            Circle()
+                .fill(Color.spellInk.opacity(0.28))
+                .frame(width: 64, height: 64)
+
+            Circle()
+                .stroke(Color.spellCream.opacity(isHoveringRing ? 0.36 : 0.22), lineWidth: 3)
+                .frame(width: 64, height: 64)
+
+            Circle()
+                .trim(from: 0, to: holdProgress)
+                .stroke(
+                    Color.spellCream.opacity(0.88),
+                    style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                )
+                .frame(width: 64, height: 64)
+                .rotationEffect(.degrees(-90))
+                .animation(.linear(duration: 0.05), value: holdProgress)
+
+            if isHoldingToSkip && holdProgress > 0 {
+                Text("\(Int(holdProgress * 100))")
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundColor(.spellCream.opacity(0.95))
+            } else {
+                Text("skip")
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .foregroundColor(.spellCream.opacity(isHoveringRing ? 0.85 : 0.62))
+                    .animation(.easeInOut(duration: 0.2), value: isHoveringRing)
             }
+        }
+        .scaleEffect(reduceMotion ? 1.0 : (isHoldingToSkip ? 1.14 : (isHoveringRing ? 1.05 : 1.0)))
+        .animation(reduceMotion ? nil : .spring(duration: 0.3, bounce: 0.3), value: isHoldingToSkip)
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: isHoveringRing)
+        .opacity(showSkipRing ? 1 : 0)
+        .allowsHitTesting(showSkipRing && !lockMode)
+        .animation(.easeOut(duration: reduceMotion ? 0.25 : 0.5), value: showSkipRing)
+        .onHover { hovering in
+            isHoveringRing = hovering
+        }
+        .onLongPressGesture(minimumDuration: requiredHoldDuration, maximumDistance: .infinity) {
+            if showSkipRing && !lockMode {
+                skipBreak()
+            }
+        } onPressingChanged: { pressing in
+            handleHoldPressingChanged(pressing)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityHidden(!showSkipRing || lockMode)
+        .accessibilityLabel("Skip break")
+        .accessibilityHint("Hold Space or activate to end the break early")
+        .accessibilityValue(isHoldingToSkip ? "\(Int(holdProgress * 100)) percent" : "")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction(.default) {
+            if showSkipRing && !lockMode {
+                skipBreak()
+            }
+        }
+        .accessibilityAction(named: "Skip break") {
+            if showSkipRing && !lockMode {
+                skipBreak()
+            }
+        }
+    }
+
+    private var muteControl: some View {
+        Button {
+            toggleAmbientMute()
+        } label: {
+            Image(systemName: isAmbientAudible ? "speaker.wave.2.fill" : "speaker.slash.fill")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(Color.spellCream.opacity(isHoveringMute ? 0.88 : 0.60))
+                .frame(width: 44, height: 44)
+                .background(
+                    Circle()
+                        .fill(Color.spellInk.opacity(isHoveringMute ? 0.34 : 0.22))
+                )
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .scaleEffect(reduceMotion ? 1.0 : (isHoveringMute ? 1.08 : 1.0))
+        .animation(reduceMotion ? nil : .spring(duration: 0.3, bounce: 0.3), value: isHoveringMute)
+        .animation(.easeOut(duration: 0.2), value: isAmbientAudible)
+        .onHover { isHoveringMute = $0 }
+        .opacity(messageOpacity * 0.92)
+        .accessibilityLabel(isAmbientAudible ? "Mute ambient sound" : "Play ambient sound")
+        .help(isAmbientAudible ? "Mute ambient (M)" : "Play ambient (M)")
+    }
+
+    private var countdownReadout: some View {
+        Text(formatTimeShort(timeRemaining))
+            .font(.system(size: 24, weight: .medium, design: .rounded))
+            .monospacedDigit()
+            .foregroundStyle(Color.spellCream.opacity(0.68))
+            .shadow(color: Color.spellInk.opacity(0.45), radius: 4, x: 0, y: 1)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(
+                Capsule()
+                    .fill(Color.spellInk.opacity(0.20))
+            )
+            .opacity(messageOpacity * 0.92)
+            .accessibilityLabel("\(TimeInterval(timeRemaining).spokenDuration) remaining")
+    }
+
+    // MARK: - Lifecycle & Actions
+
+    private func startBreakPresentation() {
+        let context = appState.getBreakContext()
+        breakMessage = SpellTextGenerator.generateMessage(
+            breakCount: context.breakCount,
+            skippedCount: context.skippedCount,
+            lastBreakInterval: context.lastBreakInterval
+        )
+
+        soundManager.playBreakStartChime()
+        installNotificationObservers()
+
+        let fadeDuration = reduceMotion ? 0.35 : 1.2
+        withAnimation(.easeOut(duration: fadeDuration)) {
+            opacity = 1
+        }
+
+        withAnimation(.easeOut(duration: reduceMotion ? 0.3 : 1.0).delay(reduceMotion ? 0.05 : 0.3)) {
+            messageOpacity = 1
+        }
+
+        if !reduceMotion {
+            withAnimation(.easeInOut(duration: 1.334).repeatForever(autoreverses: true).delay(1.5)) {
+                textScale = 1.05
+            }
+        }
+
+        if musicEnabled {
+            soundManager.playAmbient()
+        }
+
+        hasResolvedBreak = false
+        breakEndsAt = Date().addingTimeInterval(actualBreakDuration)
+        updateCountdown()
+        startCountdownTimer()
+        scheduleSkipRingReveal()
+        scheduleAutoCompletion()
+        announceBreakForVoiceOver()
+    }
+
+    private func installNotificationObservers() {
+        notificationObservers.forEach { NotificationCenter.default.removeObserver($0) }
+        notificationObservers.removeAll()
+
+        let escObs = NotificationCenter.default.addObserver(
+            forName: Self.escapePressed,
+            object: nil,
+            queue: .main
+        ) { _ in
+            cancelHoldToSkip()
+            guard !reduceMotion else { return }
+            escapePulse = 1
+            escapePulseResetWorkItem?.cancel()
+            let resetWork = DispatchWorkItem {
+                escapePulse = 0
+            }
+            escapePulseResetWorkItem = resetWork
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: resetWork)
+        }
+
+        let holdObs = NotificationCenter.default.addObserver(
+            forName: Self.holdSkipChanged,
+            object: nil,
+            queue: .main
+        ) { note in
+            let pressing = (note.userInfo?["pressing"] as? Bool) ?? false
+            handleHoldPressingChanged(pressing)
+        }
+
+        let muteObs = NotificationCenter.default.addObserver(
+            forName: Self.toggleMute,
+            object: nil,
+            queue: .main
+        ) { _ in
+            toggleAmbientMute()
+        }
+
+        notificationObservers = [escObs, holdObs, muteObs]
+    }
+
+    private func toggleAmbientMute() {
+        if isAmbientAudible {
+            musicEnabled = false
+            soundManager.stopAmbient()
+        } else {
+            musicEnabled = true
+            soundManager.playAmbient()
+        }
+    }
+
+    private func handleHoldPressingChanged(_ pressing: Bool) {
+        guard showSkipRing && !lockMode && !hasResolvedBreak else {
+            if !pressing { cancelHoldToSkip() }
+            return
+        }
+        if pressing {
+            guard !isHoldingToSkip else { return }
+            isHoldingToSkip = true
+            startHoldTimer()
+        } else {
+            cancelHoldToSkip()
+        }
+    }
+
+    private func cancelHoldToSkip() {
+        isHoldingToSkip = false
+        holdTimer?.invalidate()
+        holdTimer = nil
+        if holdProgress < 1.0 && holdProgress > 0 {
+            withAnimation(reduceMotion ? .linear(duration: 0.1) : .spring(duration: 0.3, bounce: 0.4)) {
+                holdProgress = 0
+            }
+        }
+    }
+
+    private func announceBreakForVoiceOver() {
+        let durationSpeech = actualBreakDuration.spokenDuration
+        let messagePart = showBreakMessage && !breakMessage.isEmpty ? "\(breakMessage). " : ""
+        let announcement = "Spellbreak pause, \(durationSpeech). \(messagePart)"
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            NSAccessibility.post(
+                element: NSApp as Any,
+                notification: .announcementRequested,
+                userInfo: [
+                    .announcement: announcement,
+                    .priority: NSAccessibilityPriorityLevel.high.rawValue
+                ]
+            )
         }
     }
 
@@ -347,7 +432,7 @@ struct OverlayWindow: View {
 
     private func startCountdownTimer() {
         countdownTimer?.invalidate()
-        countdownTimer = Timer.scheduledCommonTimer(withTimeInterval: 0.25, repeats: true) { timer in
+        countdownTimer = Timer.scheduledCommonTimer(withTimeInterval: 0.25, tolerance: 0.05, repeats: true) { timer in
             updateCountdown()
             if timeRemaining <= 0 {
                 timer.invalidate()
@@ -372,8 +457,8 @@ struct OverlayWindow: View {
 
         skipRingWorkItem?.cancel()
         let work = DispatchWorkItem {
-            guard !hasResolvedBreak else { return }
-            withAnimation(.spring(duration: 0.6, bounce: 0.3)) {
+            guard !hasResolvedBreak, !lockMode else { return }
+            withAnimation(reduceMotion ? .easeOut(duration: 0.25) : .spring(duration: 0.6, bounce: 0.3)) {
                 showSkipRing = true
             }
         }
@@ -415,7 +500,12 @@ struct OverlayWindow: View {
         guard !hasResolvedBreak, appState.showingOverlay else { return }
 
         hasResolvedBreak = true
-        NotificationCenter.default.post(name: OverlayMirror.fadeOut, object: nil)  // other displays fade with it
+        let mirrorFadeDuration: TimeInterval = reduceMotion ? 0.25 : (skipped ? 0.6 : 1.0)
+        NotificationCenter.default.post(
+            name: OverlayMirror.fadeOut,
+            object: nil,
+            userInfo: ["duration": mirrorFadeDuration]
+        )
         isHoldingToSkip = false
         holdProgress = 0
         countdownTimer?.invalidate()
@@ -431,28 +521,30 @@ struct OverlayWindow: View {
             soundManager.playSkipComplete()
             appState.markBreakSkipped()
 
-            withAnimation(.easeOut(duration: 0.4)) {
+            withAnimation(.easeOut(duration: reduceMotion ? 0.2 : 0.4)) {
                 messageOpacity = 0
                 showSkipRing = false
             }
 
-            withAnimation(.easeInOut(duration: 0.6).delay(0.1)) {
+            withAnimation(.easeInOut(duration: reduceMotion ? 0.25 : 0.6).delay(reduceMotion ? 0 : 0.1)) {
                 opacity = 0
             }
 
-            scheduleOverlayClose(after: 0.7)
+            scheduleOverlayClose(after: reduceMotion ? 0.3 : 0.7)
         } else {
+            soundManager.playBreakCompleteChime()
             appState.markBreakCompleted()
 
-            withAnimation(.easeInOut(duration: 0.8)) {
+            withAnimation(.easeInOut(duration: reduceMotion ? 0.25 : 0.8)) {
                 messageOpacity = 0
+                showSkipRing = false
             }
 
-            withAnimation(.easeInOut(duration: 1.0).delay(0.2)) {
+            withAnimation(.easeInOut(duration: reduceMotion ? 0.3 : 1.0).delay(reduceMotion ? 0 : 0.2)) {
                 opacity = 0
             }
 
-            scheduleOverlayClose(after: 1.2)
+            scheduleOverlayClose(after: reduceMotion ? 0.35 : 1.2)
         }
 
         soundManager.stopAmbient()
@@ -476,22 +568,25 @@ struct OverlayWindow: View {
         skipRingWorkItem = nil
         escapePulseResetWorkItem = nil
     }
-    
+
     private func startHoldTimer() {
         holdProgress = 0
-        let updateInterval = 0.05 // 20 FPS updates
+        let updateInterval = 0.05
         let increments = requiredHoldDuration / updateInterval
-        
+
         holdTimer?.invalidate()
         holdTimer = Timer.scheduledCommonTimer(withTimeInterval: updateInterval, repeats: true) { timer in
-            if isHoldingToSkip {
+            if isHoldingToSkip && !lockMode {
                 holdProgress = min(holdProgress + (1.0 / increments), 1.0)
                 if holdProgress >= 1.0 {
                     timer.invalidate()
+                    holdTimer = nil
+                    skipBreak()
                 }
             } else {
                 timer.invalidate()
-                withAnimation(.spring(duration: 0.3, bounce: 0.4)) {
+                holdTimer = nil
+                withAnimation(reduceMotion ? .linear(duration: 0.1) : .spring(duration: 0.3, bounce: 0.4)) {
                     holdProgress = 0
                 }
             }
@@ -500,15 +595,14 @@ struct OverlayWindow: View {
 }
 
 // MARK: - Overlay Mirror
-/// What every other display shows during a break: the same aurora, quiet — no
-/// line, no ring, no sound. The break itself lives on the display with the
-/// pointer. Keep these layers in step with the backdrop at the top of
-/// OverlayWindow's body.
+/// Secondary-display companion during a break: the same aurora at a calm 15fps
+/// cadence without particles, text, or interactive chrome.
 struct OverlayMirror: View {
-    /// Posted when the break resolves, so the mirrors fade out with it
     static let fadeOut = Notification.Name("SpellbreakOverlayMirrorFadeOut")
 
     let theme: String
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @State private var opacity: Double = 0
 
     var body: some View {
@@ -517,30 +611,33 @@ struct OverlayMirror: View {
                 .fill(Color(red: 0.078, green: 0.062, blue: 0.058))
                 .ignoresSafeArea()
 
+            if !reduceTransparency {
+                Rectangle()
+                    .fill(.ultraThickMaterial)
+                    .opacity(0.35)
+                    .ignoresSafeArea()
+            }
+
+            AuroraBackground(
+                palette: AuroraPalette.from(theme: theme),
+                frameInterval: 1.0 / 15.0
+            )
+            .opacity(reduceTransparency ? 0.88 : 0.95)
+
             Rectangle()
-                .fill(.ultraThickMaterial)
-                .opacity(0.35)
+                .fill(Color.spellInk.opacity(0.18))
                 .ignoresSafeArea()
-
-            AuroraBackground(palette: AuroraPalette.from(theme: theme))
-                .blur(radius: 12)
-                .opacity(0.95)
-
-            Rectangle()
-                .fill(.black.opacity(0.12))
-                .ignoresSafeArea()
-
-            AmbientParticles(palette: AuroraPalette.from(theme: theme))
-                .opacity(0.7)
         }
         .opacity(opacity)
+        .accessibilityHidden(true)
         .onAppear {
-            withAnimation(.easeOut(duration: 1.2)) {
+            withAnimation(.easeOut(duration: reduceMotion ? 0.35 : 1.2)) {
                 opacity = 1
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: OverlayMirror.fadeOut)) { _ in
-            withAnimation(.easeInOut(duration: 0.8)) {
+        .onReceive(NotificationCenter.default.publisher(for: OverlayMirror.fadeOut)) { note in
+            let duration = (note.userInfo?["duration"] as? TimeInterval) ?? (reduceMotion ? 0.25 : 0.8)
+            withAnimation(.easeInOut(duration: duration)) {
                 opacity = 0
             }
         }

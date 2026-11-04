@@ -14,14 +14,19 @@ import AppKit
 private struct FrostedCard: ViewModifier {
     var cornerRadius: CGFloat = 24
     var fillOpacity: Double = 0.06
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     func body(content: Content) -> some View {
         content.background(
-            RoundedRectangle(cornerRadius: cornerRadius)
-                .fill(Color.white.opacity(fillOpacity))
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(
+                    reduceTransparency
+                        ? Color(red: 0.21, green: 0.18, blue: 0.28)
+                        : Color.spellCream.opacity(fillOpacity)
+                )
                 .overlay(
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .stroke(Color.spellCream.opacity(reduceTransparency ? 0.18 : 0.09), lineWidth: 1)
                 )
         )
     }
@@ -35,49 +40,52 @@ extension View {
 
 // MARK: - Preferences View
 struct PreferencesView: View {
+    static let selectTabNotification = Notification.Name("SpellbreakSelectPreferencesTab")
+
     // MARK: - UI Constants
     private enum UI {
         static let sidePadding: CGFloat = 32
-        static let windowPaddingTop: CGFloat = 8          // Sits cleanly below the hidden-title traffic lights
-        static let windowPaddingBottom: CGFloat = 26      // Generous bottom air beneath Test Break & signature
-        static let sectionSpacing: CGFloat = 16           // Calm rhythm between sections
-        static let tabBodyHeight: CGFloat = 418           // Shared 3-toggle height for Time & Vibes
-        static let buttonSpacing: CGFloat = 18            // Gap above Test Break
-        static let buttonHeight: CGFloat = 46             // Slimmed to match the 48pt top tab pills
-        static let cardPadding: CGFloat = 16              // Unified card internal padding
+        static let windowPaddingTop: CGFloat = 8
+        static let windowPaddingBottom: CGFloat = 26
+        static let sectionSpacing: CGFloat = 16
+        static let tabBodyMinHeight: CGFloat = 420
+        static let buttonSpacing: CGFloat = 18
+        static let buttonHeight: CGFloat = 46
+        static let cardPadding: CGFloat = 16
     }
-    
+
     // MARK: - Core Settings
     @AppStorage("breakIntervalMin") private var breakIntervalMin: Double = 20
     @AppStorage("breakDurationSec") private var breakDurationSec: Double = 20
     @AppStorage("lockMode") private var lockMode: Bool = false
     @AppStorage("deferDuringFullscreen") private var deferDuringFullscreen: Bool = true
-    @AppStorage("launchAtLogin") private var launchAtLogin: Bool = false
     @AppStorage("visualTheme") private var visualTheme: String = "aurora"
     @AppStorage("showBreakMessage") private var showBreakMessage: Bool = true
     @AppStorage("musicEnabled") private var musicEnabled: Bool = false
     @AppStorage("soundEffectsEnabled") private var soundEffectsEnabled: Bool = true
-    
+
     // MARK: - UI State
     @State private var selectedTab = 0
     @State private var hoveredElement: String? = nil
     @State private var testButtonPressed = false
     @State private var sparkleRotation: Double = 0
     @State private var titleOffset: CGFloat = 0
+    @State private var launchAtLogin: Bool = false
     @State private var launchAtLoginStatus: SMAppService.Status = SMAppService.mainApp.status
     @State private var launchAtLoginError: String?
     @EnvironmentObject var soundManager: SoundManager
     @EnvironmentObject var store: Store
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     init(initialTab: Int = 0) {
         _selectedTab = State(initialValue: initialTab)
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             VStack(spacing: UI.sectionSpacing) {
-                // Signature header — owns the top-left beneath the hidden-title traffic lights
+                // Signature header — sits cleanly below the hidden-title traffic lights
                 HStack(spacing: 11) {
                     Image(systemName: "sparkles")
                         .font(.system(size: 23, weight: .bold))
@@ -92,6 +100,7 @@ struct PreferencesView: View {
                             )
                         )
                         .rotationEffect(.degrees(sparkleRotation))
+                        .accessibilityHidden(true)
                         .onAppear {
                             guard !reduceMotion else { return }
                             withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) {
@@ -129,9 +138,9 @@ struct PreferencesView: View {
                         selectedTab = 0
                     }
                     .onHover { hovering in
-                        hoveredElement = hovering ? "timer-tab" : nil
+                        setHover("timer-tab", hovering)
                     }
-                    
+
                     TabButton(
                         icon: "waveform",
                         title: "Vibes",
@@ -144,7 +153,7 @@ struct PreferencesView: View {
                         selectedTab = 1
                     }
                     .onHover { hovering in
-                        hoveredElement = hovering ? "vibes-tab" : nil
+                        setHover("vibes-tab", hovering)
                     }
 
                     TabButton(
@@ -159,20 +168,20 @@ struct PreferencesView: View {
                         selectedTab = 2
                     }
                     .onHover { hovering in
-                        hoveredElement = hovering ? "about-tab" : nil
+                        setHover("about-tab", hovering)
                     }
                 }
                 .padding(.horizontal, UI.sidePadding)
-                
-                // Lower canvas: Time & Vibes share tabBodyHeight + Test Break;
-                // About spans the exact same total height so the cat signature floats centered.
+
+                // Lower canvas: Time & Vibes share tabBodyMinHeight + Test Break;
+                // About keeps its cat signature in every mode and adds the unlock row only when needed.
                 if selectedTab == 2 && !needsUnlock {
                     aboutFullCanvas
-                        .frame(height: UI.tabBodyHeight + UI.buttonSpacing + UI.buttonHeight, alignment: .top)
+                        .frame(minHeight: UI.tabBodyMinHeight + UI.buttonSpacing + UI.buttonHeight, alignment: .top)
                         .transition(.opacity)
                 } else {
                     VStack(spacing: 0) {
-                        ZStack {
+                        ZStack(alignment: .top) {
                             if selectedTab == 0 {
                                 timerContent
                                     .frame(maxWidth: .infinity, alignment: .top)
@@ -182,12 +191,12 @@ struct PreferencesView: View {
                                     .frame(maxWidth: .infinity, alignment: .top)
                                     .transition(.opacity)
                             } else {
-                                aboutCardsOnly
+                                aboutFullCanvas
                                     .frame(maxWidth: .infinity, alignment: .top)
                                     .transition(.opacity)
                             }
                         }
-                        .frame(height: UI.tabBodyHeight, alignment: .top)
+                        .frame(minHeight: UI.tabBodyMinHeight, alignment: .top)
 
                         VStack(spacing: 10) {
                             HStack(spacing: 12) {
@@ -207,14 +216,13 @@ struct PreferencesView: View {
                     }
                 }
             }
-            .animation(.easeInOut(duration: 0.2), value: selectedTab)
+            .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: selectedTab)
         }
         .padding(.top, UI.windowPaddingTop)
         .padding(.bottom, UI.windowPaddingBottom)
         .frame(width: 560)
         .background(
             ZStack {
-                // Dark gradient background
                 LinearGradient(
                     colors: [
                         Color(red: 0.16, green: 0.14, blue: 0.22),
@@ -223,27 +231,58 @@ struct PreferencesView: View {
                     startPoint: .top,
                     endPoint: .bottom
                 )
-                
-                // Subtle noise texture overlay
-                Color.white.opacity(0.02)
-                    .background(.ultraThinMaterial)
-                    .opacity(0.3)
+
+                if !reduceTransparency {
+                    Color.spellCream.opacity(0.02)
+                        .background(.ultraThinMaterial)
+                        .opacity(0.3)
+                }
             }
         )
         .onAppear {
+            clampStoredTimingsIfNeeded()
             refreshLaunchAtLoginState()
+            #if APP_STORE
+            if store.trialProduct == nil || store.unlockProduct == nil {
+                Task { await store.loadProducts() }
+            }
+            #endif
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             refreshLaunchAtLoginState()
         }
+        .onReceive(NotificationCenter.default.publisher(for: Self.selectTabNotification)) { note in
+            if let tab = note.userInfo?["tab"] as? Int, (0...2).contains(tab) {
+                selectedTab = tab
+            }
+        }
     }
-    
+
+    private func setHover(_ key: String, _ hovering: Bool) {
+        if hovering {
+            hoveredElement = key
+        } else if hoveredElement == key {
+            hoveredElement = nil
+        }
+    }
+
+    private func clampStoredTimingsIfNeeded() {
+        let clampedInterval = SpellbreakLimits.clampInterval(breakIntervalMin)
+        if clampedInterval != breakIntervalMin {
+            breakIntervalMin = clampedInterval
+        }
+        let clampedDuration = SpellbreakLimits.clampDuration(breakDurationSec)
+        if clampedDuration != breakDurationSec {
+            breakDurationSec = clampedDuration
+        }
+    }
+
     // MARK: - Test Break & Unlock
     private var testBreakButton: some View {
         Button(action: {
             testButtonPressed = true
             soundManager.playButtonPress()
-            NotificationCenter.default.post(name: NSNotification.Name("ShowTestBreak"), object: nil)
+            NotificationCenter.default.post(name: AppState.showTestBreakNotification, object: nil)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 testButtonPressed = false
             }
@@ -251,8 +290,9 @@ struct PreferencesView: View {
             HStack(spacing: 10) {
                 Image(systemName: "play.fill")
                     .font(.system(size: 15, weight: .bold))
+                    .accessibilityHidden(true)
                 Text("Test Break")
-                    .font(.system(size: 16.5, weight: .bold))
+                    .font(.system(size: 16.5, weight: .bold, design: .rounded))
             }
             .foregroundColor(.spellInk)
             .frame(maxWidth: .infinity)
@@ -269,14 +309,15 @@ struct PreferencesView: View {
                 )
             )
             .clipShape(Capsule())
-            .scaleEffect(testButtonPressed ? 0.98 : (hoveredElement == "test-button" ? 1.01 : 1.0))
-            .shadow(color: .black.opacity(hoveredElement == "test-button" ? 0.3 : 0.15),
+            .scaleEffect(reduceMotion ? 1.0 : (testButtonPressed ? 0.98 : (hoveredElement == "test-button" ? 1.01 : 1.0)))
+            .shadow(color: Color.spellInk.opacity(hoveredElement == "test-button" ? 0.40 : 0.22),
                     radius: hoveredElement == "test-button" ? 12 : 8,
                     x: 0, y: 4)
+            .animation(.easeOut(duration: 0.15), value: hoveredElement == "test-button")
         }
         .buttonStyle(.plain)
         .onHover { hovering in
-            hoveredElement = hovering ? "test-button" : nil
+            setHover("test-button", hovering)
         }
     }
 
@@ -288,28 +329,37 @@ struct PreferencesView: View {
         }
     }
 
-    /// Start the free week, or unlock once it's running or done. The price always
-    /// comes from StoreKit, localized per storefront, never from a constant.
+    /// Start the free week, or unlock once it's running or done. If the Mac launched
+    /// offline (e.g. login item before Wi-Fi associates), clicking retries product loading
+    /// rather than leaving the button permanently dead.
     private var unlockButton: some View {
         let startingTrial = store.currentAccess == .notStarted
+        let productsReady = store.unlockProduct != nil && (!startingTrial || store.trialProduct != nil)
         let title: String
-        if startingTrial {
+        let iconName: String
+
+        if !productsReady {
+            title = store.isWorking ? "Connecting…" : "Load App Store"
+            iconName = "arrow.clockwise"
+        } else if startingTrial {
             title = "Try Free for 7 Days"
+            iconName = "sparkles"
         } else if let price = store.unlockProduct?.displayPrice {
             title = "Unlock · \(price)"
+            iconName = "lock.open.fill"
         } else {
             title = "Unlock"
+            iconName = "lock.open.fill"
         }
-        // The trial can't start until the unlock price is showing too: App Review
-        // wants the downstream charge stated before the trial begins (3.1.1)
-        let unavailable = store.isWorking
-            || store.unlockProduct == nil
-            || (startingTrial && store.trialProduct == nil)
+
+        let isHovered = hoveredElement == "unlock-button"
 
         return Button {
             soundManager.playButtonPress()
             Task {
-                if startingTrial {
+                if !productsReady {
+                    await store.loadProducts()
+                } else if startingTrial {
                     await store.startTrial()
                 } else {
                     await store.unlock()
@@ -317,29 +367,32 @@ struct PreferencesView: View {
             }
         } label: {
             HStack(spacing: 10) {
-                Image(systemName: startingTrial ? "sparkles" : "lock.open.fill")
+                Image(systemName: iconName)
                     .font(.system(size: 16, weight: .bold))
+                    .accessibilityHidden(true)
                 Text(title)
-                    .font(.system(size: 17, weight: .bold))
+                    .font(.system(size: 16.5, weight: .bold, design: .rounded))
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
             .foregroundColor(.spellCream)
             .frame(maxWidth: .infinity)
             .frame(height: UI.buttonHeight)
-            .background(Capsule().fill(Color.white.opacity(hoveredElement == "unlock-button" ? 0.14 : 0.08)))
+            .background(Capsule().fill(Color.spellCream.opacity(isHovered ? 0.14 : 0.08)))
             .overlay(
                 Capsule().stroke(
                     LinearGradient(colors: [Color.spellPink, Color.spellPeach], startPoint: .leading, endPoint: .trailing),
                     lineWidth: 2
                 )
             )
+            .scaleEffect(reduceMotion ? 1.0 : (isHovered && !store.isWorking ? 1.01 : 1.0))
+            .animation(.easeOut(duration: 0.15), value: isHovered)
         }
         .buttonStyle(.plain)
-        .disabled(unavailable)
-        .opacity(unavailable ? 0.5 : 1)
+        .disabled(store.isWorking)
+        .opacity(store.isWorking ? 0.55 : 1)
         .onHover { hovering in
-            hoveredElement = hovering ? "unlock-button" : nil
+            setHover("unlock-button", hovering)
         }
     }
 
@@ -347,7 +400,7 @@ struct PreferencesView: View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
             Text(unlockCaptionText)
                 .font(.system(size: 12, weight: .medium))
-                .foregroundColor(.spellCream.opacity(0.6))
+                .foregroundColor(.spellCream.opacity(0.68))
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 8)
             Button("Restore Purchase") {
@@ -382,20 +435,21 @@ struct PreferencesView: View {
         }
     }
 
-    // MARK: - Timer Tab Content  
+    // MARK: - Timer Tab Content
     private var timerContent: some View {
         VStack(alignment: .leading, spacing: 16) {
             // Main timing card
             VStack(spacing: 26) {
                 // Break interval
                 VStack(alignment: .leading, spacing: 12) {
-                    HStack {
+                    HStack(alignment: .firstTextBaseline) {
                         Text("Every")
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundColor(.spellCream.opacity(0.9))
                         Spacer()
-                        Text("\(Int(breakIntervalMin))")
+                        Text("\(Int(SpellbreakLimits.clampInterval(breakIntervalMin)))")
                             .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .monospacedDigit()
                             .foregroundStyle(
                                 LinearGradient(
                                     colors: [
@@ -408,27 +462,29 @@ struct PreferencesView: View {
                             )
                         Text("minutes")
                             .font(.system(size: 20, weight: .medium))
-                            .foregroundColor(.spellCream.opacity(0.7))
+                            .foregroundColor(.spellCream.opacity(0.72))
                     }
-                    
+                    .accessibilityHidden(true)
+
                     GradientSlider(
                         value: $breakIntervalMin,
                         options: [15, 20, 25, 30, 45, 60, 90, 120, 180],
                         accessibilityLabel: "Break interval",
-                        accessibilityValueFormatter: { "\(Int($0)) minutes" },
+                        accessibilityValueFormatter: { "Every \(Int($0)) minutes" },
                         soundManager: soundManager
                     )
                 }
-                
+
                 // Break duration
                 VStack(alignment: .leading, spacing: 12) {
-                    HStack {
+                    HStack(alignment: .firstTextBaseline) {
                         Text("For")
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundColor(.spellCream.opacity(0.9))
                         Spacer()
-                        Text("\(Int(breakDurationSec))")
+                        Text("\(Int(SpellbreakLimits.clampDuration(breakDurationSec)))")
                             .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .monospacedDigit()
                             .foregroundStyle(
                                 LinearGradient(
                                     colors: [
@@ -441,29 +497,29 @@ struct PreferencesView: View {
                             )
                         Text("seconds")
                             .font(.system(size: 20, weight: .medium))
-                            .foregroundColor(.spellCream.opacity(0.7))
+                            .foregroundColor(.spellCream.opacity(0.72))
                     }
-                    
+                    .accessibilityHidden(true)
+
                     GradientSlider(
                         value: $breakDurationSec,
                         options: [10, 15, 20, 30, 60, 90, 120, 180],
                         accessibilityLabel: "Break duration",
-                        accessibilityValueFormatter: { "\(Int($0)) seconds" },
+                        accessibilityValueFormatter: { "For \(Int($0)) seconds" },
                         soundManager: soundManager
                     )
                 }
             }
             .padding(UI.cardPadding)
             .frostedCard(fillOpacity: hoveredElement == "timing-card" ? 0.10 : 0.06)
-            .scaleEffect(hoveredElement == "timing-card" ? 1.01 : 1.0)
-            .animation(.easeOut(duration: 0.2), value: hoveredElement)
+            .scaleEffect(reduceMotion ? 1.0 : (hoveredElement == "timing-card" ? 1.005 : 1.0))
+            .animation(.easeOut(duration: 0.2), value: hoveredElement == "timing-card")
             .onHover { hovering in
-                hoveredElement = hovering ? "timing-card" : nil
+                setHover("timing-card", hovering)
             }
             .padding(.horizontal, UI.sidePadding)
-            
+
             // Rule-of-three behaviour card: Lock mode, Pause while busy, Autostart.
-            // The 15-second corner countdown pill is baked in so nobody gets jump-scared.
             VStack(spacing: 0) {
                 ToggleRow(
                     title: "Lock mode",
@@ -474,8 +530,6 @@ struct PreferencesView: View {
 
                 rowDivider
 
-                // Covers the mic too (ScreenBusy.isMicrophoneInUse), so it can't be named
-                // for fullscreen alone — switching it off stops both.
                 ToggleRow(
                     title: "Pause while busy",
                     subtitle: "Waits out fullscreen apps, calls, and active typing",
@@ -501,23 +555,23 @@ struct PreferencesView: View {
                 Text(launchAtLoginError)
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(Color.spellPeach)
+                    .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, UI.sidePadding + 4)
             }
-            
-            Spacer()  // Push content to top within fixed height
+
+            Spacer(minLength: 0)
         }
         .padding(.top, 4)
     }
 
     private var rowDivider: some View {
         Divider()
-            .overlay(Color.white.opacity(0.06))
+            .overlay(Color.spellCream.opacity(0.07))
     }
-    
+
     // MARK: - Vibes Tab Content
     private var vibesContent: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Visual theme selector — the main event, so it leads
             VStack(alignment: .leading, spacing: 14) {
                 Text("Visual Theme")
                     .font(.system(size: 20, weight: .semibold))
@@ -540,7 +594,7 @@ struct PreferencesView: View {
                         soundManager.playToggleOn()
                     }
                     .onHover { hovering in
-                        hoveredElement = hovering ? "theme-aurora" : nil
+                        setHover("theme-aurora", hovering)
                     }
 
                     ThemeChip(
@@ -558,7 +612,7 @@ struct PreferencesView: View {
                         soundManager.playToggleOn()
                     }
                     .onHover { hovering in
-                        hoveredElement = hovering ? "theme-ember" : nil
+                        setHover("theme-ember", hovering)
                     }
 
                     ThemeChip(
@@ -576,10 +630,9 @@ struct PreferencesView: View {
                         soundManager.playToggleOn()
                     }
                     .onHover { hovering in
-                        hoveredElement = hovering ? "theme-violet" : nil
+                        setHover("theme-violet", hovering)
                     }
 
-                    // Rolls a fresh analogous jewel-tone harmony on every break.
                     ThemeChip(
                         title: "Surprise",
                         subtitle: "Harmonious colours rolled each break",
@@ -595,7 +648,7 @@ struct PreferencesView: View {
                         soundManager.playToggleOn()
                     }
                     .onHover { hovering in
-                        hoveredElement = hovering ? "theme-random" : nil
+                        setHover("theme-random", hovering)
                     }
                 }
             }
@@ -603,7 +656,6 @@ struct PreferencesView: View {
             .frostedCard()
             .padding(.horizontal, UI.sidePadding)
 
-            // Unified 3-row toggle card — matches Time's 3-row symmetry cleanly.
             VStack(spacing: 0) {
                 ToggleRow(
                     title: "Messages",
@@ -635,7 +687,7 @@ struct PreferencesView: View {
             .frostedCard(cornerRadius: 20)
             .padding(.horizontal, UI.sidePadding)
 
-            Spacer()  // Push content to top within fixed height
+            Spacer(minLength: 0)
         }
         .padding(.top, 4)
     }
@@ -645,22 +697,15 @@ struct PreferencesView: View {
         VStack(alignment: .leading, spacing: 0) {
             aboutCardsStack
 
-            Spacer(minLength: 16)
+            Spacer(minLength: 14)
 
             aboutSignature
                 .padding(.bottom, 2)
         }
     }
 
-    private var aboutCardsOnly: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            aboutCardsStack
-            Spacer(minLength: 0)
-        }
-    }
-
     private var aboutCardsStack: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 12) {
                     Image(systemName: "moon.stars.fill")
@@ -672,6 +717,7 @@ struct PreferencesView: View {
                                 endPoint: .bottomTrailing
                             )
                         )
+                        .accessibilityHidden(true)
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Spellbreak")
@@ -680,7 +726,7 @@ struct PreferencesView: View {
 
                         Text("Version \(appVersion)")
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.spellCream.opacity(0.5))
+                            .foregroundColor(.spellCream.opacity(0.60))
                     }
 
                     Spacer()
@@ -695,13 +741,13 @@ struct PreferencesView: View {
 
                 Text("It knows the hour, and it knows the moon. Dawn comes in soft, 2am gets knowing, a full moon shows off a little. Skip a few and it notices, gently.")
                     .font(.system(size: 14, weight: .regular))
-                    .foregroundColor(.spellCream.opacity(0.76))
+                    .foregroundColor(.spellCream.opacity(0.78))
                     .fixedSize(horizontal: false, vertical: true)
                     .lineSpacing(3)
 
                 Text("Twenty minutes on, twenty seconds off. Or make it a tea timer, a stretch bell, a nudge to look out the window at something far away.")
                     .font(.system(size: 14, weight: .regular))
-                    .foregroundColor(.spellCream.opacity(0.76))
+                    .foregroundColor(.spellCream.opacity(0.78))
                     .fixedSize(horizontal: false, vertical: true)
                     .lineSpacing(3)
 
@@ -717,11 +763,16 @@ struct PreferencesView: View {
             .padding(.horizontal, UI.sidePadding)
 
             VStack(alignment: .leading, spacing: 6) {
+                #if APP_STORE
+                aboutLink(title: "Privacy Policy", icon: "hand.raised", url: "https://spellbreak.app/privacy")
+                aboutLink(title: "Support", icon: "envelope", url: "mailto:pibulus@gmail.com?subject=Spellbreak%20Support")
+                #else
                 aboutLink(title: "spellbreak.app", icon: "globe", url: "https://spellbreak.app")
                 aboutLink(title: "madebypablo.app", icon: "square.grid.2x2", url: "https://madebypablo.app")
                 aboutLink(title: "Source on GitHub", icon: "chevron.left.forwardslash.chevron.right", url: "https://github.com/pibulus/spellbreak")
+                #endif
             }
-            .padding(.vertical, 12)
+            .padding(.vertical, 10)
             .padding(.horizontal, 16)
             .frostedCard()
             .padding(.horizontal, UI.sidePadding)
@@ -729,26 +780,27 @@ struct PreferencesView: View {
     }
 
     private var aboutSignature: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 5) {
             Text("( - ω - ) zzz")
                 .font(.system(size: 13, weight: .medium, design: .monospaced))
-                .foregroundColor(.spellCream.opacity(0.56))
+                .foregroundColor(.spellCream.opacity(0.58))
 
             (
                 Text("made by pablo")
                     .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundColor(.spellCream.opacity(0.78))
+                    .foregroundColor(.spellCream.opacity(0.80))
                 + Text(".")
                     .font(.system(size: 15, weight: .heavy, design: .rounded))
                     .foregroundColor(.spellPink)
             )
         }
         .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Made by Pablo.")
     }
 
     private var appVersion: String {
-        let short = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.2.1"
-        return short
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.2.2"
     }
 
     @ViewBuilder
@@ -762,6 +814,7 @@ struct PreferencesView: View {
                         .font(.system(size: 13.5, weight: .semibold))
                         .foregroundColor(.spellCoral.opacity(isHovered ? 1.0 : 0.9))
                         .frame(width: 18)
+                        .accessibilityHidden(true)
 
                     Text(title)
                         .font(.system(size: 13.5, weight: .semibold))
@@ -771,19 +824,21 @@ struct PreferencesView: View {
 
                     Image(systemName: "arrow.up.right")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundColor(.spellCream.opacity(isHovered ? 0.65 : 0.35))
+                        .foregroundColor(.spellCream.opacity(isHovered ? 0.68 : 0.42))
+                        .accessibilityHidden(true)
                 }
                 .padding(.vertical, 6)
                 .padding(.horizontal, 8)
                 .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(isHovered ? Color.white.opacity(0.06) : Color.clear)
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(isHovered ? Color.spellCream.opacity(0.07) : Color.clear)
                 )
+                .animation(.easeOut(duration: 0.12), value: isHovered)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .onHover { hovering in
-                hoveredElement = hovering ? linkKey : (hoveredElement == linkKey ? nil : hoveredElement)
+                setHover(linkKey, hovering)
             }
         }
     }
@@ -793,7 +848,7 @@ struct PreferencesView: View {
         case .enabled:
             return "Starts at login"
         case .requiresApproval:
-            return "Approve in Login Items"
+            return "Pending approval in Login Items"
         case .notFound:
             return "Installable build required"
         case .notRegistered:
@@ -805,11 +860,15 @@ struct PreferencesView: View {
 
     private func refreshLaunchAtLoginState() {
         launchAtLoginStatus = SMAppService.mainApp.status
-        launchAtLogin = launchAtLoginStatus == .enabled || launchAtLoginStatus == .requiresApproval
+        launchAtLogin = (launchAtLoginStatus == .enabled)
         launchAtLoginError = nil
     }
 
     private func handleLaunchAtLoginToggle(_ newValue: Bool) {
+        if newValue && launchAtLoginStatus == .requiresApproval {
+            SMAppService.openSystemSettingsLoginItems()
+            return
+        }
         do {
             if newValue {
                 try SMAppService.mainApp.register()
@@ -817,11 +876,14 @@ struct PreferencesView: View {
                 try SMAppService.mainApp.unregister()
             }
             launchAtLoginStatus = SMAppService.mainApp.status
-            launchAtLogin = launchAtLoginStatus == .enabled || launchAtLoginStatus == .requiresApproval
+            launchAtLogin = (launchAtLoginStatus == .enabled)
+            if launchAtLoginStatus == .requiresApproval {
+                SMAppService.openSystemSettingsLoginItems()
+            }
             launchAtLoginError = nil
         } catch {
             refreshLaunchAtLoginState()
-            launchAtLoginError = "macOS wouldn’t change login-item status just now."
+            launchAtLoginError = "Login item status could not change right now."
         }
     }
 }
@@ -833,16 +895,18 @@ struct TabButton: View {
     let isSelected: Bool
     let isHovered: Bool
     let action: () -> Void
-    
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: 8) {
                 Image(systemName: icon)
                     .font(.system(size: 16, weight: .semibold))
+                    .accessibilityHidden(true)
                 Text(title)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(.system(size: 18, weight: .semibold, design: .rounded))
             }
-            .foregroundColor(isSelected ? .spellInk : .spellCream.opacity(0.7))
+            .foregroundColor(isSelected ? .spellInk : .spellCream.opacity(isHovered ? 0.88 : 0.72))
             .frame(maxWidth: .infinity)
             .frame(height: 48)
             .background(
@@ -857,12 +921,12 @@ struct TabButton: View {
                             endPoint: .trailing
                         )
                     } else {
-                        Color.white.opacity(isHovered ? 0.14 : 0.08)
+                        Color.spellCream.opacity(isHovered ? 0.14 : 0.08)
                     }
                 }
             )
-            .cornerRadius(24)
-            .scaleEffect(isHovered && !isSelected ? 1.02 : 1.0)
+            .clipShape(Capsule())
+            .scaleEffect(reduceMotion ? 1.0 : (isHovered && !isSelected ? 1.02 : 1.0))
             .animation(.easeOut(duration: 0.15), value: isHovered)
         }
         .buttonStyle(.plain)
@@ -872,9 +936,7 @@ struct TabButton: View {
 }
 
 // MARK: - Toggle Row
-/// A single full-width row inside a shared card. No card chrome of its own —
-/// that's the parent's job — so several of these can stack into one calm list
-/// with dividers between them.
+/// Keyboard-focusable full-width row inside a shared card.
 struct ToggleRow: View {
     let title: String
     let subtitle: String
@@ -883,69 +945,76 @@ struct ToggleRow: View {
     let onChange: (Bool) -> Void
 
     @State private var isHovered = false
+    @FocusState private var isFocused: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private var toggleAction: () -> Void {
-        {
-            let newValue = !isOn
-            onChange(newValue)
-            if newValue {
-                soundManager.playToggleOn()
-            } else {
-                soundManager.playToggleOff()
-            }
+    private func performToggle() {
+        let newValue = !isOn
+        onChange(newValue)
+        if newValue {
+            soundManager.playToggleOn()
+        } else {
+            soundManager.playToggleOff()
         }
     }
 
     var body: some View {
-        HStack(spacing: 16) {
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title)
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(.spellCream.opacity(isOn ? 0.95 : 0.75))
-                Text(subtitle)
-                    .font(.system(size: 13, weight: .regular))
-                    .foregroundColor(.spellCream.opacity(0.5))
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+        Button(action: performToggle) {
+            HStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(title)
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.spellCream.opacity(isOn ? 0.95 : 0.78))
+                    Text(subtitle)
+                        .font(.system(size: 13, weight: .regular))
+                        .foregroundColor(.spellCream.opacity(0.60))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
 
-            Spacer(minLength: 12)
+                Spacer(minLength: 12)
 
-            ZStack {
-                Capsule()
-                    .fill(
-                        LinearGradient(
-                            colors: isOn
-                                ? [Color.spellPink, Color.spellCoral]
-                                : [Color.white.opacity(0.15), Color.white.opacity(0.1)],
-                            startPoint: .leading,
-                            endPoint: .trailing
+                ZStack {
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: isOn
+                                    ? [Color.spellPink, Color.spellCoral]
+                                    : [Color.spellCream.opacity(0.16), Color.spellCream.opacity(0.10)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
                         )
-                    )
-                    .frame(width: 60, height: 32)
+                        .frame(width: 60, height: 32)
 
-                Circle()
-                    .fill(Color.spellCream)
-                    .frame(width: 24, height: 24)
-                    .offset(x: isOn ? 14 : -14)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isOn)
+                    Circle()
+                        .fill(Color.spellCream)
+                        .frame(width: 24, height: 24)
+                        .offset(x: isOn ? 14 : -14)
+                        .animation(reduceMotion ? .linear(duration: 0.1) : .spring(response: 0.3, dampingFraction: 0.7), value: isOn)
+                }
+                .scaleEffect(reduceMotion ? 1.0 : (isHovered ? 1.06 : 1.0))
+                .animation(.easeOut(duration: 0.15), value: isHovered)
             }
-            .scaleEffect(isHovered ? 1.08 : 1.0)
-            .animation(.easeOut(duration: 0.15), value: isHovered)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .contentShape(Rectangle())
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(isHovered ? Color.spellCream.opacity(0.06) : Color.clear)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(Color.spellCoral.opacity(isFocused ? 0.75 : 0), lineWidth: 2)
+            )
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .contentShape(Rectangle())
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(isHovered ? Color.white.opacity(0.06) : Color.clear)
-        )
-        .onTapGesture(perform: toggleAction)
+        .buttonStyle(.plain)
+        .focused($isFocused)
         .onHover { isHovered = $0 }
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel(title)
-        .accessibilityValue(isOn ? "On, \(subtitle)" : "Off, \(subtitle)")
+        .accessibilityValue(isOn ? "On" : "Off")
+        .accessibilityHint(subtitle)
         .accessibilityAddTraits(.isButton)
-        .accessibilityAction(named: Text(isOn ? "Turn Off" : "Turn On"), toggleAction)
     }
 }
 
@@ -959,15 +1028,17 @@ struct GradientSlider: View {
     @State private var isDragging = false
     @State private var isHovering = false
     @State private var lastSoundTime: Date = Date()
-    
+    @FocusState private var isFocused: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
                 // Track
                 Capsule()
-                    .fill(Color.white.opacity(0.1))
+                    .fill(Color.spellCream.opacity(0.11))
                     .frame(height: 8)
-                
+
                 // Progress
                 Capsule()
                     .fill(
@@ -980,15 +1051,19 @@ struct GradientSlider: View {
                             endPoint: .trailing
                         )
                     )
-                    .frame(width: geometry.size.width * normalizedValue, height: 8)
-                
+                    .frame(width: max(0, geometry.size.width * normalizedValue), height: 8)
+
                 // Thumb
                 Circle()
                     .fill(Color.spellCream)
                     .frame(width: 24, height: 24)
-                    .scaleEffect(isDragging ? 1.35 : (isHovering ? 1.25 : 1.0))
-                    .shadow(color: .black.opacity(isDragging ? 0.4 : 0.2), 
-                            radius: isDragging ? 8 : 4, 
+                    .overlay(
+                        Circle()
+                            .stroke(Color.spellCoral.opacity(isFocused ? 0.9 : 0), lineWidth: 2.5)
+                    )
+                    .scaleEffect(reduceMotion ? 1.0 : (isDragging ? 1.32 : (isHovering || isFocused ? 1.20 : 1.0)))
+                    .shadow(color: Color.spellInk.opacity(isDragging ? 0.45 : 0.25),
+                            radius: isDragging ? 8 : 4,
                             x: 0, y: 2)
                     .offset(x: geometry.size.width * normalizedValue - 12)
                     .animation(.easeOut(duration: 0.15), value: isDragging)
@@ -1013,11 +1088,23 @@ struct GradientSlider: View {
                     }
             )
             .onTapGesture { location in
-                updateValue(at: location.x, width: geometry.size.width, animated: true)
+                updateValue(at: location.x, width: geometry.size.width, animated: !reduceMotion)
                 soundManager?.playSliderGrab()
             }
         }
         .frame(height: 24)
+        .focusable(true)
+        .focused($isFocused)
+        .onMoveCommand { direction in
+            switch direction {
+            case .left, .down:
+                adjustValue(.decrement)
+            case .right, .up:
+                adjustValue(.increment)
+            @unknown default:
+                break
+            }
+        }
         .accessibilityElement()
         .accessibilityLabel(accessibilityLabel)
         .accessibilityValue(accessibilityValueFormatter(value))
@@ -1027,11 +1114,10 @@ struct GradientSlider: View {
     }
 
     private func updateValue(at x: CGFloat, width: CGFloat, animated: Bool) {
-        // width can be 0 for a frame during layout; x/width would be NaN and Int(round(.nan)) traps
-        guard width > 0, x.isFinite else { return }
+        guard width > 0, x.isFinite, !options.isEmpty else { return }
         let normalizedPosition = max(0, min(1, x / width))
-        let indexFloat = normalizedPosition * Double(options.count - 1)
-        let nearestIndex = Int(round(indexFloat))
+        let indexFloat = normalizedPosition * Double(max(options.count - 1, 1))
+        let nearestIndex = min(max(Int(round(indexFloat)), 0), options.count - 1)
         let newSnappedValue = options[nearestIndex]
 
         guard newSnappedValue != value else { return }
@@ -1052,6 +1138,7 @@ struct GradientSlider: View {
     }
 
     private func adjustValue(_ direction: AccessibilityAdjustmentDirection) {
+        guard !options.isEmpty else { return }
         let currentIndex = options.firstIndex(of: value) ?? closestIndex(to: value)
         let nextIndex: Int
 
@@ -1066,8 +1153,12 @@ struct GradientSlider: View {
 
         guard options[nextIndex] != value else { return }
 
-        withAnimation(.easeOut(duration: 0.2)) {
+        if reduceMotion {
             value = options[nextIndex]
+        } else {
+            withAnimation(.easeOut(duration: 0.2)) {
+                value = options[nextIndex]
+            }
         }
         soundManager?.playSliderTick()
     }
@@ -1077,28 +1168,24 @@ struct GradientSlider: View {
             abs(options[first] - target) < abs(options[second] - target)
         } ?? 0
     }
-    
+
     private var normalizedValue: Double {
-        guard let index = options.firstIndex(of: value) else {
-            // If value not in options, find closest and return its normalized position
-            return Double(closestIndex(to: value)) / Double(options.count - 1)
-        }
+        guard options.count > 1 else { return 0 }
+        let index = options.firstIndex(of: value) ?? closestIndex(to: value)
         return Double(index) / Double(options.count - 1)
     }
 }
 
 // MARK: - Theme Chip
-/// Compact 3-across theme picker card: color dots + name, gradient ring when selected.
+/// Compact 4-across theme picker card: color dots + name, gradient ring when selected.
 struct ThemeChip: View {
     let title: String
-    /// Not rendered as visible text — it is the hover tooltip and the VoiceOver
-    /// hint, which is the only description a screen-reader user ever gets for a
-    /// chip whose whole meaning is otherwise three coloured circles.
     let subtitle: String
     let colors: [Color]
     let isSelected: Bool
     let isHovered: Bool
     let action: () -> Void
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Button(action: action) {
@@ -1110,27 +1197,28 @@ struct ThemeChip: View {
                             .frame(width: 22, height: 22)
                             .overlay(
                                 Circle()
-                                    .stroke(Color.black.opacity(0.2), lineWidth: 1)
+                                    .stroke(Color.spellInk.opacity(0.28), lineWidth: 1)
                             )
                             .zIndex(Double(colors.count - i))
                     }
                 }
+                .accessibilityHidden(true)
 
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.spellCream.opacity(isSelected ? 0.95 : 0.75))
+                    .foregroundColor(.spellCream.opacity(isSelected ? 0.95 : 0.78))
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
             .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.white.opacity(isSelected ? 0.12 : (isHovered ? 0.08 : 0.04)))
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color.spellCream.opacity(isSelected ? 0.12 : (isHovered ? 0.08 : 0.04)))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 16)
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
                             .stroke(
                                 LinearGradient(
-                                    colors: isSelected ? colors : [Color.white.opacity(0.1)],
+                                    colors: isSelected ? colors : [Color.spellCream.opacity(0.11)],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 ),
@@ -1138,12 +1226,12 @@ struct ThemeChip: View {
                             )
                     )
             )
-            .scaleEffect(isHovered && !isSelected ? 1.02 : 1.0)
+            .scaleEffect(reduceMotion ? 1.0 : (isHovered && !isSelected ? 1.02 : 1.0))
             .animation(.easeOut(duration: 0.15), value: isHovered)
         }
         .buttonStyle(.plain)
         .help(subtitle)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(title) theme")
         .accessibilityHint(subtitle)
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)

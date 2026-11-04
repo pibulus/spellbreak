@@ -36,13 +36,15 @@ final class Store: ObservableObject {
     @Published private(set) var problem: String?
 
     private var transactionUpdates: Task<Void, Never>?
+    private var trialExpiryTask: Task<Void, Never>?
+    private var isLoadingProducts = false
 
     /// Seven days. SPELLBREAK_TRIAL_SECONDS can shorten it to test the ending —
     /// only shorten: a debug lever must never become a way to stretch the trial.
     private let trialLength: TimeInterval = {
         let week: TimeInterval = 7 * 24 * 60 * 60
         guard let override = ProcessInfo.processInfo.environment["SPELLBREAK_TRIAL_SECONDS"]
-            .flatMap({ TimeInterval($0) }) else { return week }
+            .flatMap({ TimeInterval($0) }), override.isFinite else { return week }
         return min(max(override, 1), week)
     }()
 
@@ -65,6 +67,11 @@ final class Store: ObservableObject {
         #else
         access = .unlocked
         #endif
+    }
+
+    deinit {
+        transactionUpdates?.cancel()
+        trialExpiryTask?.cancel()
     }
 
     /// `access`, reading an expired trial as ended without waiting for a refresh
@@ -93,18 +100,27 @@ final class Store: ObservableObject {
 
     @MainActor
     func startTrial() async {
-        guard let trialProduct else { return await loadProducts() }
+        guard !isWorking else { return }
+        guard let trialProduct, unlockProduct != nil else {
+            await loadProducts()
+            return
+        }
         await purchase(trialProduct)
     }
 
     @MainActor
     func unlock() async {
-        guard let unlockProduct else { return await loadProducts() }
+        guard !isWorking else { return }
+        guard let unlockProduct else {
+            await loadProducts()
+            return
+        }
         await purchase(unlockProduct)
     }
 
     @MainActor
     func restore() async {
+        guard !isWorking else { return }
         let wasAllowed = allowsScheduledBreaks
         isWorking = true
         defer { isWorking = false }
@@ -113,16 +129,20 @@ final class Store: ObservableObject {
         do {
             try await AppStore.sync()
         } catch StoreKitError.userCancelled {
-            // They closed the sign-in sheet; nothing to say
+            // Sign-in sheet closed; nothing to report
         } catch {
             problem = "App Store connection unavailable. Restore can resume later."
         }
         await refresh()
+        if trialProduct == nil || unlockProduct == nil {
+            await loadProducts()
+        }
         announceUnlockIfNew(wasAllowed: wasAllowed)
     }
 
     @MainActor
     private func purchase(_ product: Product) async {
+        guard !isWorking else { return }
         let wasAllowed = allowsScheduledBreaks
         isWorking = true
         defer { isWorking = false }
@@ -131,18 +151,23 @@ final class Store: ObservableObject {
         do {
             switch try await product.purchase() {
             case .success(let verification):
-                if case .verified(let transaction) = verification {
+                switch verification {
+                case .verified(let transaction):
                     await transaction.finish()
+                    await refresh()
+                    announceUnlockIfNew(wasAllowed: wasAllowed)
+                case .unverified:
+                    problem = "Purchase verification could not complete."
                 }
-                await refresh()
-                announceUnlockIfNew(wasAllowed: wasAllowed)
-            case .userCancelled, .pending:
+            case .pending:
+                problem = "Purchase awaiting approval."
+            case .userCancelled:
                 break
             @unknown default:
                 break
             }
         } catch {
-            problem = "Purchase unavailable for now."
+            problem = "Purchase unavailable right now."
         }
     }
 
@@ -181,16 +206,46 @@ final class Store: ObservableObject {
         } else {
             resolved = .notStarted
         }
-        await MainActor.run { self.access = resolved }
+        await MainActor.run {
+            self.access = resolved
+            self.scheduleTrialExpiryIfNeeded(for: resolved)
+        }
+    }
+
+    @MainActor
+    private func scheduleTrialExpiryIfNeeded(for current: Access) {
+        trialExpiryTask?.cancel()
+        trialExpiryTask = nil
+        guard case .trial(let endsAt) = current else { return }
+
+        let delay = max(0.1, endsAt.timeIntervalSinceNow)
+        trialExpiryTask = Task { [weak self] in
+            let nanos = UInt64(min(delay, 8 * 24 * 60 * 60) * 1_000_000_000)
+            try? await Task.sleep(nanoseconds: nanos)
+            guard !Task.isCancelled else { return }
+            await self?.refresh()
+        }
     }
 
     func loadProducts() async {
+        let shouldStart = await MainActor.run { () -> Bool in
+            guard !self.isLoadingProducts else { return false }
+            self.isLoadingProducts = true
+            return true
+        }
+        guard shouldStart else { return }
+        defer {
+            Task { @MainActor [weak self] in
+                self?.isLoadingProducts = false
+            }
+        }
+
         do {
             let products = try await Product.products(for: [Store.trialProductID, Store.unlockProductID])
             await MainActor.run {
                 self.trialProduct = products.first { $0.id == Store.trialProductID }
                 self.unlockProduct = products.first { $0.id == Store.unlockProductID }
-                self.problem = products.isEmpty ? "The App Store didn't answer. Purchases are unavailable for now." : nil
+                self.problem = products.isEmpty ? "App Store did not respond. Purchases are unavailable right now." : nil
             }
         } catch {
             await MainActor.run {
