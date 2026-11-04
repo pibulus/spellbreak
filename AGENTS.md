@@ -166,8 +166,9 @@ Release order: `release-check.sh` green → `gh release create vX.Y.Z dist/…` 
 asset again and `dmg-doctor` it → probe `/api/payment/create` → cancel the probe
 payment link in Square.
 
-`releases/latest/download/Spellbreak.dmg` is load-bearing: the site's buy link
-and the receipt email both point at it. Never publish a release without it.
+`releases/latest/download/Spellbreak.dmg` is load-bearing: `/success` downloads
+it directly, and Square's receipt names `spellbreak.app/success` on the line
+item. Never publish a release without it.
 
 ### Marketing art
 
