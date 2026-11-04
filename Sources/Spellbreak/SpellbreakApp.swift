@@ -567,6 +567,9 @@ class AppState: ObservableObject {
                 defer: false
             )
             window.title = "Spellbreak Settings"
+            window.titleVisibility = .hidden
+            window.titlebarAppearsTransparent = true
+            window.backgroundColor = NSColor(red: 0.16, green: 0.14, blue: 0.22, alpha: 1.0)
             if fittingHeight > availableHeight {
                 window.contentView = NSHostingView(rootView: ScrollView { preferences }
                     .frame(width: 560, height: contentHeight)
@@ -576,7 +579,6 @@ class AppState: ObservableObject {
             }
             window.center()
             window.isMovableByWindowBackground = false  // Fixed: Don't allow dragging by background
-            window.titlebarAppearsTransparent = true
             window.styleMask.remove(.resizable)  // Prevent resizing to lock the size
             
             preferencesWindowController = PreferencesWindowController(window: window) { [weak self] in

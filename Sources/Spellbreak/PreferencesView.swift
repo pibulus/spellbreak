@@ -38,10 +38,12 @@ struct PreferencesView: View {
     // MARK: - UI Constants
     private enum UI {
         static let sidePadding: CGFloat = 32
-        static let windowPaddingTop: CGFloat = 22         // Clean air above the three tabs
-        static let windowPaddingBottom: CGFloat = 24
+        static let windowPaddingTop: CGFloat = 8          // Sits cleanly below the hidden-title traffic lights
+        static let windowPaddingBottom: CGFloat = 26      // Generous bottom air beneath Test Break & signature
         static let sectionSpacing: CGFloat = 16           // Calm rhythm between sections
-        static let buttonSpacing: CGFloat = 16            // Footer CTA / signature slot gap
+        static let tabBodyHeight: CGFloat = 418           // Shared 3-toggle height for Time & Vibes
+        static let buttonSpacing: CGFloat = 18            // Gap above Test Break
+        static let buttonHeight: CGFloat = 46             // Slimmed to match the 48pt top tab pills
         static let cardPadding: CGFloat = 16              // Unified card internal padding
     }
     
@@ -51,7 +53,6 @@ struct PreferencesView: View {
     @AppStorage("lockMode") private var lockMode: Bool = false
     @AppStorage("deferDuringFullscreen") private var deferDuringFullscreen: Bool = true
     @AppStorage("launchAtLogin") private var launchAtLogin: Bool = false
-    @AppStorage("fancyMenu") private var fancyMenu: Bool = true
     @AppStorage("visualTheme") private var visualTheme: String = "aurora"
     @AppStorage("showBreakMessage") private var showBreakMessage: Bool = true
     @AppStorage("musicEnabled") private var musicEnabled: Bool = false
@@ -61,10 +62,13 @@ struct PreferencesView: View {
     @State private var selectedTab = 0
     @State private var hoveredElement: String? = nil
     @State private var testButtonPressed = false
+    @State private var sparkleRotation: Double = 0
+    @State private var titleOffset: CGFloat = 0
     @State private var launchAtLoginStatus: SMAppService.Status = SMAppService.mainApp.status
     @State private var launchAtLoginError: String?
     @EnvironmentObject var soundManager: SoundManager
     @EnvironmentObject var store: Store
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     init(initialTab: Int = 0) {
         _selectedTab = State(initialValue: initialTab)
@@ -73,7 +77,45 @@ struct PreferencesView: View {
     var body: some View {
         VStack(spacing: 0) {
             VStack(spacing: UI.sectionSpacing) {
-                // Tab selector leads cleanly beneath the window title bar ("Spellbreak Settings")
+                // Signature header — owns the top-left beneath the hidden-title traffic lights
+                HStack(spacing: 11) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 23, weight: .bold))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [
+                                    Color.spellPink,
+                                    Color.spellCoral
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .rotationEffect(.degrees(sparkleRotation))
+                        .onAppear {
+                            guard !reduceMotion else { return }
+                            withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) {
+                                sparkleRotation = 8
+                            }
+                        }
+
+                    Text("Spellbreak")
+                        .font(.system(size: 30, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color.spellCream)
+                        .offset(y: titleOffset)
+                        .onAppear {
+                            guard !reduceMotion else { return }
+                            withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) {
+                                titleOffset = -2
+                            }
+                        }
+
+                    Spacer()
+                }
+                .padding(.horizontal, UI.sidePadding)
+                .padding(.bottom, 6)
+
+                // Tab selector
                 HStack(spacing: 16) {
                     TabButton(
                         icon: "clock",
@@ -122,48 +164,50 @@ struct PreferencesView: View {
                 }
                 .padding(.horizontal, UI.sidePadding)
                 
-                // Content area with consistent height so switching tabs never shifts the window
-                ZStack {
-                    if selectedTab == 0 {
-                        timerContent
-                            .frame(maxWidth: .infinity, alignment: .top)
-                            .transition(.opacity)
-                    } else if selectedTab == 1 {
-                        vibesContent
-                            .frame(maxWidth: .infinity, alignment: .top)
-                            .transition(.opacity)
-                    } else {
-                        aboutContent
-                            .frame(maxWidth: .infinity, alignment: .top)
-                            .transition(.opacity)
-                    }
-                }
-                .frame(height: 452, alignment: .top)
-                .animation(.easeInOut(duration: 0.2), value: selectedTab)
-            }
-            
-            // Bottom slot: Test Break on Time & Vibes; sleepy cat signature on About
-            // (App Store trial/unlock bar still appears whenever needed)
-            VStack(spacing: 10) {
+                // Lower canvas: Time & Vibes share tabBodyHeight + Test Break;
+                // About spans the exact same total height so the cat signature floats centered.
                 if selectedTab == 2 && !needsUnlock {
-                    aboutSignature
-                        .frame(height: 56)
+                    aboutFullCanvas
+                        .frame(height: UI.tabBodyHeight + UI.buttonSpacing + UI.buttonHeight, alignment: .top)
+                        .transition(.opacity)
                 } else {
-                    HStack(spacing: 12) {
-                        if selectedTab != 2 {
-                            testBreakButton
+                    VStack(spacing: 0) {
+                        ZStack {
+                            if selectedTab == 0 {
+                                timerContent
+                                    .frame(maxWidth: .infinity, alignment: .top)
+                                    .transition(.opacity)
+                            } else if selectedTab == 1 {
+                                vibesContent
+                                    .frame(maxWidth: .infinity, alignment: .top)
+                                    .transition(.opacity)
+                            } else {
+                                aboutCardsOnly
+                                    .frame(maxWidth: .infinity, alignment: .top)
+                                    .transition(.opacity)
+                            }
                         }
-                        if needsUnlock {
-                            unlockButton
+                        .frame(height: UI.tabBodyHeight, alignment: .top)
+
+                        VStack(spacing: 10) {
+                            HStack(spacing: 12) {
+                                if selectedTab != 2 {
+                                    testBreakButton
+                                }
+                                if needsUnlock {
+                                    unlockButton
+                                }
+                            }
+                            if needsUnlock {
+                                unlockCaption
+                            }
                         }
+                        .padding(.top, UI.buttonSpacing)
+                        .padding(.horizontal, UI.sidePadding)
                     }
                 }
-                if needsUnlock {
-                    unlockCaption
-                }
             }
-            .padding(.top, UI.buttonSpacing)
-            .padding(.horizontal, UI.sidePadding)
+            .animation(.easeInOut(duration: 0.2), value: selectedTab)
         }
         .padding(.top, UI.windowPaddingTop)
         .padding(.bottom, UI.windowPaddingBottom)
@@ -204,15 +248,15 @@ struct PreferencesView: View {
                 testButtonPressed = false
             }
         }) {
-            HStack(spacing: 12) {
+            HStack(spacing: 10) {
                 Image(systemName: "play.fill")
-                    .font(.system(size: 18, weight: .bold))
+                    .font(.system(size: 15, weight: .bold))
                 Text("Test Break")
-                    .font(.system(size: 18, weight: .bold))
+                    .font(.system(size: 16.5, weight: .bold))
             }
-            .foregroundColor(.black.opacity(0.8))
+            .foregroundColor(.spellInk)
             .frame(maxWidth: .infinity)
-            .frame(height: 56)
+            .frame(height: UI.buttonHeight)
             .background(
                 LinearGradient(
                     colors: [
@@ -282,7 +326,7 @@ struct PreferencesView: View {
             }
             .foregroundColor(.spellCream)
             .frame(maxWidth: .infinity)
-            .frame(height: 56)
+            .frame(height: UI.buttonHeight)
             .background(Capsule().fill(Color.white.opacity(hoveredElement == "unlock-button" ? 0.14 : 0.08)))
             .overlay(
                 Capsule().stroke(
@@ -341,10 +385,8 @@ struct PreferencesView: View {
     // MARK: - Timer Tab Content  
     private var timerContent: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Color.clear.frame(height: 4)  // Breathing room below tabs
-
             // Main timing card
-            VStack(spacing: 32) {
+            VStack(spacing: 26) {
                 // Break interval
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
@@ -436,7 +478,7 @@ struct PreferencesView: View {
                 // for fullscreen alone — switching it off stops both.
                 ToggleRow(
                     title: "Pause while busy",
-                    subtitle: "Waits for full-screen apps, active mic use, and a pause in typing",
+                    subtitle: "Waits out fullscreen apps, calls, and active typing",
                     isOn: deferDuringFullscreen,
                     soundManager: soundManager
                 ) { deferDuringFullscreen = $0 }
@@ -464,6 +506,7 @@ struct PreferencesView: View {
             
             Spacer()  // Push content to top within fixed height
         }
+        .padding(.top, 4)
     }
 
     private var rowDivider: some View {
@@ -473,9 +516,7 @@ struct PreferencesView: View {
     
     // MARK: - Vibes Tab Content
     private var vibesContent: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Color.clear.frame(height: 4)  // Breathing room below tabs
-
+        VStack(alignment: .leading, spacing: 16) {
             // Visual theme selector — the main event, so it leads
             VStack(alignment: .leading, spacing: 14) {
                 Text("Visual Theme")
@@ -562,7 +603,7 @@ struct PreferencesView: View {
             .frostedCard()
             .padding(.horizontal, UI.sidePadding)
 
-            // Unified 4-row toggle card — audio is cleanly on or off at its mastered level.
+            // Unified 3-row toggle card — matches Time's 3-row symmetry cleanly.
             VStack(spacing: 0) {
                 ToggleRow(
                     title: "Messages",
@@ -588,15 +629,6 @@ struct PreferencesView: View {
                     isOn: soundEffectsEnabled,
                     soundManager: soundManager
                 ) { soundEffectsEnabled = $0 }
-
-                rowDivider
-
-                ToggleRow(
-                    title: "Fancy Menu",
-                    subtitle: "Mystical menu bar or clean text",
-                    isOn: fancyMenu,
-                    soundManager: soundManager
-                ) { fancyMenu = $0 }
             }
             .padding(.vertical, 6)
             .padding(.horizontal, UI.cardPadding)
@@ -605,17 +637,34 @@ struct PreferencesView: View {
 
             Spacer()  // Push content to top within fixed height
         }
+        .padding(.top, 4)
     }
 
     // MARK: - About Tab Content
-    private var aboutContent: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Color.clear.frame(height: 4)
+    private var aboutFullCanvas: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            aboutCardsStack
 
-            VStack(alignment: .leading, spacing: 14) {
+            Spacer(minLength: 16)
+
+            aboutSignature
+                .padding(.bottom, 2)
+        }
+    }
+
+    private var aboutCardsOnly: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            aboutCardsStack
+            Spacer(minLength: 0)
+        }
+    }
+
+    private var aboutCardsStack: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 12) {
                     Image(systemName: "moon.stars.fill")
-                        .font(.system(size: 28, weight: .medium))
+                        .font(.system(size: 26, weight: .medium))
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [Color.spellPink, Color.spellCoral],
@@ -626,7 +675,7 @@ struct PreferencesView: View {
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Spellbreak")
-                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                            .font(.system(size: 21, weight: .bold, design: .rounded))
                             .foregroundColor(.spellCream.opacity(0.95))
 
                         Text("Version \(appVersion)")
@@ -639,38 +688,43 @@ struct PreferencesView: View {
                 .padding(.bottom, 2)
 
                 Text("Every break brings a quiet line of its own.")
-                    .font(.system(size: 14.5, weight: .medium))
-                    .foregroundColor(.spellCream.opacity(0.90))
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.spellCream.opacity(0.92))
                     .fixedSize(horizontal: false, vertical: true)
-                    .lineSpacing(4)
+                    .lineSpacing(3)
 
                 Text("It knows the hour, and it knows the moon. Dawn comes in soft, 2am gets knowing, a full moon shows off a little. Skip a few and it notices, gently.")
-                    .font(.system(size: 14.5, weight: .regular))
+                    .font(.system(size: 14, weight: .regular))
                     .foregroundColor(.spellCream.opacity(0.76))
                     .fixedSize(horizontal: false, vertical: true)
-                    .lineSpacing(4)
+                    .lineSpacing(3)
 
                 Text("Twenty minutes on, twenty seconds off. Or make it a tea timer, a stretch bell, a nudge to look out the window at something far away.")
-                    .font(.system(size: 14.5, weight: .regular))
+                    .font(.system(size: 14, weight: .regular))
                     .foregroundColor(.spellCream.opacity(0.76))
                     .fixedSize(horizontal: false, vertical: true)
-                    .lineSpacing(4)
+                    .lineSpacing(3)
+
+                Text("No streaks, no red badges, and nothing to feed. Everything stays on this Mac.")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.spellCream.opacity(0.88))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineSpacing(3)
             }
-            .padding(20)
+            .padding(18)
             .frostedCard()
+            .padding(.top, 4)
             .padding(.horizontal, UI.sidePadding)
 
-            VStack(alignment: .leading, spacing: 13) {
+            VStack(alignment: .leading, spacing: 6) {
                 aboutLink(title: "spellbreak.app", icon: "globe", url: "https://spellbreak.app")
                 aboutLink(title: "madebypablo.app", icon: "square.grid.2x2", url: "https://madebypablo.app")
                 aboutLink(title: "Source on GitHub", icon: "chevron.left.forwardslash.chevron.right", url: "https://github.com/pibulus/spellbreak")
             }
-            .padding(.vertical, 16)
-            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
             .frostedCard()
             .padding(.horizontal, UI.sidePadding)
-
-            Spacer()
         }
     }
 
@@ -699,27 +753,38 @@ struct PreferencesView: View {
 
     @ViewBuilder
     private func aboutLink(title: String, icon: String, url: String) -> some View {
+        let linkKey = "about-\(title)"
+        let isHovered = hoveredElement == linkKey
         if let destination = URL(string: url) {
             Link(destination: destination) {
                 HStack(spacing: 10) {
                     Image(systemName: icon)
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(.spellCoral.opacity(0.9))
+                        .font(.system(size: 13.5, weight: .semibold))
+                        .foregroundColor(.spellCoral.opacity(isHovered ? 1.0 : 0.9))
                         .frame(width: 18)
 
                     Text(title)
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(.spellCream.opacity(0.85))
+                        .font(.system(size: 13.5, weight: .semibold))
+                        .foregroundColor(.spellCream.opacity(isHovered ? 0.96 : 0.85))
 
                     Spacer()
 
                     Image(systemName: "arrow.up.right")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundColor(.spellCream.opacity(0.35))
+                        .foregroundColor(.spellCream.opacity(isHovered ? 0.65 : 0.35))
                 }
+                .padding(.vertical, 6)
+                .padding(.horizontal, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(isHovered ? Color.white.opacity(0.06) : Color.clear)
+                )
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .onHover { hovering in
+                hoveredElement = hovering ? linkKey : (hoveredElement == linkKey ? nil : hoveredElement)
+            }
         }
     }
 
@@ -1057,7 +1122,7 @@ struct ThemeChip: View {
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
+            .padding(.vertical, 16)
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color.white.opacity(isSelected ? 0.12 : (isHovered ? 0.08 : 0.04)))

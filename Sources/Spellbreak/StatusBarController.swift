@@ -15,7 +15,6 @@ class StatusBarController: NSObject {
     private var contextMenu: NSMenu!
     weak var appState: AppState?
     private var cancellables = Set<AnyCancellable>()
-    private var notificationObserver: Any?
 
     override init() {
         super.init()
@@ -43,10 +42,6 @@ class StatusBarController: NSObject {
     }
     
     deinit {
-        // Clean up notification observer
-        if let observer = notificationObserver {
-            NotificationCenter.default.removeObserver(observer)
-        }
         // Cancel all Combine subscriptions
         cancellables.forEach { $0.cancel() }
     }
@@ -75,19 +70,6 @@ class StatusBarController: NSObject {
                 self?.updateIcon()
             }
             .store(in: &cancellables)
-        
-        // Listen for fancy menu preference changes
-        notificationObserver = NotificationCenter.default.addObserver(
-            forName: UserDefaults.didChangeNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            // Close popover if switching to plain menu
-            let fancyMenu = UserDefaults.standard.object(forKey: "fancyMenu") as? Bool ?? true
-            if !fancyMenu && self?.popover.isShown == true {
-                self?.popover.performClose(nil)
-            }
-        }
     }
     
     @objc private func handleClick() {
@@ -101,19 +83,8 @@ class StatusBarController: NSObject {
             // Show context menu on right-click
             showContextMenu()
         } else {
-            // Check if fancy menu is enabled (defaults to true)
-            let fancyMenu = UserDefaults.standard.object(forKey: "fancyMenu") as? Bool ?? true
-            
-            if fancyMenu {
-                // Show fancy popover for left-click
-                togglePopover()
-            } else {
-                // Show same context menu for left-click when fancy is off
-                if popover.isShown {
-                    popover.performClose(nil)
-                }
-                showContextMenu()
-            }
+            // Left-click always opens the signature dark popover
+            togglePopover()
         }
     }
     

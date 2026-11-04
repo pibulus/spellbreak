@@ -13,38 +13,12 @@ struct MenuViewSimple: View {
     @EnvironmentObject var appState: AppState
     @State private var hoveredItem: String? = nil
     @AppStorage("breakIntervalMin") private var breakInterval: Double = 20
-    @AppStorage("fancyMenu") private var fancyMenu: Bool = true
     var onRequestClose: () -> Void = {}
     
     var body: some View {
-        Group {
-            if fancyMenu {
-                fancyMenuView
-            } else {
-                plainMenuView
-            }
-        }
-    }
-    
-    // MARK: - Fancy Menu (Current)
-    private var fancyMenuView: some View {
         VStack(spacing: 0) {
-            // Spellbreak branding
-            Text("Spellbreak")
-                .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [Color(red: 0.7, green: 0.4, blue: 0.9), 
-                                Color(red: 0.9, green: 0.3, blue: 0.6)],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-                .fixedSize()
-                .padding(.top, 18)
-                .padding(.bottom, 12)
-            
             timerStatusCard
+                .padding(.top, 10)
             
             VStack(spacing: 2) {
                 // Break Now
@@ -101,59 +75,6 @@ struct MenuViewSimple: View {
         }
         .frame(width: 200)
         .background(.ultraThickMaterial)
-    }
-    
-    // MARK: - Plain Menu (macOS Standard)
-    private var plainMenuView: some View {
-        VStack(spacing: 0) {
-            // Simple timer display
-            if appState.timerRunning {
-                Text(appState.timeRemaining.mmss)
-                    .font(.system(size: 14, weight: .medium, design: .monospaced))
-                    .foregroundColor(.primary)
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 16)
-                
-                Divider()
-            }
-            
-            VStack(spacing: 0) {
-                PlainMenuItem(
-                    title: "Break Now",
-                    action: {
-                        onRequestClose()
-                        appState.triggerBreak()
-                    }
-                )
-                PlainMenuItem(
-                    title: appState.timerRunning ? "Pause Timer" : (appState.timerPaused ? "Resume Timer" : "Start Timer"),
-                    action: {
-                        onRequestClose()
-                        appState.toggleTimer()  // "Pause" that reset to a fresh interval was the old lie
-                    }
-                )
-                
-                Divider()
-                
-                PlainMenuItem(
-                    title: "Settings…",
-                    action: {
-                        onRequestClose()
-                        appState.showPreferences()
-                    }
-                )
-                
-                Divider()
-                
-                PlainMenuItem(
-                    title: "Quit Spellbreak"
-                ) {
-                    onRequestClose()
-                    NSApplication.shared.terminate(nil)
-                }
-            }
-        }
-        .background(.regularMaterial)
     }
 
     private var statusSubtext: String {
@@ -248,29 +169,5 @@ struct SimpleMenuItem: View {
             )
         }
         .buttonStyle(.plain)
-    }
-}
-
-// MARK: - Plain Menu Item
-struct PlainMenuItem: View {
-    let title: String
-    let action: () -> Void
-    @State private var isHovered = false
-    
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.system(size: 14))
-                .foregroundColor(.primary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 4)
-                .background(isHovered ? Color.accentColor : Color.clear)
-                .foregroundColor(isHovered ? .white : .primary)
-        }
-        .buttonStyle(.plain)
-        .onHover { hovering in
-            isHovered = hovering
-        }
     }
 }
