@@ -14,13 +14,15 @@ that hold away. Street-smart occult, never corporate wellness.
 
 ## Status
 
-**v1.2.1 live on GitHub · v1.2.2 built & verified locally on both lanes** —
-`dist/Spellbreak-v1.2.2.dmg` (Developer ID signed, notarized, dual-stapled) and
-`dist/Spellbreak-v1.2.2-mas.pkg` (Mac App Store distribution signed with compiled
-`Assets.car`, `CFBundleIconName`, `PrivacyInfo.xcprivacy` `CA92.1` + `35F9.1`, and
-MAS-safe About links) both verify cleanly alongside each other.
+**v1.2.2 live on GitHub** (`releases/latest` → both the versioned DMG and the
+stable `Spellbreak.dmg`, verified by re-downloading and running `dmg-doctor`) and
+**spellbreak.app deployed** with `verify-live.sh` 32/32 green. The MAS lane is
+built and signed but not submitted: `dist/Spellbreak-v1.2.2-mas.pkg` carries the
+compiled `Assets.car`, `CFBundleIconName`, `PrivacyInfo.xcprivacy` `CA92.1` +
+`35F9.1`, and MAS-safe About links, and `mas-check.sh` is 19/19.
 
-Selling today: A$19 once, unlocked, from spellbreak.app (Square checkout).
+Selling today: A$19 once, unlocked, from spellbreak.app (Square checkout). The
+live payment link was probed and charged A$19.00 AUD, then cancelled in Square.
 
 Open for MAS launch: creating the App Store Connect app record (`POST /v1/apps`
 is web-UI only), uploading `dist/Spellbreak-v1.2.2-mas.pkg` via Transporter, and
