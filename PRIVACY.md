@@ -30,9 +30,11 @@ microphone permission.
 
 It also notices when another app is full screen (a game, a film, a
 presentation), using the window sizes macOS reports, and doesn't see what's in
-those windows. And it asks macOS how many seconds it's been since a key was
-pressed, so a break can wait for the end of your sentence. That's a single
-number: never which keys, never what you typed. Turn Pause while busy off in
+those windows. It checks whether a mouse button is currently held down, whether
+a screen-recording or video-playback assertion is keeping the display awake, and
+how many seconds it's been since a key was pressed, so a break can wait for the
+end of a drag, a share, or a sentence. That's a single number or a yes/no flag:
+never which keys, never what you typed or watched. Turn Pause while busy off in
 Settings and these checks stop.
 
 Separately, Spellbreak asks how long it's been since you last touched the

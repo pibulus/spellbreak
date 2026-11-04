@@ -172,14 +172,54 @@ struct SpellTextGenerator {
         "full": [
             "Full moon pull",
             "Lunar glow",
-            "High tide"
+            "High tide",
+            "Silver orbit",
+            "Full moon overhead"
         ],
         "new": [
             "New moon sky",
             "Deep dark",
-            "Clear void"
+            "Clear void",
+            "Velvet dark",
+            "Dark of the moon"
         ]
     ]
+
+    private static func contextualSparks() -> [String] {
+        var sparks: [String] = []
+        let hour = Calendar.current.component(.hour, from: Date())
+        switch hour {
+        case 0..<5:
+            sparks += [
+                "3am static", "Late glow", "Night drift",
+                "Small hours humming", "Past midnight", "2am gravity"
+            ]
+        case 5..<9:
+            sparks += [
+                "Morning light", "Dawn horizon", "First rays",
+                "Early air", "Day waking slowly"
+            ]
+        case 12..<14:
+            sparks += ["Midday glare", "Sun overhead", "High daylight"]
+        case 17..<21:
+            sparks += [
+                "Golden hour", "Dusk settling", "Amber angle",
+                "Daylight folding", "Evening tide"
+            ]
+        case 21..<24:
+            sparks += [
+                "Night air", "Dark frame", "Low glow",
+                "Late quiet", "Night settling"
+            ]
+        default:
+            break
+        }
+
+        if let lunar = moonSparks[getMoonPhase()] {
+            sparks += lunar
+        }
+        return sparks
+    }
 
     // ===================================================================
     // MEMORY - recently shown lines, kept on this Mac (UserDefaults), so the
@@ -242,9 +282,16 @@ struct SpellTextGenerator {
     /// the rolled mode (rather than re-rolling the mode) is what keeps the mix honest.
     /// Nil only when that mode's whole pool is in `seen`.
     private static func drawLine(avoiding seen: Set<String>) -> String? {
+        // Contextual hour-of-day & lunar sparks get an 18% first look whenever active
+        // so dawn, 2am, and full/new moon breaks noticeably reflect the sky and clock.
+        let contextual = contextualSparks().filter { !seen.contains($0) }
+        if !contextual.isEmpty && Int.random(in: 1...100) <= 18 {
+            return contextual.randomElement()
+        }
+
         // Mode 1 (30%): Body + State ("Shoulders adrift", "Jaw softening", "Spine in orbit")
-        // Mode 2 (30%): Ambient + State ("Static cooling", "Frame dissolving", "Horizon wide open")
-        // Mode 3 (20%): Abstract Mystical Spark ("Soft geometry", "Quiet frequency", "Pale static")
+        // Mode 2 (30%): Ambient + State ("Static cooling", "Frame dissolving", "Horizon opening")
+        // Mode 3 (20%): Abstract Mystical Spark ("Soft geometry", "Quiet frequency", "Slow pulse")
         // Mode 4 (20%): Full observation ("The trance gets comfortable")
 
         let roll = Int.random(in: 1...100)
@@ -255,31 +302,9 @@ struct SpellTextGenerator {
         } else if roll <= 60 {
             pool = ambientElements.flatMap { element in ambientStates.map { "\(element) \($0)" } }
         } else if roll <= 80 {
-            pool = mysticalSparks
-
-            // Contextual sparks
-            let hour = Calendar.current.component(.hour, from: Date())
-            switch hour {
-            case 0..<5:
-                pool += ["3am static", "Late glow", "Night drift"]
-            case 5..<9:
-                pool += ["Morning light", "Dawn horizon", "First rays"]
-            case 12..<14:
-                pool += ["Midday glare", "Sun overhead", "Raw light"]
-            case 17..<20:
-                pool += ["Golden hour", "Dusk settling", "Amber angle"]
-            case 22..<24:
-                pool += ["Night air", "Dark frame", "Low glow"]
-            default:
-                break
-            }
-
-            if let lunar = moonSparks[getMoonPhase()] {
-                pool += lunar
-            }
+            pool = mysticalSparks + contextualSparks()
         } else {
             pool = observations
-
             if let lunar = moonSparks[getMoonPhase()] {
                 pool += lunar
             }

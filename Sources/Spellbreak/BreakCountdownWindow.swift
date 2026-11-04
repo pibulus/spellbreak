@@ -12,19 +12,24 @@ import AppKit
 // MARK: - Countdown Window Controller
 /// Small click-through panel pinned comfortably top-center of the main screen.
 final class BreakCountdownWindowController: NSWindowController {
-    init(appState: AppState) {
-        // Generous bounds so its soft glow never clips
-        let size = NSSize(width: 360, height: 104)
+    private static let pillSize = NSSize(width: 360, height: 104)
+
+    private static func targetOrigin() -> NSPoint {
         let mouseLoc = NSEvent.mouseLocation
         let screenWithMouse = NSScreen.screens.first(where: { NSMouseInRect(mouseLoc, $0.frame, false) })
         let screen = screenWithMouse ?? NSScreen.main ?? NSScreen.screens.first
         let screenFrame = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1280, height: 800)
-        let origin = NSPoint(
-            x: screenFrame.midX - size.width / 2,
-            y: screenFrame.maxY - size.height - 24
+        return NSPoint(
+            x: screenFrame.midX - pillSize.width / 2,
+            y: screenFrame.maxY - pillSize.height - 24
         )
+    }
+
+    init(appState: AppState) {
+        // Generous bounds so its soft glow never clips
+        let origin = Self.targetOrigin()
         let window = NSWindow(
-            contentRect: NSRect(origin: origin, size: size),
+            contentRect: NSRect(origin: origin, size: Self.pillSize),
             styleMask: [.borderless],
             backing: .buffered,
             defer: false
@@ -39,6 +44,15 @@ final class BreakCountdownWindowController: NSWindowController {
         window.contentView = NSHostingView(rootView: BreakCountdownView().environmentObject(appState))
 
         super.init(window: window)
+    }
+
+    /// Follow the pointer if the user moves to another physical display mid-countdown.
+    func updateScreenPositionIfNeeded() {
+        guard let window else { return }
+        let desired = Self.targetOrigin()
+        if hypot(window.frame.origin.x - desired.x, window.frame.origin.y - desired.y) > 4 {
+            window.setFrameOrigin(desired)
+        }
     }
 
     required init?(coder: NSCoder) {

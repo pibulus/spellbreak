@@ -301,11 +301,13 @@ class AppState: ObservableObject {
         return ScreenBusy.isBusy() || isMidSentence()
     }
 
-    /// Typing when a break comes due? Let the sentence land first: wait for a pause
-    /// in the keys (two quiet seconds), but no more than 30 seconds, so a non-stop
-    /// typist still gets the break. The same never-stuck-on-busy rule as the rest.
+    /// Typing or dragging when a break comes due? Let the sentence or drag land first:
+    /// wait for two quiet seconds and released mouse buttons, capped at 30 seconds so
+    /// a non-stop typist or stuck peripheral never wedges scheduled breaks.
     private func isMidSentence() -> Bool {
-        guard ScreenBusy.secondsSinceLastKeystroke() < 2 else {
+        let activelyTypingOrDragging = ScreenBusy.secondsSinceLastKeystroke() < 2
+            || ScreenBusy.isMouseButtonDown()
+        guard activelyTypingOrDragging else {
             typingHoldStartedAt = nil
             return false
         }
@@ -578,6 +580,7 @@ class AppState: ObservableObject {
                 window.contentView = NSHostingView(rootView: preferences)
             }
             window.center()
+            window.collectionBehavior = [.moveToActiveSpace]  // Always summon Settings onto the Space in focus
             window.isMovableByWindowBackground = false  // Fixed: Don't allow dragging by background
             window.styleMask.remove(.resizable)  // Prevent resizing to lock the size
             
@@ -680,17 +683,19 @@ class AppState: ObservableObject {
 
     private func handleSystemWake() {
         guard timerRunning else { return }
-        let elapsed = max(0, Date().timeIntervalSince(lastBreakTime))
-        let remaining = breakInterval - elapsed
-        let wakeGracePeriod: TimeInterval = 180 // 3 minutes of screen presence after waking
-        
-        if remaining < wakeGracePeriod {
-            // Give user breathing room after opening lid rather than slamming screen immediately
-            lastBreakTime = Date().addingTimeInterval(wakeGracePeriod - breakInterval)
-            restartTimer()
-        } else {
-            updateTimeRemainingAndWarning()
+        // If the Mac slept ≥ 1 min, restartIntervalIfMacSlept() resets to a full fresh interval.
+        // If it only catnapped (< 1 min) right before a due break, still grant 3 min of breathing room.
+        if !restartIntervalIfMacSlept() {
+            let elapsed = max(0, Date().timeIntervalSince(lastBreakTime))
+            let remaining = breakInterval - elapsed
+            let wakeGracePeriod: TimeInterval = 180
+            if remaining < wakeGracePeriod {
+                lastBreakTime = Date().addingTimeInterval(wakeGracePeriod - breakInterval)
+                lastBreakTimestamp = lastBreakTime.timeIntervalSince1970
+                scheduleRepeatingBreakTimer()
+            }
         }
+        updateTimeRemainingAndWarning()
     }
 
     private func updateTimeRemainingAndWarning() {
@@ -745,6 +750,8 @@ class AppState: ObservableObject {
 
         if countdownWindowController == nil {
             countdownWindowController = BreakCountdownWindowController(appState: self)
+        } else {
+            countdownWindowController?.updateScreenPositionIfNeeded()
         }
         countdownWindowController?.window?.orderFrontRegardless()
     }

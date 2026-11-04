@@ -258,6 +258,7 @@ struct OverlayWindow: View {
                     if timeRemaining > 0 {
                         Text(formatTimeShort(timeRemaining))
                             .font(.system(size: 26, weight: .medium, design: .rounded))
+                            .monospacedDigit()
                             .foregroundStyle(Color.spellCream.opacity(0.45))
                             .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
                             .opacity(messageOpacity * 0.8)
@@ -336,15 +337,17 @@ struct OverlayWindow: View {
 
     private func formatTimeShort(_ seconds: Int) -> String {
         if seconds >= 60 {
-            return "\(seconds / 60)m"
+            let mins = seconds / 60
+            let secs = seconds % 60
+            return String(format: "%d:%02d", mins, secs)
         } else {
-            return "\(seconds)"  // Just the number, no "s"
+            return "\(seconds)"
         }
     }
 
     private func startCountdownTimer() {
         countdownTimer?.invalidate()
-        countdownTimer = Timer.scheduledCommonTimer(withTimeInterval: 0.5, repeats: true) { timer in
+        countdownTimer = Timer.scheduledCommonTimer(withTimeInterval: 0.25, repeats: true) { timer in
             updateCountdown()
             if timeRemaining <= 0 {
                 timer.invalidate()

@@ -56,7 +56,9 @@ extension TimeInterval {
 /// it's an interruption. Same for a film, a presentation, or a meeting.
 enum ScreenBusy {
     static func isBusy() -> Bool {
-        return aFullscreenAppIsRunning() || isMicrophoneInUse()
+        return aFullscreenAppIsRunning()
+            || isMicrophoneInUse()
+            || isScreenRecordingOrWatchedVideoActive()
     }
 
     /// Seconds since the last keyboard, mouse or trackpad event, system-wide. Quartz
@@ -70,8 +72,67 @@ enum ScreenBusy {
         CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: .keyDown)
     }
 
+    /// True while any mouse or trackpad button is held down (dragging a file, scrubbing
+    /// a timeline, resizing a window).
+    static func isMouseButtonDown() -> Bool {
+        NSEvent.pressedMouseButtons != 0
+    }
+
     /// kCGAnyInputEventType — every event type at once, ~0 in the C header
     private static let anyInputEvent = CGEventType(rawValue: ~0)!
+
+    /// Processes whose whole job is keeping the Mac awake while working — never treat
+    /// them as an active film or screen share, or scheduled breaks would stop all day.
+    private static let sleepBlockerProcesses: Set<String> = [
+        "caffeinate", "amphetamine", "keepingyouawake", "lungomare", "jiggler", "spellbreak"
+    ]
+
+    /// Processes (or assertion substrings) that indicate screen recording or screen sharing.
+    private static let captureMarkers: [String] = [
+        "quicktime", "obs", "loom", "screencapture", "replay", "cleanshot",
+        "screenflow", "kap", "descript", "zoom", "teams", "webex", "webrtc"
+    ]
+
+    /// Inspects per-process display-sleep assertions (`IOPMCopyAssertionsByProcess`) so
+    /// screen recordings / shares always hold breaks, and windowed video playback holds
+    /// breaks when the user is watching (hands off the keyboard for 15s+) without getting
+    /// tricked by `caffeinate` or a background music tab while coding.
+    static func isScreenRecordingOrWatchedVideoActive() -> Bool {
+        var rawAssertions: Unmanaged<CFDictionary>?
+        guard IOPMCopyAssertionsByProcess(&rawAssertions) == kIOReturnSuccess,
+              let byPid = rawAssertions?.takeRetainedValue() as? [NSNumber: [[String: Any]]]
+        else { return false }
+
+        let handsOffKeys = secondsSinceLastKeystroke() >= 15
+
+        for (_, list) in byPid {
+            for entry in list {
+                let type = (entry["AssertionTrueType"] as? String)
+                    ?? (entry["AssertType"] as? String)
+                    ?? ""
+                guard type == "PreventUserIdleDisplaySleep" || type == "NoDisplaySleepAssertion" else {
+                    continue
+                }
+
+                let proc = ((entry["Process Name"] as? String) ?? "").lowercased()
+                if sleepBlockerProcesses.contains(proc) { continue }
+
+                let reason = ((entry["AssertName"] as? String) ?? "").lowercased()
+                let isCapture = captureMarkers.contains { proc.contains($0) || reason.contains($0) }
+                    || reason.contains("screen")
+                    || reason.contains("record")
+                    || reason.contains("capture")
+
+                if isCapture {
+                    return true
+                }
+                if handsOffKeys {
+                    return true
+                }
+            }
+        }
+        return false
+    }
 
     /// Is something keeping the display awake — a playing video, a call? It's how
     /// macOS knows not to dim the screen mid-film, and it's the difference between

@@ -32,10 +32,12 @@ class StatusBarController: NSObject {
             statusButton.target = self
         }
         
-        // Setup popover for left-click menu
+        // Setup popover for left-click menu — pin darkAqua so macOS Light Mode
+        // never turns the popover chrome white behind warm cream text
         popover = NSPopover()
         popover.behavior = .transient
-        popover.animates = true  // Smooth animation
+        popover.animates = true
+        popover.appearance = NSAppearance(named: .darkAqua)
         
         // Setup context menu for right-click
         setupContextMenu()
@@ -56,7 +58,7 @@ class StatusBarController: NSObject {
             .environmentObject(appState)
         
         popover.contentViewController = NSHostingController(rootView: menuView)
-        popover.contentSize = NSSize(width: 200, height: NSSize.zero.height)
+        popover.contentSize = NSSize(width: 208, height: NSSize.zero.height)
         
         // Observe timer changes to update tooltip
         appState.$timerRunning
@@ -92,20 +94,10 @@ class StatusBarController: NSObject {
         contextMenu = NSMenu()
         contextMenu.autoenablesItems = false
         
-        // Status lines: the countdown (if running) and today's tally (once there is one)
-        var statusLines: [String] = []
         if appState?.timerRunning == true {
-            statusLines.append("\((appState?.timeRemaining ?? 0).mmss) until break")
-        }
-        if let summary = appState?.todaySummary {
-            statusLines.append(summary)
-        }
-        if !statusLines.isEmpty {
-            for line in statusLines {
-                let item = NSMenuItem(title: line, action: nil, keyEquivalent: "")
-                item.isEnabled = false
-                contextMenu.addItem(item)
-            }
+            let item = NSMenuItem(title: "\((appState?.timeRemaining ?? 0).mmss) until break", action: nil, keyEquivalent: "")
+            item.isEnabled = false
+            contextMenu.addItem(item)
             contextMenu.addItem(NSMenuItem.separator())
         }
         
@@ -114,14 +106,12 @@ class StatusBarController: NSObject {
         breakItem.target = self
         contextMenu.addItem(breakItem)
         
-        contextMenu.addItem(NSMenuItem.separator())
-        
         // Timer toggle
         let timerTitle: String
         if appState?.timerRunning == true {
-            timerTitle = "Pause Timer"
+            timerTitle = "Pause"
         } else {
-            timerTitle = appState?.timerPaused == true ? "Resume Timer" : "Start Timer"
+            timerTitle = appState?.timerPaused == true ? "Resume" : "Start"
         }
         let timerItem = NSMenuItem(title: timerTitle, action: #selector(toggleTimer), keyEquivalent: "")
         timerItem.target = self
@@ -129,15 +119,13 @@ class StatusBarController: NSObject {
         
         contextMenu.addItem(NSMenuItem.separator())
 
-        // Preferences
-        let prefsItem = NSMenuItem(title: "Settings…", action: #selector(showPreferences), keyEquivalent: "")
+        // Settings
+        let prefsItem = NSMenuItem(title: "Settings", action: #selector(showPreferences), keyEquivalent: "")
         prefsItem.target = self
         contextMenu.addItem(prefsItem)
         
-        contextMenu.addItem(NSMenuItem.separator())
-        
         // Quit
-        let quitItem = NSMenuItem(title: "Quit Spellbreak", action: #selector(quitApp), keyEquivalent: "")
+        let quitItem = NSMenuItem(title: "Quit", action: #selector(quitApp), keyEquivalent: "")
         quitItem.target = self
         contextMenu.addItem(quitItem)
     }
